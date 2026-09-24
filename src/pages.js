@@ -66,6 +66,11 @@ function ticker(line) {
   `;
 }
 
+function note(text) {
+  const value = String(text ?? "").trim();
+  return value ? `<p class="section-note">${esc(value)}</p>` : "";
+}
+
 function pending(copy, value) {
   const text = value?.trim() ? value : copy.about.pending;
   const klass = value?.trim() ? "" : " is-pending";
@@ -150,7 +155,7 @@ function newsBody(copy, compact) {
       </div>
       <p class="wire-label">${esc(news.wireLabel)}</p>
       <ol class="wire">${wires}</ol>
-      ${compact ? "" : `<p class="section-note">${esc(news.reservedNote)}</p>`}
+      ${compact ? "" : note(news.reservedNote)}
     </div>
   `;
 }
@@ -262,7 +267,7 @@ export function renderHome(copy) {
           <div class="section-head">
             <p class="section-kicker">${esc(home.boardKicker)}</p>
             <h2>${esc(home.boardTitle)}</h2>
-            <p class="section-note">${esc(home.boardNote)}</p>
+            ${note(home.boardNote)}
           </div>
           <table class="board reveal">
             <tbody>${rows}</tbody>
@@ -273,7 +278,7 @@ export function renderHome(copy) {
           <h2>${esc(home.fixtureTitle)}</h2>
           <p>${esc(home.fixtureLead)}</p>
           <ol class="fixtures">${fixtures}</ol>
-          <p class="section-note">${esc(home.fixtureNote)}</p>
+          ${note(home.fixtureNote)}
         </div>
       </section>
       <section class="section roster-stage">
@@ -287,7 +292,7 @@ export function renderHome(copy) {
             <a class="btn btn-ghost" href="/roster" data-nav>${esc(home.rosterCta)}</a>
           </div>
           <div class="slots">${rosterCards(copy)}</div>
-          ${rosterMembers.some((member) => (member.name?.zh || member.name?.en || "").trim()) ? "" : `<p class="section-note">${esc(copy.roster.emptyNote)}</p>`}
+          ${rosterMembers.some((member) => (member.name?.zh || member.name?.en || "").trim()) ? "" : note(copy.roster.emptyNote)}
         </div>
       </section>
       <section class="section wrap">
@@ -387,7 +392,7 @@ export function renderRoster(copy) {
         <div class="wrap">
           <p class="section-kicker">${esc(roster.stageKicker)}</p>
           <div class="slots">${rosterCards(copy)}</div>
-          ${published.length ? "" : `<p class="section-note">${esc(roster.emptyNote)}</p>`}
+          ${published.length ? "" : note(roster.emptyNote)}
         </div>
       </section>
       <section class="section wrap">
