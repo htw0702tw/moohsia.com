@@ -129,11 +129,35 @@ export class ContentRejected extends Error {
   }
 }
 
+const OFF_BRAND = String.fromCharCode(104, 116, 119, 48, 55, 48, 50);
+const DISCORD_INVITE = /discord\.gg\/|discord\.com\/invite\//i;
+
+function collectText(value, out) {
+  if (typeof value === "string") {
+    out.push(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectText(item, out);
+    return;
+  }
+  if (value && typeof value === "object") {
+    for (const key of Object.keys(value)) collectText(value[key], out);
+  }
+}
+
+/**
+ * Stored CMS text may not carry a Discord invite URL or the personal-brand token.
+ * Check the strings themselves. A raw JSON scan can only see the same needles, but
+ * it also makes an id or a joined fragment look like public copy.
+ */
 function assertPublicSafe(doc) {
-  const text = JSON.stringify(doc).toLowerCase();
-  const offBrand = String.fromCharCode(104, 116, 119, 48, 55, 48, 50);
-  if (text.includes("discord.gg/") || text.includes("discord.com/invite/") || text.includes(offBrand)) {
-    throw new ContentRejected("blocked_content");
+  const strings = [];
+  collectText(doc, strings);
+  for (const value of strings) {
+    if (DISCORD_INVITE.test(value) || value.toLowerCase().includes(OFF_BRAND)) {
+      throw new ContentRejected("blocked_content");
+    }
   }
 }
 
