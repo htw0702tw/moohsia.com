@@ -19,7 +19,7 @@ import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
  */
 
 const PUBLIC_FALLBACK = "/index.html";
-const ADMIN_FALLBACK = "/admin/index.html";
+const ADMIN_FALLBACK = "/admin/";
 
 function isFilePath(pathname) {
   return /\.[a-z0-9]{1,8}$/i.test(pathname);
@@ -89,8 +89,16 @@ async function serveAdmin(request, env) {
 
   if ((request.method === "GET" || request.method === "HEAD") && !isFilePath(path)) {
     const session = await adminSession(request, env);
-    if (path === "/" ) return redirect(session ? "/dashboard" : "/login");
+    if (path === "/") return redirect(session ? "/dashboard" : "/login");
     if (path === "/login" && session) return redirect("/dashboard");
+    // Assets 307s /admin/index.html and extensionless client routes (/login, /dashboard) to /admin/.
+    // Fetch the directory shell, and follow one Assets redirect, so the browser stays on the SPA path.
+    let shell = await env.ASSETS.fetch(new Request(new URL(ADMIN_FALLBACK, url.origin), request));
+    const location = shell.headers.get("location");
+    if ((shell.status === 301 || shell.status === 302 || shell.status === 307 || shell.status === 308) && location) {
+      shell = await env.ASSETS.fetch(new Request(new URL(location, url.origin), request));
+    }
+    return withAdminPageHeaders(shell);
   }
 
   const response = await serveAsset(request, env, ADMIN_FALLBACK);

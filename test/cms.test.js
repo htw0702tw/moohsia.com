@@ -16,9 +16,10 @@ function assets(files) {
     async fetch(request) {
       const path = new URL(request.url).pathname;
       if (files[path]) {
+        const html = path.endsWith(".html") || path.endsWith("/");
         return new Response(files[path], {
           status: 200,
-          headers: { "content-type": path.endsWith(".html") ? "text/html; charset=utf-8" : "text/plain" },
+          headers: { "content-type": html ? "text/html; charset=utf-8" : "text/plain" },
         });
       }
       return new Response("missing", { status: 404 });
@@ -35,6 +36,7 @@ async function adminEnv() {
     CMS_STORE: createMemoryStore(),
     ASSETS: assets({
       "/index.html": "public-shell",
+      "/admin/": "admin-shell",
       "/admin/index.html": "admin-shell",
       "/favicon.svg": "icon",
     }),
@@ -239,6 +241,55 @@ test("admin host serves the admin shell and public host does not", async () => {
   const home = await worker.fetch(new Request("https://admin.moohsia.com/", { headers: { cookie } }), env);
   assert.equal(home.status, 302);
   assert.equal(home.headers.get("location"), "/dashboard");
+
+  const icon = await worker.fetch(new Request("https://admin.moohsia.com/favicon.svg"), env);
+  assert.equal(icon.status, 200);
+  assert.equal(await icon.text(), "icon");
+});
+
+test("admin spa routes serve the shell instead of the assets 307", async () => {
+  const env = await adminEnv();
+  const seen = [];
+  env.ASSETS = {
+    async fetch(request) {
+      const path = new URL(request.url).pathname;
+      seen.push(path);
+      if (path === "/login" || path === "/dashboard") {
+        return new Response(null, { status: 307, headers: { location: "/admin/" } });
+      }
+      if (path === "/admin/index.html") {
+        return new Response(null, { status: 307, headers: { location: "/admin/" } });
+      }
+      if (path === "/admin/") {
+        return new Response(null, {
+          status: 307,
+          headers: { location: "/admin/shell.html" },
+        });
+      }
+      if (path === "/admin/shell.html") {
+        return new Response("admin-shell", {
+          status: 200,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      return new Response("missing", { status: 404 });
+    },
+  };
+
+  const dashboard = await worker.fetch(new Request("https://admin.moohsia.com/dashboard"), env);
+  assert.equal(dashboard.status, 200);
+  assert.equal(dashboard.headers.get("location"), null);
+  assert.equal(await dashboard.text(), "admin-shell");
+  assert.equal(dashboard.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.equal(dashboard.headers.get("cache-control"), "no-store");
+  assert.deepEqual(seen, ["/admin/", "/admin/shell.html"]);
+
+  seen.length = 0;
+  const login = await worker.fetch(new Request("https://admin.moohsia.com/login", { method: "HEAD" }), env);
+  assert.equal(login.status, 200);
+  assert.equal(login.headers.get("location"), null);
+  assert.equal(login.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.deepEqual(seen, ["/admin/", "/admin/shell.html"]);
 });
 
 test("admin is not configured when secrets are missing", async () => {

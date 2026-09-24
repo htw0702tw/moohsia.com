@@ -93,12 +93,7 @@ openssl rand -base64 32 | npx wrangler secret put ADMIN_SESSION_SECRET
 
 ### 資料庫
 
-```bash
-npx wrangler d1 create moohsia-cms
-npx wrangler kv namespace create CMS_KV
-```
-
-把印出的 id 填進 [`wrangler.jsonc`](wrangler.jsonc) 的 `database_id` 與 `kv_namespaces.id`，取代現在的占位值。KV 可以先不建，登入鎖定仍可用，只是不會跨 isolate。
+[`wrangler.jsonc`](wrangler.jsonc) 裡的 `database_id` 與 `CMS_KV` id 已是正式環境的 `moohsia-cms` 與 `CMS_KV`。不要換成別的 id。沒有 KV 時登入鎖定仍可用，只是不會跨 isolate。
 
 ```bash
 npm run cms:migrate:local
