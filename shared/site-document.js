@@ -129,8 +129,8 @@ export class ContentRejected extends Error {
   }
 }
 
-const OFF_BRAND = String.fromCharCode(104, 116, 119, 48, 55, 48, 50);
 const DISCORD_INVITE = /discord\.gg\/|discord\.com\/invite\//i;
+const RESERVED_ROSTER_NAME = "moohsia";
 
 function collectText(value, out) {
   if (typeof value === "string") {
@@ -146,19 +146,37 @@ function collectText(value, out) {
   }
 }
 
+/** Exact roster name, or the same token with spaces and punctuation removed. */
+function rosterNameKey(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, "");
+}
+
+function assertRosterNames(members) {
+  if (!Array.isArray(members)) return;
+  for (const member of members) {
+    for (const name of [member?.name?.zh, member?.name?.en]) {
+      if (rosterNameKey(name) === RESERVED_ROSTER_NAME) {
+        throw new ContentRejected("blocked_content");
+      }
+    }
+  }
+}
+
 /**
- * Stored CMS text may not carry a Discord invite URL or the personal-brand token.
- * Check the strings themselves. A raw JSON scan can only see the same needles, but
- * it also makes an id or a joined fragment look like public copy.
+ * Stored public strings may not carry a Discord invite URL.
+ * Roster display names are checked on their own: the reserved team token is
+ * rejected there, and nowhere else, so mail and site copy can still say moohsia.
  */
 function assertPublicSafe(doc) {
   const strings = [];
   collectText(doc, strings);
   for (const value of strings) {
-    if (DISCORD_INVITE.test(value) || value.toLowerCase().includes(OFF_BRAND)) {
-      throw new ContentRejected("blocked_content");
-    }
+    if (DISCORD_INVITE.test(value)) throw new ContentRejected("blocked_content");
   }
+  assertRosterNames(doc?.rosterMembers);
 }
 
 /** @param {unknown} input */
