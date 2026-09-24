@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "moohsia-com",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-09-24",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  // Placeholder only. Empty means the public Discord gate stays "coming soon".
+  // When a real invite exists, remove this var and run:
+  //   npx wrangler secret put DISCORD_INVITE_URL
+  // The site never prints the URL. See README.
+  "vars": {
+    "DISCORD_INVITE_URL": ""
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api", "/api/*"]
+  }
+  // Custom domains are attached in the Cloudflare dashboard (or by uncommenting
+  // after the moohsia.com zone is on this account). Do not route this Worker
+  // over the existing `moohsia-cloud` AI/chat API.
+  // "routes": [
+  //   { "pattern": "moohsia.com", "custom_domain": true },
+  //   { "pattern": "www.moohsia.com", "custom_domain": true }
+  // ]
+}
