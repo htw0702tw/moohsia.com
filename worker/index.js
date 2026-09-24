@@ -89,8 +89,17 @@ async function serveAdmin(request, env) {
 
   if ((request.method === "GET" || request.method === "HEAD") && !isFilePath(path)) {
     const session = await adminSession(request, env);
-    if (path === "/" ) return redirect(session ? "/dashboard" : "/login");
+    if (path === "/") return redirect(session ? "/dashboard" : "/login");
     if (path === "/login" && session) return redirect("/dashboard");
+    // Assets 307s extensionless client routes such as /login and /dashboard to /admin/.
+    // Fetch the shell directly so the browser stays on the SPA path.
+    let shell = await env.ASSETS.fetch(new Request(new URL(ADMIN_FALLBACK, url.origin), request));
+    const location = shell.headers.get("location");
+    if ((shell.status === 301 || shell.status === 302 || shell.status === 307 || shell.status === 308) && location) {
+      const next = new URL(location, url.origin);
+      if (next.origin === url.origin) shell = await env.ASSETS.fetch(new Request(next, request));
+    }
+    return withAdminPageHeaders(shell);
   }
 
   const response = await serveAsset(request, env, ADMIN_FALLBACK);

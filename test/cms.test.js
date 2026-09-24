@@ -239,6 +239,45 @@ test("admin host serves the admin shell and public host does not", async () => {
   const home = await worker.fetch(new Request("https://admin.moohsia.com/", { headers: { cookie } }), env);
   assert.equal(home.status, 302);
   assert.equal(home.headers.get("location"), "/dashboard");
+
+  const icon = await worker.fetch(new Request("https://admin.moohsia.com/favicon.svg"), env);
+  assert.equal(icon.status, 200);
+  assert.equal(await icon.text(), "icon");
+});
+
+test("admin spa routes serve the shell instead of the assets 307", async () => {
+  const env = await adminEnv();
+  const seen = [];
+  env.ASSETS = {
+    async fetch(request) {
+      const path = new URL(request.url).pathname;
+      seen.push(path);
+      if (path === "/login" || path === "/dashboard") {
+        return new Response(null, { status: 307, headers: { location: "/admin/" } });
+      }
+      if (path === "/admin/index.html") {
+        return new Response(null, {
+          status: 307,
+          headers: { location: "/admin/", "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      if (path === "/admin/") {
+        return new Response("admin-shell", {
+          status: 200,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      return new Response("missing", { status: 404 });
+    },
+  };
+
+  const dashboard = await worker.fetch(new Request("https://admin.moohsia.com/dashboard"), env);
+  assert.equal(dashboard.status, 200);
+  assert.equal(dashboard.headers.get("location"), null);
+  assert.equal(await dashboard.text(), "admin-shell");
+  assert.equal(dashboard.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.equal(dashboard.headers.get("cache-control"), "no-store");
+  assert.deepEqual(seen, ["/admin/index.html", "/admin/"]);
 });
 
 test("admin is not configured when secrets are missing", async () => {
