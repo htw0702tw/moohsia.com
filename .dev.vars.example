@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local `wrangler dev` / `npm run dev`.
+# Leave empty until the owner supplies a real Discord invite.
+# Accepted shapes (never commit the real value):
+#   https://discord.gg/<code>
+#   https://discord.com/invite/<code>
+DISCORD_INVITE_URL=

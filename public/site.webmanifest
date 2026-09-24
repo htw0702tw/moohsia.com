@@ -1,0 +1,18 @@
+{
+  "name": "暮霞｜MOS",
+  "short_name": "MOS",
+  "description": "暮霞｜MOS 傳說對決戰隊",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07060c",
+  "theme_color": "#07060c",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
