@@ -177,7 +177,7 @@ const MESSAGES = {
   storage_unavailable: "現在讀不到內容資料庫。",
   forbidden: "這個操作被拒絕。請重新整理後再試。",
   unauthorized: "請先登入。",
-  blocked_content: "內容含有不允許的連結，沒有儲存。",
+  blocked_content: "內容含有 Discord 邀請連結或 htw0702，沒有儲存。",
   invalid_content: "內容格式不正確。",
   payload_too_large: "內容太長。",
 };
@@ -266,19 +266,26 @@ function applyPayload(data) {
   if (state.draft?.copy?.zh) captureSamples(state.draft.copy.zh, "");
 }
 
+/**
+ * The login form stores username htw0702. Empty CMS boxes, especially a new
+ * roster name, must not accept that autofill: the brand token blocks the save.
+ */
+const CMS_TEXT = `data-cms autocomplete="off" autocapitalize="off" spellcheck="false" readonly`;
+const CMS_CHOICE = `data-cms autocomplete="off"`;
+
 function fieldControl(path, lang, value) {
   const key = path.split(".").pop();
   const text = value ?? "";
   if (key === "tone") {
-    return `<select data-path="${esc(path)}" data-lang="${lang}">
+    return `<select data-path="${esc(path)}" data-lang="${lang}" ${CMS_CHOICE}>
       <option value="calm"${text !== "alert" ? " selected" : ""}>一般</option>
       <option value="alert"${text === "alert" ? " selected" : ""}>強調</option>
     </select>`;
   }
   if (LONG.has(key) || String(text).length > 90) {
-    return `<textarea data-path="${esc(path)}" data-lang="${lang}" rows="4">${esc(text)}</textarea>`;
+    return `<textarea data-path="${esc(path)}" data-lang="${lang}" rows="4" ${CMS_TEXT}>${esc(text)}</textarea>`;
   }
-  return `<input data-path="${esc(path)}" data-lang="${lang}" value="${esc(text)}">`;
+  return `<input data-path="${esc(path)}" data-lang="${lang}" value="${esc(text)}" ${CMS_TEXT}>`;
 }
 
 function fieldPair(path, zh, en) {
@@ -342,10 +349,10 @@ function rosterEditor() {
       return `<article class="repeat">
         <header><b>成員 ${index + 1}</b><button class="ghost" type="button" data-action="roster-remove" data-index="${index}">刪除</button></header>
         <div class="pair">
-          <label>名字 繁中<input data-roster="${index}" data-field="name" data-lang="zh" value="${esc(member.name?.zh)}"></label>
-          <label>名字 EN<input data-roster="${index}" data-field="name" data-lang="en" value="${esc(member.name?.en)}"></label>
-          <label>位置 繁中<input data-roster="${index}" data-field="role" data-lang="zh" value="${esc(member.role?.zh)}"></label>
-          <label>位置 EN<input data-roster="${index}" data-field="role" data-lang="en" value="${esc(member.role?.en)}"></label>
+          <label>名字 繁中<input data-roster="${index}" data-field="name" data-lang="zh" value="${esc(member.name?.zh)}" ${CMS_TEXT}></label>
+          <label>名字 EN<input data-roster="${index}" data-field="name" data-lang="en" value="${esc(member.name?.en)}" ${CMS_TEXT}></label>
+          <label>位置 繁中<input data-roster="${index}" data-field="role" data-lang="zh" value="${esc(member.role?.zh)}" ${CMS_TEXT}></label>
+          <label>位置 EN<input data-roster="${index}" data-field="role" data-lang="en" value="${esc(member.role?.en)}" ${CMS_TEXT}></label>
         </div>
         <label class="check"><input type="checkbox" data-roster="${index}" data-field="hidden"${member.hidden ? " checked" : ""}>在公開頁隱藏</label>
       </article>`;
@@ -353,8 +360,8 @@ function rosterEditor() {
     .join("");
   return `<section class="stack">
     <h2>選手</h2>
-    <p class="hint">預設沒有選手。空白名單會在公開頁顯示待公布席位，不會自動填上假的人名。</p>
-    <label>沒有選手時的空位數量<input data-kind="slots" type="number" min="0" max="12" value="${esc(state.draft.placeholderSlots)}"></label>
+    <p class="hint">預設沒有選手。空白名單會在公開頁顯示待公布席位，不會自動填上假的人名。不要寫 Discord 邀請網址，也不要寫 htw0702。</p>
+    <label>沒有選手時的空位數量<input data-kind="slots" type="number" min="0" max="12" value="${esc(state.draft.placeholderSlots)}" ${CMS_TEXT}></label>
     <div class="repeats">${cards}</div>
     <button class="btn" type="button" data-action="roster-add">新增成員</button>
     ${copyBlocks("roster")}
@@ -367,16 +374,16 @@ function newsEditor() {
       return `<article class="repeat">
         <header><b>動態 ${index + 1}</b><button class="ghost" type="button" data-action="news-remove" data-index="${index}">刪除</button></header>
         <div class="pair">
-          <label>日期<input data-news="${index}" data-field="date" type="date" value="${esc(post.date)}"></label>
-          <label>狀態<select data-news="${index}" data-field="status">
+          <label>日期<input data-news="${index}" data-field="date" type="date" value="${esc(post.date)}" ${CMS_TEXT}></label>
+          <label>狀態<select data-news="${index}" data-field="status" ${CMS_CHOICE}>
             <option value="draft"${post.status !== "published" ? " selected" : ""}>草稿（不公開）</option>
             <option value="published"${post.status === "published" ? " selected" : ""}>公開</option>
           </select></label>
-          <label>標題 繁中<input data-news="${index}" data-field="title" data-lang="zh" value="${esc(post.title?.zh)}"></label>
-          <label>標題 EN<input data-news="${index}" data-field="title" data-lang="en" value="${esc(post.title?.en)}"></label>
+          <label>標題 繁中<input data-news="${index}" data-field="title" data-lang="zh" value="${esc(post.title?.zh)}" ${CMS_TEXT}></label>
+          <label>標題 EN<input data-news="${index}" data-field="title" data-lang="en" value="${esc(post.title?.en)}" ${CMS_TEXT}></label>
         </div>
-        <label>內文 繁中<textarea data-news="${index}" data-field="body" data-lang="zh" rows="4">${esc(post.body?.zh)}</textarea></label>
-        <label>內文 EN<textarea data-news="${index}" data-field="body" data-lang="en" rows="4">${esc(post.body?.en)}</textarea></label>
+        <label>內文 繁中<textarea data-news="${index}" data-field="body" data-lang="zh" rows="4" ${CMS_TEXT}>${esc(post.body?.zh)}</textarea></label>
+        <label>內文 EN<textarea data-news="${index}" data-field="body" data-lang="en" rows="4" ${CMS_TEXT}>${esc(post.body?.en)}</textarea></label>
       </article>`;
     })
     .join("");
@@ -395,10 +402,10 @@ function profileEditor() {
       return `<article class="repeat">
         <header><b>欄位 ${index + 1}</b><button class="ghost" type="button" data-action="profile-remove" data-index="${index}">移除</button></header>
         <div class="pair">
-          <label>欄名 繁中<input data-profile="${index}" data-part="label" data-lang="zh" value="${esc(field.zh)}"></label>
-          <label>欄名 EN<input data-profile="${index}" data-part="label" data-lang="en" value="${esc(field.en)}"></label>
-          <label>內容 繁中<input data-profile="${index}" data-part="value" data-lang="zh" value="${esc(field.value?.zh)}"></label>
-          <label>內容 EN<input data-profile="${index}" data-part="value" data-lang="en" value="${esc(field.value?.en)}"></label>
+          <label>欄名 繁中<input data-profile="${index}" data-part="label" data-lang="zh" value="${esc(field.zh)}" ${CMS_TEXT}></label>
+          <label>欄名 EN<input data-profile="${index}" data-part="label" data-lang="en" value="${esc(field.en)}" ${CMS_TEXT}></label>
+          <label>內容 繁中<input data-profile="${index}" data-part="value" data-lang="zh" value="${esc(field.value?.zh)}" ${CMS_TEXT}></label>
+          <label>內容 EN<input data-profile="${index}" data-part="value" data-lang="en" value="${esc(field.value?.en)}" ${CMS_TEXT}></label>
         </div>
       </article>`;
     })
@@ -415,7 +422,7 @@ function contactEditor() {
   return `<section class="stack">
     <h2>公開信箱</h2>
     <p class="hint">預設是 Info@moohsia.com。這是按鈕與 mailto 使用的地址。句子裡寫出來的信箱，要在下面的文案另外改。</p>
-    <label>聯絡信箱<input data-kind="email" value="${esc(state.draft.contactEmail)}"></label>
+    <label>聯絡信箱<input data-kind="email" value="${esc(state.draft.contactEmail)}" ${CMS_TEXT}></label>
     ${copyBlocks("contact")}
   </section>`;
 }
@@ -469,6 +476,10 @@ function shell() {
       `<a href="${item[1]}" data-nav${sectionId() === item[0] ? ' aria-current="page"' : ""}>${esc(item[2])}</a>`,
   ).join("");
   return `<div class="admin">
+    <div class="autofill-sink" aria-hidden="true">
+      <input tabindex="-1" type="text" name="username" autocomplete="username">
+      <input tabindex="-1" type="password" name="password" autocomplete="current-password">
+    </div>
     <aside class="side">
       <p class="brand">暮霞｜MOS</p>
       <p class="user">${esc(state.username)}</p>
@@ -555,10 +566,11 @@ function onInput(event) {
 async function persist(mode) {
   state.error = "";
   state.status = mode === "publish" ? "發布中" : "儲存中";
+  const body = JSON.stringify(state.draft);
   render();
   const data = await api(mode === "publish" ? "/api/admin/publish" : "/api/admin/content", {
     method: mode === "publish" ? "POST" : "PUT",
-    body: JSON.stringify(state.draft),
+    body,
   });
   if (!data.ok) {
     state.error = message(data.code);
@@ -720,10 +732,18 @@ async function onSubmit(event) {
   render();
 }
 
+function unlockCmsField(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+  if (!target.hasAttribute("data-cms") || !target.readOnly) return;
+  target.readOnly = false;
+}
+
 async function boot() {
   document.addEventListener("click", onClick);
   document.addEventListener("input", onInput);
   document.addEventListener("change", onInput);
+  document.addEventListener("focusin", unlockCmsField);
   document.addEventListener("submit", onSubmit);
   window.addEventListener("popstate", () => render());
   const session = await api("/api/admin/session");

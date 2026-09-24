@@ -196,14 +196,33 @@ test("login locks out after repeated failures", async () => {
   assert.equal(locked.headers.get("retry-after"), "900");
 });
 
-test("blocked public links are rejected", async () => {
+test("default document and ordinary section edits can be saved", async () => {
   const env = await adminEnv();
   const loggedIn = await handleAdmin(loginRequest(PASSWORD, "203.0.113.70"), env);
   const session = await loggedIn.json();
   const cookie = (loggedIn.headers.get("set-cookie") || "").split(";")[0];
   const draft = sanitizeDocument(getDefaultDocument());
-  draft.copy.zh.home.lead = "see https://discord.gg/not-allowed";
-  const response = await handleAdmin(
+  assert.equal(draft.contactEmail, "Info@moohsia.com");
+  assert.equal(draft.copy.zh.nav.recruitChip, "不開放招募");
+  draft.copy.zh.home.tagline = "暮色仍在。";
+  draft.copy.en.about.lead = "MOS plays Arena of Valor.";
+  draft.copy.zh.roster.lead = "名單如下。";
+  draft.copy.zh.news.emptyBody = "稍後公布。";
+  draft.copy.zh.contact.lead = "寫信給戰隊。";
+  draft.rosterMembers = [
+    { id: "aabbccddeeff", name: { zh: "小明", en: "Ming" }, role: { zh: "中路", en: "Mid" }, hidden: false },
+  ];
+  draft.newsPosts = [
+    {
+      id: "112233445566",
+      date: "2026-09-24",
+      title: { zh: "例行公告", en: "Note" },
+      body: { zh: "賽程之後公布。", en: "Schedule later." },
+      status: "published",
+    },
+  ];
+
+  const saved = await handleAdmin(
     new Request("https://admin.moohsia.com/api/admin/content", {
       method: "PUT",
       headers: {
@@ -216,8 +235,88 @@ test("blocked public links are rejected", async () => {
     }),
     env,
   );
-  assert.equal(response.status, 400);
-  assert.equal((await response.json()).code, "blocked_content");
+  assert.equal(saved.status, 200);
+
+  const published = await handleAdmin(
+    new Request("https://admin.moohsia.com/api/admin/publish", {
+      method: "POST",
+      headers: {
+        origin: "https://admin.moohsia.com",
+        "content-type": "application/json",
+        cookie,
+        "x-csrf-token": session.csrf,
+      },
+      body: JSON.stringify(draft),
+    }),
+    env,
+  );
+  assert.equal(published.status, 200);
+  const body = await published.json();
+  assert.equal(body.draft.copy.zh.roster.lead, "名單如下。");
+  assert.equal(body.draft.rosterMembers[0].name.zh, "小明");
+  assert.equal(body.draft.copy.zh.contact.only, "Info@moohsia.com");
+
+  const live = await handleApi(new Request("https://moohsia.com/api/content"), env);
+  const after = await live.json();
+  assert.equal(after.source, "published");
+  assert.equal(after.copy.zh.home.tagline, "暮色仍在。");
+  assert.equal(after.rosterMembers[0].role.zh, "中路");
+  assert.equal(after.newsPosts[0].title.zh, "例行公告");
+});
+
+test("blocked public links are rejected", async () => {
+  const env = await adminEnv();
+  const loggedIn = await handleAdmin(loginRequest(PASSWORD, "203.0.113.71"), env);
+  const session = await loggedIn.json();
+  const cookie = (loggedIn.headers.get("set-cookie") || "").split(";")[0];
+
+  async function save(draft) {
+    return handleAdmin(
+      new Request("https://admin.moohsia.com/api/admin/content", {
+        method: "PUT",
+        headers: {
+          origin: "https://admin.moohsia.com",
+          "content-type": "application/json",
+          cookie,
+          "x-csrf-token": session.csrf,
+        },
+        body: JSON.stringify(draft),
+      }),
+      env,
+    );
+  }
+
+  const invite = sanitizeDocument(getDefaultDocument());
+  invite.copy.zh.home.lead = "see https://discord.gg/not-allowed";
+  const inviteResponse = await save(invite);
+  assert.equal(inviteResponse.status, 400);
+  assert.equal((await inviteResponse.json()).code, "blocked_content");
+
+  const vanity = sanitizeDocument(getDefaultDocument());
+  vanity.copy.zh.contact.writeBody = "https://discord.com/invite/team";
+  const vanityResponse = await save(vanity);
+  assert.equal(vanityResponse.status, 400);
+  assert.equal((await vanityResponse.json()).code, "blocked_content");
+
+  const brand = sanitizeDocument(getDefaultDocument());
+  brand.rosterMembers = [
+    { id: "aabbccddeeff", name: { zh: "htw0702", en: "Ming" }, role: { zh: "中路", en: "Mid" }, hidden: false },
+  ];
+  const brandResponse = await save(brand);
+  assert.equal(brandResponse.status, 400);
+  assert.equal((await brandResponse.json()).code, "blocked_content");
+
+  const promo = sanitizeDocument(getDefaultDocument());
+  promo.copy.en.footer.blurb = "Also see htw0702.com";
+  const promoResponse = await save(promo);
+  assert.equal(promoResponse.status, 400);
+  assert.equal((await promoResponse.json()).code, "blocked_content");
+
+  const mention = sanitizeDocument(getDefaultDocument());
+  mention.copy.zh.roster.lead = "選手自行聯絡，不公開 Discord 邀請。";
+  const mentionResponse = await save(mention);
+  assert.equal(mentionResponse.status, 200);
+  assert.equal((await mentionResponse.json()).draft.copy.zh.roster.lead, "選手自行聯絡，不公開 Discord 邀請。");
 });
 
 test("admin host serves the admin shell and public host does not", async () => {

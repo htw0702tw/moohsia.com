@@ -23,6 +23,18 @@ body {
 
 button, input, textarea, select { font: inherit; color: inherit; }
 
+.autofill-sink {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 button, a { cursor: pointer; }
 
 .login-wrap, .admin { min-height: 100vh; }
