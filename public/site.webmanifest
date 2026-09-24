@@ -4,8 +4,8 @@
   "description": "暮霞｜MOS 傳說對決戰隊",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07060c",
-  "theme_color": "#07060c",
+  "background_color": "#07040d",
+  "theme_color": "#07040d",
   "lang": "zh-Hant",
   "icons": [
     {

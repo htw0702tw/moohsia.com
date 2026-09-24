@@ -2,7 +2,7 @@
 
 傳說對決戰隊的公開網站，準備部署到 [moohsia.com](https://moohsia.com)。
 
-這不是個人作品集。訪客只會看到戰隊資訊。公開聯絡方式只有 `Info@moohsia.com`。招募狀態是 **不開放招募**，沒有試訓報名表。內部 Discord 要通過驗證才加入；邀請網址沒有寫進頁面。
+這不是個人作品集。訪客只會看到戰隊資訊。公開聯絡方式只有 `Info@moohsia.com`。招募狀態是 **不開放招募**，沒有試訓報名表。公開頁面沒有驗證入口，也沒有 Discord 邀請網址。
 
 ## 本地啟動
 
@@ -15,7 +15,7 @@ npm run dev
 
 開啟 <http://localhost:5173>。
 
-`npm run dev` 會同時提供頁面與驗證用的本機 API（`/api/config`、`/api/verify`、`/api/health`）。
+`npm run dev` 會同時提供頁面與內部 API（`/api/config`、`/api/verify`、`/api/health`）。這些 API 沒有掛在公開導覽上。
 
 用與正式環境相同的 Worker 方式啟動：
 
@@ -38,16 +38,17 @@ npm start
 
 | 路徑 | 內容 |
 | --- | --- |
-| `/` | 戰隊首頁、暮色主視覺、招募狀態 |
+| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、動態空狀態、聯絡 |
 | `/about` | 戰隊。未確認欄位顯示待公布 |
-| `/roster` | 成員。沒有名單時顯示「成員資訊即將公開」 |
-| `/news` | 動態。沒有公告時為空狀態 |
-| `/contact` | 只有 `Info@moohsia.com`，以及 Discord 驗證說明 |
-| `/verify` | 內部驗證入口（站內存根，不是 Garena 官方同步） |
+| `/roster` | 成員。沒有名單時以待公布席位呈現，並註明不是已公開選手 |
+| `/news` | 動態。沒有公告時為廣播空狀態 |
+| `/contact` | 只有 `Info@moohsia.com` |
 
 右上角可切換 English。預設是繁體中文。
 
-動畫包含首頁粒子、HUD 環、跑馬燈、導覽底線、捲動浮現與滑鼠視差。系統若設定 `prefers-reduced-motion: reduce`，這些動效會停用。
+公開資訊架構沒有驗證頁。導覽、首頁按鈕、頁尾與行銷文案都不提供驗證入口；直接打開舊的驗證網址會落到站內 404。
+
+動畫包含可略過的入場、舞台地板、粒子拖尾、HUD 環、跑馬燈、滑鼠與捲動視差、卡片傾斜、雷達掃描與懸停回饋。系統若設定 `prefers-reduced-motion: reduce`，入場與這些動效會停用，內容仍可直接閱讀。
 
 ## 更新戰隊資料
 
@@ -65,11 +66,11 @@ export const newsPosts = [
 
 名稱留白的項目不會被畫成選手或新聞。
 
-## Discord 邀請
+## Discord 邀請與內部 API
 
-公開網站 **不會顯示邀請網址**。預設 `DISCORD_INVITE_URL` 是空的，驗證頁會寫「即將開放」，按鈕維持鎖定，文案是「通過驗證後加入內部 Discord」。
+公開網站 **不會顯示邀請網址，也不提供驗證頁**。預設 `DISCORD_INVITE_URL` 是空的。
 
-這次的驗證流程是人工審核存根：表單送出後只產生申請編號，存在這台瀏覽器。Worker 不保存申請、不連 Garena、也不因為送出表單就解鎖 Discord。
+`POST /api/verify` 仍是人工審核存根，只留給之後的內部流程，沒有掛進公開頁面。Worker 不保存申請、不連 Garena、也不會因為請求就解鎖 Discord。
 
 之後若要放上真正的邀請：
 
@@ -84,7 +85,7 @@ npx wrangler secret put DISCORD_INVITE_URL
 
 5. 本機開發可複製 `.dev.vars.example` 為 `.dev.vars`（此檔已在 `.gitignore`）。
 
-設定成功後，`/api/config` 只會回 `inviteConfigured: true`，仍然不含網址。頁面改顯示「邀請已備妥」，入口維持鎖定，直到未來有真正的審核通過流程。
+設定成功後，`/api/config` 只會回 `inviteConfigured: true`，仍然不含網址。公開網站不會因此出現邀請或驗證入口。
 
 ## 驗證 API
 
