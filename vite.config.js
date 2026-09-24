@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import { apiDevPlugin } from "./vite.api.js";
 
@@ -15,5 +16,11 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: false,
+    rollupOptions: {
+      input: {
+        main: resolve("index.html"),
+        admin: resolve("admin/index.html"),
+      },
+    },
   },
 });

@@ -1,5 +1,11 @@
-import { CONTACT_EMAIL, MAILTO } from "../shared/brand.js";
-import { newsPosts, PLACEHOLDER_SLOTS, profileFields, rosterMembers } from "./content.js";
+import {
+  getContactEmail,
+  getMailto,
+  getNewsPosts,
+  getPlaceholderSlots,
+  getProfileFields,
+  getRosterMembers,
+} from "./content.js";
 import { esc } from "./html.js";
 
 export function brandMark() {
@@ -80,7 +86,10 @@ function pending(copy, value) {
 function rosterCards(copy) {
   const roster = copy.roster;
   const lang = document.documentElement.lang === "en" ? "en" : "zh";
-  const published = rosterMembers.filter((member) => (member.name?.[lang] || member.name?.zh || "").trim());
+  const rosterMembers = getRosterMembers();
+  const published = rosterMembers.filter(
+    (member) => !member.hidden && (member.name?.[lang] || member.name?.zh || "").trim(),
+  );
   if (published.length) {
     return published
       .map((member, index) => {
@@ -90,7 +99,7 @@ function rosterCards(copy) {
       })
       .join("");
   }
-  return Array.from({ length: PLACEHOLDER_SLOTS }, (_, index) =>
+  return Array.from({ length: getPlaceholderSlots() }, (_, index) =>
     slotCard(index, roster.slot, roster.slotMeta, roster.stamp, true),
   ).join("");
 }
@@ -112,7 +121,9 @@ function slotCard(index, name, meta, stamp, empty) {
 function newsBody(copy, compact) {
   const news = copy.news;
   const lang = document.documentElement.lang === "en" ? "en" : "zh";
-  const posts = newsPosts.filter((post) => (post.title?.[lang] || post.title?.zh || "").trim());
+  const posts = getNewsPosts().filter(
+    (post) => post.status !== "draft" && (post.title?.[lang] || post.title?.zh || "").trim(),
+  );
   if (posts.length) {
     return `<div class="news-list">${posts
       .map((post) => {
@@ -234,7 +245,7 @@ export function renderHome(copy) {
             <div class="hero-actions">
               <a class="btn btn-primary" href="/about" data-nav>${esc(home.ctaTeam)}</a>
               <a class="btn btn-ghost" href="/roster" data-nav>${esc(home.ctaRoster)}</a>
-              <a class="btn btn-ghost" href="${MAILTO}">${esc(home.ctaContact)}</a>
+              <a class="btn btn-ghost" href="${getMailto()}">${esc(home.ctaContact)}</a>
             </div>
           </div>
           <div class="hero-crest">
@@ -287,12 +298,12 @@ export function renderHome(copy) {
             <div>
               <p class="section-kicker">${esc(home.rosterKicker)}</p>
               <h2>${esc(home.rosterTitle)}</h2>
-              <p class="section-note">${esc(rosterMembers.some((member) => (member.name?.zh || member.name?.en || "").trim()) ? copy.roster.liveLead : home.rosterLead)}</p>
+              <p class="section-note">${esc(getRosterMembers().some((member) => !member.hidden && (member.name?.zh || member.name?.en || "").trim()) ? copy.roster.liveLead : home.rosterLead)}</p>
             </div>
             <a class="btn btn-ghost" href="/roster" data-nav>${esc(home.rosterCta)}</a>
           </div>
           <div class="slots">${rosterCards(copy)}</div>
-          ${rosterMembers.some((member) => (member.name?.zh || member.name?.en || "").trim()) ? "" : note(copy.roster.emptyNote)}
+          ${getRosterMembers().some((member) => !member.hidden && (member.name?.zh || member.name?.en || "").trim()) ? "" : note(copy.roster.emptyNote)}
         </div>
       </section>
       <section class="section wrap">
@@ -308,7 +319,7 @@ export function renderHome(copy) {
             <p class="section-kicker">${esc(home.finaleKicker)}</p>
             <h2>${esc(home.finaleTitle)}</h2>
             <p class="lead">${esc(home.finaleBody)}</p>
-            <a class="mail-address" href="${MAILTO}">${esc(CONTACT_EMAIL)}</a>
+            <a class="mail-address" href="${getMailto()}">${esc(getContactEmail())}</a>
           </div>
           <div class="plate reveal">
             ${seal(copy.nav.recruitChip)}
@@ -338,7 +349,7 @@ function mast(copy, page) {
 export function renderAbout(copy) {
   const about = copy.about;
   const lang = document.documentElement.lang === "en" ? "en" : "zh";
-  const facts = profileFields
+  const facts = getProfileFields()
     .map((field) => {
       const label = lang === "en" ? field.en : field.zh;
       const value = lang === "en" ? field.value.en : field.value.zh;
@@ -383,7 +394,9 @@ export function renderAbout(copy) {
 export function renderRoster(copy) {
   const roster = copy.roster;
   const lang = document.documentElement.lang === "en" ? "en" : "zh";
-  const published = rosterMembers.filter((member) => (member.name?.[lang] || member.name?.zh || "").trim());
+  const published = getRosterMembers().filter(
+    (member) => !member.hidden && (member.name?.[lang] || member.name?.zh || "").trim(),
+  );
   const page = published.length ? { ...roster, lead: roster.liveLead } : roster;
   return `
     <article class="page subpage">
@@ -434,9 +447,9 @@ export function renderContact(copy) {
     <article class="page subpage">
       ${mast(copy, contact)}
       <section class="section wrap contact-layout">
-        <a class="mail-plate frame" href="${MAILTO}">
+        <a class="mail-plate frame" href="${getMailto()}">
           <span class="section-kicker">${esc(contact.emailLabel)}</span>
-          <span class="mail-address">${esc(CONTACT_EMAIL)}</span>
+          <span class="mail-address">${esc(getContactEmail())}</span>
           <span class="section-note">${esc(contact.only)}</span>
         </a>
         <div class="glass frame">

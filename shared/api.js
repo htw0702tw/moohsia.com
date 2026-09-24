@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL, WORKER_NAME } from "./brand.js";
+import { loadPublicPayload } from "./public-content.js";
 import { validateVerification } from "./validate.js";
 
 const MAX_BODY = 2048;
@@ -85,6 +86,24 @@ export async function handleApi(request, env = {}) {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
 
+  if (path === "/api/admin" || path.startsWith("/api/admin/")) {
+    return json(404, { ok: false, code: "not_found" });
+  }
+
+  if (path === "/api/content") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    const payload = await loadPublicPayload(env);
+    if (request.method === "HEAD") {
+      return new Response(null, {
+        status: 200,
+        headers: { "cache-control": "public, max-age=0, must-revalidate" },
+      });
+    }
+    return json(200, payload, { "cache-control": "public, max-age=0, must-revalidate" });
+  }
+
   if (path === "/api/health") {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
@@ -99,9 +118,10 @@ export async function handleApi(request, env = {}) {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
     }
+    const published = await loadPublicPayload(env);
     const body = {
       ok: true,
-      contactEmail: CONTACT_EMAIL,
+      contactEmail: published.contactEmail || CONTACT_EMAIL,
       discord: {
         access: "verification_required",
         inviteConfigured: inviteConfigured(env),

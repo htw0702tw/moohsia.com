@@ -1,5 +1,5 @@
-import { CONTACT_EMAIL, MAILTO, SITE_URL } from "../shared/brand.js";
-import { NAV, getCopy } from "./content.js";
+import { SITE_URL } from "../shared/brand.js";
+import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
 import { brandMark, renderPage } from "./pages.js";
@@ -113,7 +113,7 @@ function shell() {
     <div id="menu-panel" class="menu-panel" hidden>
       <nav aria-label="Mobile">${links}</nav>
       <p class="nav-chip">${esc(text.nav.recruitChip)}</p>
-      <a class="text-link" href="${MAILTO}">${esc(CONTACT_EMAIL)}</a>
+      <a class="text-link" href="${getMailto()}">${esc(getContactEmail())}</a>
     </div>
     <main id="main" tabindex="-1"></main>
     <footer class="footer">
@@ -128,7 +128,7 @@ function shell() {
         </nav>
         <div>
           <p class="section-kicker">${esc(text.footer.recruit)}</p>
-          <a class="text-link" href="${MAILTO}">${esc(CONTACT_EMAIL)}</a>
+          <a class="text-link" href="${getMailto()}">${esc(getContactEmail())}</a>
           <p>${esc(text.footer.rule)}</p>
         </div>
       </div>
@@ -318,7 +318,35 @@ function onKeydown(event) {
   }
 }
 
-function boot() {
+function contentFingerprint() {
+  return JSON.stringify({
+    contactEmail: getContactEmail(),
+    placeholderSlots: getPlaceholderSlots(),
+    profileFields: getProfileFields(),
+    rosterMembers: getRosterMembers(),
+    newsPosts: getNewsPosts(),
+    zh: getCopy("zh"),
+    en: getCopy("en"),
+  });
+}
+
+let painted = false;
+
+async function loadPublished() {
+  try {
+    const response = await fetch("/api/content");
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data || data.ok !== true || !data.copy) return;
+    const before = contentFingerprint();
+    applyPublishedContent(data);
+    if (painted && contentFingerprint() !== before) paint();
+  } catch {
+    /* built-in defaults stay on screen */
+  }
+}
+
+async function boot() {
   state.lang = readLang();
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce || introSeen()) document.body.classList.add("is-ready");
@@ -331,7 +359,14 @@ function boot() {
   window.addEventListener("resize", () => {
     if (window.innerWidth > 860 && state.menuOpen) closeMenu(false);
   });
+  await Promise.race([
+    loadPublished(),
+    new Promise((resolve) => {
+      window.setTimeout(resolve, 500);
+    }),
+  ]);
   paint();
+  painted = true;
   if (!document.body.classList.contains("is-ready")) {
     try {
       mountIntro();
@@ -346,4 +381,4 @@ function boot() {
   }, 5000);
 }
 
-boot();
+void boot();

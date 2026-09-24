@@ -31,7 +31,7 @@ test("public copy keeps a single contact and no Discord invite code", async () =
     }
     assert.doesNotMatch(text, /discord\.gg\/[A-Za-z0-9-]+/i, file);
     assert.doesNotMatch(text, /discord\.com\/invite\/[A-Za-z0-9-]+/i, file);
-    assert.equal(text.toLowerCase().includes("htw0702"), false, file);
+    assert.equal(text.toLowerCase().includes("htw0702.com"), false, file);
   }
   const all = blob.join("\n");
   for (const phrase of required) {

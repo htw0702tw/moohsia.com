@@ -1,24 +1,118 @@
+import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
+import { isAdminHost } from "../shared/hosts.js";
+import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
 
 /**
- * Marketing site for moohsia.com (暮霞｜MOS).
+ * Marketing site for moohsia.com (暮霞｜MOS) plus the private admin host.
  * This Worker is `moohsia-com`. It does not replace `moohsia-cloud`,
  * the separate AI/chat API Worker.
  *
  * @typedef {Object} Env
  * @property {Fetcher} ASSETS
  * @property {string} [DISCORD_INVITE_URL]
+ * @property {string} [ADMIN_USERNAME]
+ * @property {string} [ADMIN_PASSWORD_HASH]
+ * @property {string} [ADMIN_SESSION_SECRET]
+ * @property {D1Database} [CMS_DB]
+ * @property {KVNamespace} [CMS_KV]
  */
+
+const PUBLIC_FALLBACK = "/index.html";
+const ADMIN_FALLBACK = "/admin/index.html";
+
+function isFilePath(pathname) {
+  return /\.[a-z0-9]{1,8}$/i.test(pathname);
+}
+
+function text(status, body, headers = {}) {
+  return new Response(body, {
+    status,
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      ...headers,
+    },
+  });
+}
+
+function redirect(pathname) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: pathname,
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+    },
+  });
+}
+
+async function adminSession(request, env) {
+  const secret = env?.ADMIN_SESSION_SECRET;
+  if (typeof secret !== "string" || secret.length < 16) return null;
+  return readSession(secret, readCookie(request, SESSION_COOKIE));
+}
+
+async function serveAsset(request, env, fallbackPath) {
+  const url = new URL(request.url);
+  const assetResponse = await env.ASSETS.fetch(request);
+  if (assetResponse.status !== 404 || isFilePath(url.pathname)) return assetResponse;
+  if (request.method !== "GET" && request.method !== "HEAD") return assetResponse;
+  const fallback = new URL(fallbackPath, url.origin);
+  return env.ASSETS.fetch(new Request(fallback, request));
+}
+
+function withAdminPageHeaders(response) {
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", "no-store");
+  headers.set("x-robots-tag", "noindex, nofollow");
+  headers.set("x-frame-options", "DENY");
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "same-origin");
+  return new Response(response.body, { status: response.status, headers });
+}
+
+async function serveAdmin(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+
+  if (path === "/api" || path.startsWith("/api/")) {
+    if (path === "/api/admin" || path.startsWith("/api/admin/")) return handleAdmin(request, env);
+    if (path === "/api/health" || path === "/api/content") return handleApi(request, env);
+    return text(404, "Not found");
+  }
+
+  if (path === "/robots.txt") {
+    return text(200, "User-agent: *\nDisallow: /\n", { "content-type": "text/plain; charset=utf-8" });
+  }
+
+  if ((request.method === "GET" || request.method === "HEAD") && !isFilePath(path)) {
+    const session = await adminSession(request, env);
+    if (path === "/" ) return redirect(session ? "/dashboard" : "/login");
+    if (path === "/login" && session) return redirect("/dashboard");
+  }
+
+  const response = await serveAsset(request, env, ADMIN_FALLBACK);
+  if ((response.headers.get("content-type") || "").includes("text/html")) return withAdminPageHeaders(response);
+  return response;
+}
+
+async function servePublic(request, env) {
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/api" || path.startsWith("/api/")) return handleApi(request, env);
+  if (path === "/admin" || path.startsWith("/admin/")) return text(404, "Not found");
+  return serveAsset(request, env, PUBLIC_FALLBACK);
+}
 
 export default {
   /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
-      if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
-        return await handleApi(request, env);
-      }
-      return await env.ASSETS.fetch(request);
+      if (isAdminHost(url.hostname)) return await serveAdmin(request, env);
+      return await servePublic(request, env);
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -26,13 +120,7 @@ export default {
           name: error instanceof Error ? error.name : "Error",
         }),
       );
-      return new Response("Service unavailable", {
-        status: 500,
-        headers: {
-          "content-type": "text/plain; charset=utf-8",
-          "cache-control": "no-store",
-        },
-      });
+      return text(500, "Service unavailable");
     }
   },
 };

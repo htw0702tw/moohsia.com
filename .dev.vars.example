@@ -1,6 +1,15 @@
-# Copy to .dev.vars for local `wrangler dev` / `npm run dev`.
-# Leave empty until the owner supplies a real Discord invite.
+# Copy to .dev.vars for local `wrangler dev` / `npm start`.
+# This file is an example. Do not put a real password or session secret in git.
+# Leave the invite empty until the owner supplies one.
 # Accepted shapes (never commit the real value):
 #   https://discord.gg/<code>
 #   https://discord.com/invite/<code>
 DISCORD_INVITE_URL=
+
+# Private admin at admin.localhost / admin.moohsia.com.
+# The only username is htw0702. Do not put a password in this file.
+# Generate the password hash with `npm run cms:hash`, then paste it here.
+# Generate a session secret with `openssl rand -base64 32`.
+ADMIN_USERNAME=htw0702
+ADMIN_PASSWORD_HASH=
+ADMIN_SESSION_SECRET=
