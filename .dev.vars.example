@@ -7,8 +7,9 @@
 DISCORD_INVITE_URL=
 
 # Private admin at admin.localhost / admin.moohsia.com.
+# The only username is htw0702. Do not put a password in this file.
 # Generate the password hash with `npm run cms:hash`, then paste it here.
 # Generate a session secret with `openssl rand -base64 32`.
-ADMIN_USERNAME=
+ADMIN_USERNAME=htw0702
 ADMIN_PASSWORD_HASH=
 ADMIN_SESSION_SECRET=

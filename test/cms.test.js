@@ -29,7 +29,7 @@ function assets(files) {
 async function adminEnv() {
   resetLoginFailuresForTests();
   return {
-    ADMIN_USERNAME: "owner",
+    ADMIN_USERNAME: "htw0702",
     ADMIN_PASSWORD_HASH: await hashPassword(PASSWORD),
     ADMIN_SESSION_SECRET: "test-session-secret-value",
     CMS_STORE: createMemoryStore(),
@@ -49,7 +49,7 @@ function loginRequest(password, ip = "203.0.113.10") {
       "content-type": "application/json",
       "cf-connecting-ip": ip,
     },
-    body: JSON.stringify({ username: "owner", password }),
+    body: JSON.stringify({ username: "htw0702", password }),
   });
 }
 
@@ -92,7 +92,7 @@ test("login cookie, csrf, draft publish, and public projection", async () => {
   const session = await loggedIn.json();
   const cookie = loggedIn.headers.get("set-cookie") || "";
   assert.equal(loggedIn.status, 200);
-  assert.equal(session.username, "owner");
+  assert.equal(session.username, "htw0702");
   assert.match(cookie, /mos_admin=/);
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /Secure/i);
@@ -245,4 +245,28 @@ test("admin is not configured when secrets are missing", async () => {
   const response = await handleAdmin(loginRequest(PASSWORD, "203.0.113.90"), { CMS_STORE: createMemoryStore() });
   assert.equal(response.status, 503);
   assert.equal((await response.json()).code, "admin_not_configured");
+});
+
+test("only the fixed admin username can sign in", async () => {
+  const env = await adminEnv();
+  const other = await handleAdmin(
+    new Request("https://admin.moohsia.com/api/admin/login", {
+      method: "POST",
+      headers: {
+        origin: "https://admin.moohsia.com",
+        "content-type": "application/json",
+        "cf-connecting-ip": "203.0.113.91",
+      },
+      body: JSON.stringify({ username: "owner", password: PASSWORD }),
+    }),
+    env,
+  );
+  assert.equal(other.status, 401);
+
+  const overridden = await handleAdmin(loginRequest(PASSWORD, "203.0.113.92"), {
+    ...env,
+    ADMIN_USERNAME: "someone-else",
+  });
+  assert.equal(overridden.status, 503);
+  assert.equal((await overridden.json()).code, "admin_not_configured");
 });

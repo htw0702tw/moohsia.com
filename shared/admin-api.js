@@ -13,6 +13,9 @@ import {
 } from "./session.js";
 import { ContentRejected, sanitizeDocument } from "./site-document.js";
 
+/** The only admin account. Not a secret. Password and session key stay in Worker secrets. */
+export const ADMIN_USERNAME = "htw0702";
+
 const LOGIN_MAX = 8 * 1024;
 const DOC_MAX = 480 * 1024;
 
@@ -29,11 +32,14 @@ function json(status, body, extraHeaders = {}) {
   });
 }
 
+function usernameAllowed(env) {
+  const configured = typeof env?.ADMIN_USERNAME === "string" ? env.ADMIN_USERNAME.trim() : "";
+  return configured === "" || configured === ADMIN_USERNAME;
+}
+
 function adminReady(env) {
   return Boolean(
-    typeof env?.ADMIN_USERNAME === "string" &&
-      env.ADMIN_USERNAME.length > 0 &&
-      env.ADMIN_USERNAME.length <= 64 &&
+    usernameAllowed(env) &&
       typeof env?.ADMIN_PASSWORD_HASH === "string" &&
       env.ADMIN_PASSWORD_HASH.startsWith("pbkdf2-sha256$") &&
       typeof env?.ADMIN_SESSION_SECRET === "string" &&
@@ -164,7 +170,7 @@ async function login(request, env) {
   if (parsed.error) return parsed.error;
   const username = typeof parsed.data?.username === "string" ? parsed.data.username.slice(0, 64) : "";
   const password = typeof parsed.data?.password === "string" ? parsed.data.password.slice(0, 200) : "";
-  const userOk = await timingSafeText(username, env.ADMIN_USERNAME);
+  const userOk = await timingSafeText(username, ADMIN_USERNAME);
   const passOk = await verifyPassword(password, env.ADMIN_PASSWORD_HASH);
   if (!userOk || !passOk) {
     await recordLoginFailure(env, ip);
@@ -172,10 +178,10 @@ async function login(request, env) {
   }
   await clearLoginFailures(env, ip);
   const csrf = csrfToken();
-  const token = await issueSession(env.ADMIN_SESSION_SECRET, { username: env.ADMIN_USERNAME, csrf });
+  const token = await issueSession(env.ADMIN_SESSION_SECRET, { username: ADMIN_USERNAME, csrf });
   return json(
     200,
-    { ok: true, username: env.ADMIN_USERNAME, csrf },
+    { ok: true, username: ADMIN_USERNAME, csrf },
     { "set-cookie": sessionCookie(request, token, SESSION_TTL_SECONDS) },
   );
 }

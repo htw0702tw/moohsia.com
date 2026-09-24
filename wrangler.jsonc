@@ -12,7 +12,8 @@
   //   npx wrangler secret put DISCORD_INVITE_URL
   // The site never prints the URL. See README.
   "vars": {
-    "DISCORD_INVITE_URL": ""
+    "DISCORD_INVITE_URL": "",
+    "ADMIN_USERNAME": "htw0702"
   },
   "assets": {
     "directory": "./dist",

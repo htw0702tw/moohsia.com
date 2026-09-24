@@ -455,8 +455,8 @@ function loginView() {
   return `<div class="login-wrap"><form class="login" id="login-form">
     <p class="brand">暮霞｜MOS</p>
     <h1>管理登入</h1>
-    <p class="hint">只有擁有者設定的那一組帳號可以進來。</p>
-    <label>帳號<input name="username" autocomplete="username" required></label>
+    <p class="hint">帳號固定為 htw0702。密碼由管理員密鑰設定，不會寫在這個網站裡。</p>
+    <label>帳號<input name="username" autocomplete="username" value="htw0702" required></label>
     <label>密碼<input name="password" type="password" autocomplete="current-password" required></label>
     <button class="primary" type="submit">登入</button>
     <p class="error" data-error>${esc(state.error)}</p>

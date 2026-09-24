@@ -62,7 +62,7 @@ npm start
 | `https://admin.moohsia.com/` | 已登入時轉到總覽，否則轉到登入 |
 | `https://moohsia.com` | 公開戰隊站，只讀已發布內容 |
 
-只有一組帳號。帳號、密碼雜湊、簽章密鑰都來自 Worker secret，不寫進 git，也不要在 pull request 裡發明密碼。
+只有一組帳號，使用者名稱固定是 `htw0702`（寫在 [`wrangler.jsonc`](wrangler.jsonc)，不是密碼）。密碼雜湊與簽章密鑰來自 Worker secret，不寫進 git，也不要在 pull request 裡發明密碼。
 
 本機：
 
@@ -73,14 +73,21 @@ npm start
 
 在專案目錄、已 `npx wrangler login` 的情況下，由擁有者自己執行。密碼至少 10 個字。雜湊腳本不會把密碼寫進檔案。
 
+使用者名稱不要用 `wrangler secret put`。它已經是 var `ADMIN_USERNAME=htw0702`。同名 secret 會跟 var 衝突；若之前設過，先刪掉：
+
+```bash
+npx wrangler secret delete ADMIN_USERNAME
+```
+
+密碼與 session 由協調者設定。密碼至少 10 個字。雜湊腳本不會把密碼寫進檔案。
+
 ```bash
 npm run cms:hash
 npx wrangler secret put ADMIN_PASSWORD_HASH
-npx wrangler secret put ADMIN_USERNAME
 openssl rand -base64 32 | npx wrangler secret put ADMIN_SESSION_SECRET
 ```
 
-`npm run cms:hash` 會問密碼，印出一行 `pbkdf2-sha256$100000$...`。把那一行貼進 `ADMIN_PASSWORD_HASH`。不要把密碼本身設成 secret。本機開發把同樣三個值放進 `.dev.vars`（從 [`.dev.vars.example`](.dev.vars.example) 複製）。`.dev.vars` 已被 git 忽略。
+`npm run cms:hash` 會問密碼，印出一行 `pbkdf2-sha256$100000$...`。把那一行貼進 `ADMIN_PASSWORD_HASH`。不要把密碼本身設成 secret。本機開發把雜湊與 `ADMIN_SESSION_SECRET` 放進 `.dev.vars`（從 [`.dev.vars.example`](.dev.vars.example) 複製，帳號已是 `htw0702`）。`.dev.vars` 已被 git 忽略。
 
 登入失敗 8 次會鎖 15 分鐘。正式環境若有綁 `CMS_KV`，鎖在 KV；否則只算這一個 Worker isolate。Cookie 是 `HttpOnly`、`SameSite=Lax`，HTTPS 上加 `Secure`，約 8 小時過期。會改資料的請求要帶登入時拿到的 CSRF 標頭。
 
@@ -117,7 +124,7 @@ npm run cms:migrate
 3. 區域已在同一個帳號時，Cloudflare 會自動加一筆被代理（橘色雲）的 DNS。不要刪掉 apex 或 `www`。
 4. 若 DNS 不在這個帳號，自己加 CNAME：`admin` → `moohsia-com.<帳號>.workers.dev`，並打開代理。
 5. SSL/TLS 維持 **Full (strict)**。
-6. 打開 <https://admin.moohsia.com/login> 用上面的帳號登入。未登入時只看得到登入頁，公開 API 不會回草稿。
+6. 打開 <https://admin.moohsia.com/login>，帳號填 `htw0702`，密碼用你做成雜湊的那一組。未登入時只看得到登入頁，公開 API 不會回草稿。
 
 Zone 還沒在這個帳號時，不要把 [`wrangler.jsonc`](wrangler.jsonc) 裡註解掉的 `routes` 打開。
 
