@@ -177,7 +177,7 @@ const MESSAGES = {
   storage_unavailable: "現在讀不到內容資料庫。",
   forbidden: "這個操作被拒絕。請重新整理後再試。",
   unauthorized: "請先登入。",
-  blocked_content: "內容含有 Discord 邀請連結或 htw0702，沒有儲存。",
+  blocked_content: "內容含有 Discord 邀請連結，或選手名字是保留名稱 moohsia，沒有儲存。",
   invalid_content: "內容格式不正確。",
   payload_too_large: "內容太長。",
 };
@@ -268,7 +268,9 @@ function applyPayload(data) {
 
 /**
  * The login form stores username htw0702. Empty CMS boxes, especially a new
- * roster name, must not accept that autofill: the brand token blocks the save.
+ * roster name, stay readonly until focus so the browser does not overwrite
+ * them with that saved username. Autocomplete stays off, and the hidden sink
+ * catches a password-manager fill before it lands in a content field.
  */
 const CMS_TEXT = `data-cms autocomplete="off" autocapitalize="off" spellcheck="false" readonly`;
 const CMS_CHOICE = `data-cms autocomplete="off"`;
@@ -360,7 +362,7 @@ function rosterEditor() {
     .join("");
   return `<section class="stack">
     <h2>選手</h2>
-    <p class="hint">預設沒有選手。空白名單會在公開頁顯示待公布席位，不會自動填上假的人名。不要寫 Discord 邀請網址，也不要寫 htw0702。</p>
+    <p class="hint">預設沒有選手。空白名單會在公開頁顯示待公布席位，不會自動填上假的人名。不要寫 Discord 邀請網址。選手名字不能是 moohsia。</p>
     <label>沒有選手時的空位數量<input data-kind="slots" type="number" min="0" max="12" value="${esc(state.draft.placeholderSlots)}" ${CMS_TEXT}></label>
     <div class="repeats">${cards}</div>
     <button class="btn" type="button" data-action="roster-add">新增成員</button>
