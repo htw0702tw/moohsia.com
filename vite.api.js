@@ -1,5 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
+import { handleAdmin } from "./shared/admin-api.js";
 import { handleApi } from "./shared/api.js";
+import { createMemoryStore } from "./shared/cms-store.js";
+import { isAdminHost } from "./shared/hosts.js";
 
 function readDevVars() {
   if (!existsSync(".dev.vars")) return {};
@@ -14,10 +17,17 @@ function readDevVars() {
   return out;
 }
 
+const memoryStore = createMemoryStore();
+
 function envFromLocal() {
   const file = readDevVars();
+  const read = (name) => process.env[name] ?? file[name] ?? "";
   return {
-    DISCORD_INVITE_URL: process.env.DISCORD_INVITE_URL ?? file.DISCORD_INVITE_URL ?? "",
+    DISCORD_INVITE_URL: read("DISCORD_INVITE_URL"),
+    ADMIN_USERNAME: read("ADMIN_USERNAME"),
+    ADMIN_PASSWORD_HASH: read("ADMIN_PASSWORD_HASH"),
+    ADMIN_SESSION_SECRET: read("ADMIN_SESSION_SECRET"),
+    CMS_STORE: memoryStore,
   };
 }
 
@@ -28,14 +38,21 @@ async function handleNodeRequest(req, res) {
   const host = req.headers.host || "localhost";
   const method = req.method || "GET";
   const headers = new Headers();
-  if (req.headers["content-type"]) headers.set("content-type", String(req.headers["content-type"]));
-  if (req.headers["content-length"]) headers.set("content-length", String(req.headers["content-length"]));
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value == null) continue;
+    headers.set(key, Array.isArray(value) ? value.join(", ") : String(value));
+  }
   const request = new Request(`http://${host}${req.url}`, {
     method,
     headers,
     body: method === "GET" || method === "HEAD" ? undefined : body,
   });
-  const response = await handleApi(request, envFromLocal());
+  const pathname = (req.url || "/").split("?")[0];
+  const adminHost = isAdminHost(String(host).split(":")[0]);
+  const response =
+    adminHost && (pathname === "/api/admin" || pathname.startsWith("/api/admin/"))
+      ? await handleAdmin(request, envFromLocal())
+      : await handleApi(request, envFromLocal());
   res.statusCode = response.status;
   response.headers.forEach((value, key) => {
     res.setHeader(key, value);
@@ -44,7 +61,39 @@ async function handleNodeRequest(req, res) {
 }
 
 export function apiDevPlugin() {
+  const routeAdminShell = (middlewares) => {
+    middlewares.use((req, res, next) => {
+      const host = String(req.headers.host || "").split(":")[0].toLowerCase();
+      const pathOnly = (req.url || "/").split("?")[0];
+      if (!isAdminHost(host)) {
+        if (pathOnly === "/admin" || pathOnly.startsWith("/admin/")) {
+          res.statusCode = 404;
+          res.setHeader("content-type", "text/plain; charset=utf-8");
+          res.end("Not found");
+          return;
+        }
+        next();
+        return;
+      }
+      if (
+        pathOnly.startsWith("/api") ||
+        pathOnly.startsWith("/@") ||
+        pathOnly.startsWith("/src/") ||
+        pathOnly.startsWith("/admin/") ||
+        pathOnly.startsWith("/shared/") ||
+        pathOnly.startsWith("/node_modules/") ||
+        /\.[a-z0-9]+$/i.test(pathOnly)
+      ) {
+        next();
+        return;
+      }
+      req.url = "/admin/index.html";
+      next();
+    });
+  };
+
   const attach = (middlewares) => {
+    routeAdminShell(middlewares);
     middlewares.use(async (req, res, next) => {
       if (!req.url?.startsWith("/api")) return next();
       try {

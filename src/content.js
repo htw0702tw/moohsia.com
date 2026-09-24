@@ -1,7 +1,12 @@
+import { CONTACT_EMAIL } from "../shared/brand.js";
+
 /**
  * Editable team facts.
  * Leave strings blank until they are confirmed. Do not invent championships,
  * player names, sponsors, match results, or a Discord invite.
+ *
+ * These values are the built-in defaults. The public site replaces them with
+ * the published CMS document when one exists.
  */
 
 export const PLACEHOLDER_SLOTS = 5;
@@ -398,8 +403,93 @@ const en = {
   },
 };
 
+function snapshot() {
+  return {
+    version: 1,
+    contactEmail: CONTACT_EMAIL,
+    placeholderSlots: PLACEHOLDER_SLOTS,
+    profileFields: structuredClone(profileFields),
+    rosterMembers: structuredClone(rosterMembers),
+    newsPosts: structuredClone(newsPosts),
+    copy: {
+      zh: structuredClone(zh),
+      en: structuredClone(en),
+    },
+  };
+}
+
+let current = snapshot();
+
+export function getDefaultDocument() {
+  return snapshot();
+}
+
+function mergeCopy(base, incoming) {
+  if (typeof base === "string") return typeof incoming === "string" ? incoming : base;
+  if (Array.isArray(base)) return Array.isArray(incoming) ? incoming : base;
+  if (base && typeof base === "object") {
+    const out = {};
+    for (const key of Object.keys(base)) out[key] = mergeCopy(base[key], incoming?.[key]);
+    return out;
+  }
+  return base;
+}
+
+function usableEmail(value, fallback) {
+  const text = typeof value === "string" ? value.trim() : "";
+  if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(text) && text.length <= 120) return text;
+  return fallback;
+}
+
+/**
+ * Overlay published CMS content onto the built-in defaults.
+ * Missing pieces stay on the defaults so a partial document cannot blank the site.
+ * @param {unknown} payload
+ */
+export function applyPublishedContent(payload) {
+  const base = snapshot();
+  const doc = payload && typeof payload === "object" ? /** @type {Record<string, any>} */ (payload) : {};
+  const slots = Number(doc.placeholderSlots);
+  current = {
+    version: 1,
+    contactEmail: usableEmail(doc.contactEmail, base.contactEmail),
+    placeholderSlots: Number.isInteger(slots) && slots >= 0 && slots <= 12 ? slots : base.placeholderSlots,
+    profileFields: Array.isArray(doc.profileFields) ? doc.profileFields : base.profileFields,
+    rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers : base.rosterMembers,
+    newsPosts: Array.isArray(doc.newsPosts) ? doc.newsPosts : base.newsPosts,
+    copy: {
+      zh: mergeCopy(base.copy.zh, doc.copy?.zh),
+      en: mergeCopy(base.copy.en, doc.copy?.en),
+    },
+  };
+}
+
 export function getCopy(lang) {
-  return lang === "en" ? en : zh;
+  return lang === "en" ? current.copy.en : current.copy.zh;
+}
+
+export function getRosterMembers() {
+  return current.rosterMembers;
+}
+
+export function getNewsPosts() {
+  return current.newsPosts;
+}
+
+export function getProfileFields() {
+  return current.profileFields;
+}
+
+export function getPlaceholderSlots() {
+  return current.placeholderSlots;
+}
+
+export function getContactEmail() {
+  return current.contactEmail;
+}
+
+export function getMailto() {
+  return `mailto:${current.contactEmail}`;
 }
 
 export const NAV = [

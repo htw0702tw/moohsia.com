@@ -15,7 +15,7 @@ npm run dev
 
 開啟 <http://localhost:5173>。
 
-`npm run dev` 會同時提供頁面與內部 API（`/api/config`、`/api/verify`、`/api/health`）。這些 API 沒有掛在公開導覽上。
+`npm run dev` 會同時提供頁面與內部 API（`/api/content`、`/api/config`、`/api/verify`、`/api/health`）。這些 API 沒有掛在公開導覽上。`/api/content` 只回已發布內容。
 
 用與正式環境相同的 Worker 方式啟動：
 
@@ -29,10 +29,12 @@ npm start
 
 | 指令 | 作用 |
 | --- | --- |
-| `npm test` | 品牌文案與驗證 API 測試 |
-| `npm run build` | 輸出 `dist/` |
+| `npm test` | 品牌文案、驗證 API 與管理後台測試 |
+| `npm run build` | 輸出 `dist/`（公開頁與管理頁） |
 | `npm run check` | 以 `wrangler deploy --dry-run` 檢查 Worker 能否打包 |
 | `npm run deploy` | 建置並部署名為 `moohsia-com` 的 Worker |
+| `npm run cms:hash` | 產生 `ADMIN_PASSWORD_HASH` |
+| `npm run cms:migrate` | 對正式 D1 套用 CMS migration |
 
 ## 頁面
 
@@ -50,9 +52,78 @@ npm start
 
 動畫包含可略過的入場、舞台地板、粒子拖尾、HUD 環、跑馬燈、滑鼠與捲動視差、卡片傾斜、雷達掃描與懸停回饋。系統若設定 `prefers-reduced-motion: reduce`，入場與這些動效會停用，內容仍可直接閱讀。
 
+## 管理後台
+
+私人編輯頁在 **admin.moohsia.com**，跟公開站用同一個 Worker `moohsia-com`。不要把這個網域接到 `moohsia-cloud`。
+
+| 網址 | 行為 |
+| --- | --- |
+| `https://admin.moohsia.com/login` | 登入 |
+| `https://admin.moohsia.com/` | 已登入時轉到總覽，否則轉到登入 |
+| `https://moohsia.com` | 公開戰隊站，只讀已發布內容 |
+
+只有一組帳號。帳號、密碼雜湊、簽章密鑰都來自 Worker secret，不寫進 git，也不要在 pull request 裡發明密碼。
+
+本機：
+
+- `npm run dev` 時打開 <http://admin.localhost:5173/login>。內容存在這個行程的記憶體，重開就回到內建預設。
+- `npm start` 使用本機 D1。先做下面的 migration。
+
+### 設定密鑰
+
+在專案目錄、已 `npx wrangler login` 的情況下，由擁有者自己執行。密碼至少 10 個字。雜湊腳本不會把密碼寫進檔案。
+
+```bash
+npm run cms:hash
+npx wrangler secret put ADMIN_PASSWORD_HASH
+npx wrangler secret put ADMIN_USERNAME
+openssl rand -base64 32 | npx wrangler secret put ADMIN_SESSION_SECRET
+```
+
+`npm run cms:hash` 會問密碼，印出一行 `pbkdf2-sha256$100000$...`。把那一行貼進 `ADMIN_PASSWORD_HASH`。不要把密碼本身設成 secret。本機開發把同樣三個值放進 `.dev.vars`（從 [`.dev.vars.example`](.dev.vars.example) 複製）。`.dev.vars` 已被 git 忽略。
+
+登入失敗 8 次會鎖 15 分鐘。正式環境若有綁 `CMS_KV`，鎖在 KV；否則只算這一個 Worker isolate。Cookie 是 `HttpOnly`、`SameSite=Lax`，HTTPS 上加 `Secure`，約 8 小時過期。會改資料的請求要帶登入時拿到的 CSRF 標頭。
+
+### 資料庫
+
+```bash
+npx wrangler d1 create moohsia-cms
+npx wrangler kv namespace create CMS_KV
+```
+
+把印出的 id 填進 [`wrangler.jsonc`](wrangler.jsonc) 的 `database_id` 與 `kv_namespaces.id`，取代現在的占位值。KV 可以先不建，登入鎖定仍可用，只是不會跨 isolate。
+
+```bash
+npm run cms:migrate:local
+npm run cms:migrate
+```
+
+`migrations/0001_init.sql` 只建 `site_documents`。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。
+
+### 草稿與發布
+
+管理頁改的是草稿。公開網站不會跟著變。
+
+按 **儲存草稿** 只更新草稿。按 **發布到網站** 才把現在這份內容整份公開。**捨棄草稿** 會回到上次發布的內容。
+
+成員可以新增、修改、隱藏。沒有填名字的人不會出現在公開頁，預設也不會塞假選手。動態預設是草稿；狀態改成公開而且整站發布之後才會出現。再改回草稿並發布，就會從公開頁拿掉。招募文句可以改，但沒有試訓報名表。公開信箱欄位預設是 `Info@moohsia.com`，只有在這個欄位改掉時，頁面上的 mailto 才會換。
+
+### 接上 admin.moohsia.com
+
+先確認 `moohsia.com` 與 `www.moohsia.com` 已經在 **moohsia-com** 上，而且 `moohsia-cloud` 沒有這兩個網域。
+
+1. Cloudflare 控制台 → **Workers & Pages → moohsia-com → Settings → Domains & Routes**。
+2. Add → Custom domain → `admin.moohsia.com`。
+3. 區域已在同一個帳號時，Cloudflare 會自動加一筆被代理（橘色雲）的 DNS。不要刪掉 apex 或 `www`。
+4. 若 DNS 不在這個帳號，自己加 CNAME：`admin` → `moohsia-com.<帳號>.workers.dev`，並打開代理。
+5. SSL/TLS 維持 **Full (strict)**。
+6. 打開 <https://admin.moohsia.com/login> 用上面的帳號登入。未登入時只看得到登入頁，公開 API 不會回草稿。
+
+Zone 還沒在這個帳號時，不要把 [`wrangler.jsonc`](wrangler.jsonc) 裡註解掉的 `routes` 打開。
+
 ## 更新戰隊資料
 
-可公開的事實寫在 [`src/content.js`](src/content.js)。空白代表尚未確認，不要填上推測的冠軍、選手、贊助或賽程。
+平常改公開文案用管理後台即可，不用重新部署前端。內建預設仍在 [`src/content.js`](src/content.js)。空白代表尚未確認，不要填上推測的冠軍、選手、贊助或賽程。
 
 ```js
 export const rosterMembers = [

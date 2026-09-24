@@ -17,14 +17,34 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api", "/api/*"]
-  }
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  // Replace database_id after `npx wrangler d1 create moohsia-cms`.
+  // The placeholder lets the project bundle; production deploy needs the real id.
+  "d1_databases": [
+    {
+      "binding": "CMS_DB",
+      "database_name": "moohsia-cms",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Optional. Login lockout uses this when present, and an in-isolate counter otherwise.
+  // Replace id after `npx wrangler kv namespace create CMS_KV`.
+  "kv_namespaces": [
+    {
+      "binding": "CMS_KV",
+      "id": "00000000000000000000000000000000"
+    }
+  ]
   // Custom domains are attached in the Cloudflare dashboard (or by uncommenting
   // after the moohsia.com zone is on this account). Do not route this Worker
-  // over the existing `moohsia-cloud` AI/chat API.
+  // over the existing `moohsia-cloud` AI/chat API. Add admin.moohsia.com on
+  // this Worker only; leave apex and www in place.
   // "routes": [
   //   { "pattern": "moohsia.com", "custom_domain": true },
-  //   { "pattern": "www.moohsia.com", "custom_domain": true }
+  //   { "pattern": "www.moohsia.com", "custom_domain": true },
+  //   { "pattern": "admin.moohsia.com", "custom_domain": true }
   // ]
 }
