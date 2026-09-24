@@ -21,7 +21,11 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; background: var(--bg); }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav) + 12px);
+  background: var(--bg);
+}
 
 body {
   margin: 0;
@@ -344,7 +348,7 @@ main, .footer, .nav, .menu-panel { position: relative; z-index: 1; }
   min-height: 100svh;
   display: grid;
   align-items: center;
-  padding: calc(var(--nav) + 1.5rem) 0 3rem;
+  padding: calc(var(--nav) + 0.75rem) 0 2rem;
   overflow: hidden;
 }
 
@@ -375,7 +379,7 @@ h1, h2, h3 { line-height: 1.15; font-weight: 900; }
 
 .zh-title {
   display: block;
-  font-size: clamp(4.6rem, 12vw, 8.5rem);
+  font-size: clamp(3.6rem, 8vw, 7rem);
   letter-spacing: 0.08em;
   text-shadow: 0 0 42px rgba(255, 59, 134, 0.35);
   animation: rise 0.9s ease both;
@@ -385,7 +389,7 @@ h1, h2, h3 { line-height: 1.15; font-weight: 900; }
   display: flex;
   gap: 0.08em;
   font-family: var(--display);
-  font-size: clamp(3rem, 8vw, 5.6rem);
+  font-size: clamp(2.5rem, 5.4vw, 4.5rem);
   font-weight: 800;
   letter-spacing: 0.18em;
   background: linear-gradient(100deg, #fff 10%, var(--amber) 40%, var(--magenta) 70%, var(--violet));
@@ -472,7 +476,7 @@ h1, h2, h3 { line-height: 1.15; font-weight: 900; }
 
 .orbit {
   position: relative;
-  width: min(420px, 80vw);
+  width: min(380px, 46vh, 78vw);
   aspect-ratio: 1;
   display: grid;
   place-items: center;

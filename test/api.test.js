@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { handleApi, inviteConfigured } from "../shared/api.js";
 import { CONTACT_EMAIL } from "../shared/brand.js";
-import { isAovId, isDiscordHandle, validateVerification } from "../shared/validate.js";
+import { isAovId, isDiscordHandle, maskMiddle, validateVerification } from "../shared/validate.js";
 
 const SECRET = "https://discord.gg/should-not-leak";
 
@@ -89,6 +89,8 @@ test("oversized bodies are refused before they are parsed", async () => {
 test("identifiers allow Traditional Chinese and reject links", () => {
   assert.equal(isAovId("暮霞"), true);
   assert.equal(isAovId("a"), false);
+  assert.equal(maskMiddle("暮霞"), "暮•");
+  assert.equal(maskMiddle("Moohsia"), "M•••••a");
   assert.equal(isDiscordHandle("玩家#0001"), true);
   assert.equal(validateVerification({ website: "spam", ack: false }).honeypot, true);
 });

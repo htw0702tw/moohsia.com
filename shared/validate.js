@@ -52,6 +52,7 @@ export function validateVerification(input) {
 
 export function maskMiddle(value) {
   const text = String(value ?? "");
-  if (text.length <= 2) return "••";
+  if (text.length <= 1) return "•";
+  if (text.length === 2) return `${text.slice(0, 1)}•`;
   return `${text.slice(0, 1)}${"•".repeat(Math.min(6, text.length - 2))}${text.slice(-1)}`;
 }
