@@ -20,7 +20,7 @@ async function walk(dir) {
 
 test("public copy keeps a single contact and no Discord invite code", async () => {
   const files = await walk(ROOT);
-  const required = ["不開放招募", "成員資訊即將公開", "通過驗證後加入內部 Discord", "Info@moohsia.com"];
+  const required = ["不開放招募", "成員資訊即將公開", "Info@moohsia.com"];
   const blob = [];
   for (const file of files) {
     const text = await readFile(file, "utf8");
@@ -31,9 +31,28 @@ test("public copy keeps a single contact and no Discord invite code", async () =
     }
     assert.doesNotMatch(text, /discord\.gg\/[A-Za-z0-9-]+/i, file);
     assert.doesNotMatch(text, /discord\.com\/invite\/[A-Za-z0-9-]+/i, file);
+    assert.equal(text.toLowerCase().includes("htw0702"), false, file);
   }
   const all = blob.join("\n");
   for (const phrase of required) {
     assert.equal(all.includes(phrase), true, phrase);
+  }
+});
+
+test("public pages do not advertise a verification route", async () => {
+  const roots = ["src", "public", "index.html"].map((entry) => path.join(ROOT, entry));
+  const files = [];
+  for (const root of roots) {
+    const stat = await readFile(root, "utf8").catch(() => null);
+    if (stat !== null && !root.endsWith(".html")) continue;
+    if (root.endsWith(".html")) files.push(root);
+    else files.push(...(await walk(root)));
+  }
+  const banned = [/驗證/, /\/verify\b/, /htw0702/i, /verification/i];
+  for (const file of files) {
+    const text = await readFile(file, "utf8");
+    for (const pattern of banned) {
+      assert.doesNotMatch(text, pattern, `${file} matches ${pattern}`);
+    }
   }
 });
