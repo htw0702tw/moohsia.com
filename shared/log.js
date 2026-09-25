@@ -9,3 +9,9 @@ export function logFailure(code, error) {
   const name = error instanceof Error && error.name ? error.name : "Error";
   console.error(JSON.stringify({ message: code, name }));
 }
+
+/** Fixed operational code only. Never pass request data or page text. */
+export function logEvent(code) {
+  if (!/^[a-z0-9_]{1,40}$/.test(code)) return;
+  console.log(JSON.stringify({ message: code }));
+}

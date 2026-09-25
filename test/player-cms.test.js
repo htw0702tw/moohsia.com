@@ -114,10 +114,10 @@ test("builds, separate KDA, and media survive cleaning and public view", () => {
 
 test("player lists reject entries past the cap", () => {
   const builds = Array.from({ length: 25 }, (_, index) => ({ hero: `英雄${index}`, items: ["破甲弓"] }));
-  const matches = Array.from({ length: 81 }, (_, index) => ({ hero: `場${index}`, kills: "1", deaths: "1", assists: "1", publish: true }));
+  const matches = Array.from({ length: 161 }, (_, index) => ({ hero: `場${index}`, kills: "1", deaths: "1", assists: "1", publish: true }));
   const cleaned = cleanPlayer({ publish: true, handle: "sample", builds, matches });
   assert.equal(cleaned.builds.length, 24);
-  assert.equal(cleaned.matches.length, 80);
+  assert.equal(cleaned.matches.length, 160);
 });
 
 test("notion sync keeps admin builds, avatar, and match extras", () => {
