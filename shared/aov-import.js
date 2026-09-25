@@ -1,4 +1,4 @@
-import { derivedKda, PLAYER_MATCH_LIMIT } from "./player.js";
+import { derivedKda, emptyBadges, emptyBoardPlayer, emptySeason, PLAYER_MATCH_LIMIT } from "./player.js";
 import { logFailure } from "./log.js";
 
 export const AOV_ORIGIN = "https://aovweb.azurewebsites.net";
@@ -68,8 +68,9 @@ export function aovPageStatus(status, html) {
   if (status === 429) return "rate_limited";
   if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) return "blocked";
   const text = String(html || "");
-  const hasHistory = /player-match-item|對局時間|常用英雄/.test(text);
-  const challenge = /cf-turnstile|turnstile-form|安全驗證|Just a moment|cf-browser-verification/i.test(text);
+  const readable = decode(text);
+  const hasHistory = /player-match-item|對局時間|常用英雄/.test(text) || /player-match-item|對局時間|常用英雄/.test(readable);
+  const challenge = /cf-turnstile|turnstile-form|turnstile-title|安全驗證|anticrawler\/turnstile|just a moment|cf-browser-verification|challenge-platform|__cf_chl|cf-chl/i.test(readable);
   if ((status === 403 || status === 503) && !hasHistory) return "blocked";
   if (challenge && !hasHistory) return "challenge";
   if (!text.trim()) return "empty";
@@ -79,26 +80,38 @@ export function aovPageStatus(status, html) {
 
 function columnKey(text) {
   const label = String(text || "").replace(/\s+/g, "");
+  if (label.includes("|") || (label.includes("補兵") && label.includes("治療")) || (label.includes("輸出") && label.includes("承傷"))) return "";
   const rules = [
     ["輸出占比", "heroDamagePct"],
     ["輸出%", "heroDamagePct"],
+    ["輸出轉化", "damageRatio"],
     ["承傷占比", "takenPct"],
     ["承傷%", "takenPct"],
+    ["每次承傷", "takenPer"],
     ["總輸出", "heroDamage"],
     ["英雄輸出", "heroDamage"],
     ["輸出", "heroDamage"],
     ["總承傷", "taken"],
     ["承受傷害", "taken"],
     ["承傷", "taken"],
+    ["參團率", "teamfightRate"],
+    ["參團次數", "teamfightCount"],
+    ["評價", "award"],
+    ["勳章", "award"],
+    ["榮譽", "award"],
     ["對塔傷害", "tower"],
+    ["塔傷", "tower"],
     ["對塔", "tower"],
     ["控制時間", "control"],
+    ["控場", "control"],
     ["控制", "control"],
     ["治療量", "healing"],
     ["治療", "healing"],
+    ["排位積分變化", "rankDelta"],
     ["排位積分", "rankDelta"],
     ["積分變化", "rankDelta"],
     ["積分", "rankDelta"],
+    ["戰力變化詳情", "powerDetail"],
     ["補兵", "minions"],
     ["分均經濟", "gpm"],
     ["GPM", "gpm"],
@@ -126,25 +139,74 @@ function columnKey(text) {
   return "";
 }
 
+function attrValue(tag, name) {
+  const found = new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, "i").exec(tag);
+  return found ? decode(found[2]).trim() : "";
+}
+
+function isItemId(value) {
+  return /^裝備\s*\d+$/.test(String(value || "").trim());
+}
+
+function isStatIcon(value) {
+  return /^(輸出|承傷|經濟|補兵|控場|治療|塔傷)$/.test(String(value || "").trim());
+}
+
+function imageFacts(html) {
+  const alts = [];
+  const labels = [];
+  const gear = [];
+  const re = /<img\b([^>]*)>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const alt = attrValue(match[1], "alt");
+    const title =
+      attrValue(match[1], "title") || attrValue(match[1], "aria-label") || attrValue(match[1], "data-bs-original-title");
+    const srcId = /\/item\/(\d+)\./.exec(attrValue(match[1], "src"))?.[1] || "";
+    const altId = /^裝備\s*(\d+)$/.exec(alt)?.[1] || "";
+    const id = srcId || altId;
+    if (alt) alts.push(alt);
+    const name = [title, alt].find((value) => value && !isItemId(value) && !isStatIcon(value));
+    if (id) gear.push(`裝備 ${id}`);
+    else if (name) gear.push(name);
+    const label = name || [title, alt].find((value) => value && !isStatIcon(value));
+    if (label) labels.push(label);
+  }
+  return { alts, labels, gear };
+}
+
+function portraitName(cell) {
+  const alt = cell?.alts?.[0] || "";
+  if (alt && !isItemId(alt) && !isStatIcon(alt)) return alt;
+  const labels = cell?.labels || [];
+  return labels.find((label) => label && !isItemId(label) && !isStatIcon(label)) || "";
+}
+
 function parseTables(html) {
   const tables = [];
   const re = /<table\b[^>]*>([\s\S]*?)<\/table>/gi;
   let match;
   while ((match = re.exec(html))) {
     const rows = [];
-    const rowRe = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+    const rowRe = /<tr\b([^>]*)>([\s\S]*?)<\/tr>/gi;
     let row;
     while ((row = rowRe.exec(match[1]))) {
       const cells = [];
       const cellRe = /<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi;
       let cell;
-      while ((cell = cellRe.exec(row[1]))) {
-        const alts = [...cell[1].matchAll(/<img\b[^>]*\balt=(["'])([\s\S]*?)\1/gi)]
-          .map((item) => decode(item[2]).trim())
-          .filter(Boolean);
-        cells.push({ text: stripTags(cell[1]), alts, mvp: /MVP/i.test(cell[1]) });
+      while ((cell = cellRe.exec(row[2]))) {
+        const images = imageFacts(cell[1]);
+        cells.push({
+          text: stripTags(cell[1]),
+          alts: images.alts,
+          labels: images.labels,
+          gear: images.gear,
+          mvp: /MVP/i.test(cell[1]),
+        });
       }
-      if (cells.length) rows.push(cells);
+      if (!cells.length) continue;
+      cells.marked = /table-warning/.test(row[1]);
+      rows.push(cells);
     }
     if (rows.length) tables.push(rows);
   }
@@ -181,94 +243,273 @@ function numberFrom(text, { places = 0, signed = false } = {}) {
 
 function itemsFrom(cell) {
   if (!cell) return [];
-  if (cell.alts?.length) return cell.alts.slice(0, 6);
+  if (cell.gear?.length) return cell.gear.slice(0, 6);
+  const labels = cell.labels?.length ? cell.labels : cell.alts || [];
+  const ids = labels
+    .map((label) => {
+      const id = /^裝備\s*(\d+)$/.exec(label)?.[1];
+      return id ? `裝備 ${id}` : "";
+    })
+    .filter(Boolean);
+  if (ids.length) return ids.slice(0, 6);
+  const named = labels.filter((label) => label && !isItemId(label) && !isStatIcon(label));
+  if (named.length) return named.slice(0, 6);
   return String(cell.text || "")
     .split(/[、,，]/)
     .map((part) => part.trim())
-    .filter(Boolean)
+    .filter((part) => part && !isStatIcon(part))
     .slice(0, 6);
 }
 
 function kdaParts(text) {
-  const match = /(\d+)\s*\/\s*(\d+)\s*\/\s*(\d+)/.exec(String(text || ""));
+  const match = /(?<![\d.])(\d+)\s*\/\s*(?<![\d.])(\d+)\s*\/\s*(?<![\d.])(\d+)(?![\d.])/.exec(String(text || ""));
   if (!match) return { kills: "", deaths: "", assists: "" };
   return { kills: match[1], deaths: match[2], assists: match[3] };
+}
+
+/** Names the admin mode list already offers. Exact labels are kept. */
+const CATALOG_MODES = new Set([
+  "排位賽",
+  "巔峰對決",
+  "5V5經典競技",
+  "混沌大亂鬥",
+  "三人對決",
+  "死鬥競技場",
+  "幻影激鬥",
+  "足球總動員",
+  "飛鉤奪寶戰",
+  "隨機單中",
+  "單人對戰",
+  "幻化之戰",
+  "雙人飛車賽",
+]);
+
+/**
+ * AOVRanking 地圖 labels are not the same strings as the site catalog.
+ * This owner's 經典競技 / 競賽模式 / 冠軍賽 games are ranked.
+ */
+const MODE_RULES = [
+  [/傳說之巔|巔峰/, "巔峰對決"],
+  [/經典競技|競賽模式|冠軍賽/, "排位賽"],
+  [/5\s*v\s*5/i, "5V5經典競技"],
+  [/大亂鬥|混沌/, "混沌大亂鬥"],
+  [/三人/, "三人對決"],
+  [/死鬥/, "死鬥競技場"],
+  [/幻影/, "幻影激鬥"],
+  [/足球/, "足球總動員"],
+  [/飛鉤/, "飛鉤奪寶戰"],
+  [/單中/, "隨機單中"],
+  [/1\s*v\s*1|單人對戰/i, "單人對戰"],
+  [/幻化/, "幻化之戰"],
+  [/飛車/, "雙人飛車賽"],
+  [/排位/, "排位賽"],
+];
+
+function catalogMode(raw) {
+  const text = clip(raw, 80);
+  if (!text) return { mode: "", raw: "" };
+  if (CATALOG_MODES.has(text)) return { mode: text, raw: text };
+  for (const [pattern, name] of MODE_RULES) {
+    if (pattern.test(text)) return { mode: name, raw: text };
+  }
+  return { mode: text, raw: text };
+}
+
+function rowMedals(cells) {
+  const bits = Object.values(cells)
+    .map((cell) => `${cell?.text || ""} ${(cell?.alts || []).join(" ")}`)
+    .join(" ");
+  const badges = emptyBadges();
+  const loseMvp = /敗方\s*MVP/i.test(bits);
+  if (/超神/.test(bits)) badges.godlike = true;
+  if (/五殺/.test(bits)) badges.penta = true;
+  if (/四殺/.test(bits)) badges.quadra = true;
+  if (/三殺/.test(bits)) badges.triple = true;
+  if (/頂級/.test(bits)) badges.supreme = true;
+  if (/金牌/.test(bits)) badges.gold = true;
+  if (/銀牌/.test(bits)) badges.silver = true;
+  if (loseMvp) badges.loseMvp = true;
+  return { mvp: /MVP/i.test(bits) && !loseMvp, badges };
+}
+
+function deltaFrom(text) {
+  const source = String(text || "");
+  const paren = /\(([+-]\d+)\)/.exec(source);
+  if (paren) return paren[1].replace(/^\+/, "");
+  return numberFrom(source, { signed: true });
+}
+
+function pctOf(text) {
+  return /\(([\d.]+)\s*%\)/.exec(String(text || ""))?.[1] || "";
+}
+
+function notesFromCells(cells) {
+  const text = Object.values(cells)
+    .map((cell) => cell?.text || "")
+    .join("\n");
+  return {
+    lane: /分路(?:\([^)]*\))?\s*[:：]\s*([^\s\n]+)/.exec(text)?.[1] || "",
+    reputation: /信譽分\s*[:：]\s*([+-]?\d+)/.exec(text)?.[1]?.replace(/^\+/, "") || "",
+    level: /Lv\.?\s*(\d+)/i.exec(text)?.[1] || "",
+  };
 }
 
 function materialize(row) {
   const cells = row.cells || {};
   const kda = kdaParts(cells.kda?.text || "");
-  const joined = Object.values(cells)
-    .map((cell) => cell.text || "")
-    .join(" ");
+  const medals = rowMedals(cells);
+  const notes = notesFromCells(cells);
+  const heroAlt = portraitName(cells.hero) || portraitName(cells.ign);
   return {
     side: row.side === "red" ? "red" : "blue",
-    hero: clip(row.hero || cells.hero?.alts?.[0] || cells.hero?.text || "", 40),
+    hero: clip(row.hero || heroAlt || cells.hero?.text || "", 40),
     ign: clip(row.ign || ignFrom(cells.ign?.text || ""), 40),
+    marked: row.marked === true,
     uid: row.uid || uidFrom(cells.ign?.text || ""),
-    lane: clip(cells.lane?.text || "", 24),
+    lane: clip(cells.lane?.text || notes.lane, 24),
     badge: clip(cells.badge?.text || "", 24),
     kills: kda.kills,
     deaths: kda.deaths,
     assists: kda.assists,
     gold: numberFrom(cells.gold?.text),
     score: numberFrom(cells.score?.text, { places: 2 }),
-    mvp: Object.values(cells).some((cell) => cell.mvp) || /\bMVP\b/.test(joined),
+    mvp: medals.mvp,
     owner: false,
     items: itemsFrom(cells.items),
     heroDamage: numberFrom(cells.heroDamage?.text),
-    heroDamagePct: numberFrom(cells.heroDamagePct?.text, { places: 2 }),
+    heroDamagePct: numberFrom(cells.heroDamagePct?.text, { places: 2 }) || pctOf(cells.heroDamage?.text),
     taken: numberFrom(cells.taken?.text),
-    takenPct: numberFrom(cells.takenPct?.text, { places: 2 }),
-    level: numberFrom(cells.level?.text),
+    takenPct: numberFrom(cells.takenPct?.text, { places: 2 }) || pctOf(cells.taken?.text),
+    level: numberFrom(cells.level?.text) || notes.level,
     minions: numberFrom(cells.minions?.text),
     control: numberFrom(cells.control?.text, { places: 3 }),
     healing: numberFrom(cells.healing?.text),
     tower: numberFrom(cells.tower?.text),
-    rankDelta: numberFrom(cells.rankDelta?.text, { signed: true }),
-    reputation: numberFrom(cells.reputation?.text, { signed: true }),
-    powerDelta: numberFrom(cells.powerDelta?.text, { signed: true }),
+    rankDelta: deltaFrom(cells.rankDelta?.text),
+    reputation: numberFrom(cells.reputation?.text, { signed: true }) || notes.reputation,
+    powerDelta: deltaFrom(cells.powerDelta?.text),
     gpm: numberFrom(cells.gpm?.text),
+    teamfightCount: numberFrom(cells.teamfightCount?.text),
+    teamfightRate: numberFrom(cells.teamfightRate?.text, { places: 2 }),
+    damageRatio: numberFrom(cells.damageRatio?.text, { places: 2 }),
+    takenPer: numberFrom(cells.takenPer?.text),
+    badges: medals.badges,
   };
+}
+
+function splitPipeValues(labels, text) {
+  const raw = String(text || "");
+  const lines = raw
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length >= labels.length) return lines.slice(0, labels.length);
+  const flat = raw.replace(/\s+/g, " ").trim();
+  const joined = labels.join("");
+  if (/輸出/.test(joined) && /承傷/.test(joined)) {
+    const bits = [...flat.matchAll(/\d[\d,]*(?:\.\d+)?(?:\s*\([^)]*%\))?/g)].map((item) => item[0].trim());
+    if (bits.length >= labels.length) return bits.slice(0, labels.length);
+  }
+  if (/補兵/.test(joined) && /控場/.test(joined)) {
+    const match = /^(\d+)\s+(\d+(?:\.\d+)?)\s*秒?\s+(\d+)\s+(\d+)/.exec(flat);
+    if (match && labels.length >= 4) return [match[1], match[2], match[3], match[4]];
+  }
+  return lines;
+}
+
+function pipeKeys(parts) {
+  const norm = parts.map((part) => part.replace(/\s+/g, ""));
+  if (norm.length === 4 && norm[0].includes("補兵") && norm[1].includes("控場") && norm[2].includes("治療") && norm[3].includes("塔傷")) {
+    return ["minions", "control", "healing", "tower"];
+  }
+  if (norm.length === 3 && norm[0].includes("輸出") && norm[1].includes("承傷") && norm[2].includes("經濟")) {
+    return ["heroDamage", "taken", "gold"];
+  }
+  return parts.map((label) => columnKey(label));
+}
+
+function assignHeaderCell(cells, headerText, cell) {
+  if (!cell) return;
+  const parts = String(headerText || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length > 1) {
+    const values = splitPipeValues(parts, cell.text || "");
+    pipeKeys(parts).forEach((key, index) => {
+      if (!key || cells[key]) return;
+      cells[key] = { text: values[index] || "", alts: [], mvp: false };
+    });
+    return;
+  }
+  const key = columnKey(headerText);
+  if (key && !cells[key]) cells[key] = cell;
 }
 
 function rowsFromHtml(html, side) {
   const byKey = new Map();
   const order = [];
   for (const table of parseTables(html)) {
-    const header = table[0].map((cell) => columnKey(cell.text));
-    if (!header.some(Boolean)) continue;
+    const header = table[0].map((cell) => cell.text || "");
+    if (!header.some((text) => columnKey(text) || text.includes("|"))) continue;
     for (const raw of table.slice(1)) {
       const cells = {};
-      header.forEach((key, index) => {
-        if (key && raw[index]) cells[key] = raw[index];
-      });
+      header.forEach((text, index) => assignHeaderCell(cells, text, raw[index]));
       const ign = ignFrom(cells.ign?.text || "");
-      const hero = cells.hero?.alts?.[0] || stripTags(cells.hero?.text || "");
+      const hero = portraitName(cells.hero) || stripTags(cells.hero?.text || "") || portraitName(cells.ign);
       const uid = uidFrom(cells.ign?.text || "");
       if (!ign && !hero) continue;
       const id = `${ign}|${hero}`;
       if (!byKey.has(id)) {
-        byKey.set(id, { side, ign, hero, uid: "", cells: {} });
+        byKey.set(id, { side, ign, hero, uid: "", marked: false, cells: {} });
         order.push(id);
       }
       const row = byKey.get(id);
       if (hero) row.hero = hero;
       if (ign) row.ign = ign;
       if (uid) row.uid = uid;
+      if (raw.marked) row.marked = true;
       Object.assign(row.cells, cells);
     }
   }
   return order.map((id) => materialize(byKey.get(id)));
 }
 
-function teamHtml(chunk, name) {
-  const start = chunk.indexOf(name);
-  if (start < 0) return "";
-  const rest = chunk.slice(start + name.length);
-  const other = name === "我方隊伍" ? "敵方隊伍" : "我方隊伍";
-  const end = rest.indexOf(other);
-  return end < 0 ? rest : rest.slice(0, end);
+function teamSide(name) {
+  return name === "紅方" || name === "敵方隊伍" ? "red" : "blue";
+}
+
+function teamMarks(chunk) {
+  const found = [];
+  const re = /藍方|紅方|我方隊伍|敵方隊伍/g;
+  let match;
+  while ((match = re.exec(chunk))) found.push({ index: match.index, name: match[0] });
+  const sided = found.some((item) => item.name === "藍方" || item.name === "紅方");
+  return found.filter((item) => (sided ? item.name === "藍方" || item.name === "紅方" : item.name === "我方隊伍" || item.name === "敵方隊伍"));
+}
+
+/** Split scoreboard HTML by 藍方 / 紅方. Returns null only when those labels are absent. */
+function teamHtml(chunk) {
+  const marks = teamMarks(chunk);
+  if (!marks.length) return null;
+  const grouped = { blue: "", red: "" };
+  const tableRe = /<table\b[\s\S]*?<\/table>/gi;
+  let table;
+  let sidedTables = 0;
+  while ((table = tableRe.exec(chunk))) {
+    const prior = marks.filter((item) => item.index < table.index).pop();
+    if (!prior) continue;
+    sidedTables += 1;
+    grouped[teamSide(prior.name)] += table[0];
+  }
+  if (sidedTables) return grouped;
+  const ordered = [...marks].sort((a, b) => a.index - b.index);
+  for (let index = 0; index < ordered.length; index += 1) {
+    const start = ordered[index].index;
+    const end = ordered[index + 1]?.index ?? chunk.length;
+    grouped[teamSide(ordered[index].name)] += chunk.slice(start, end);
+  }
+  return grouped;
 }
 
 function durationFrom(text) {
@@ -288,17 +529,63 @@ function playedAtFrom(text) {
 }
 
 function headerAlts(html) {
-  const head = html.split(/<table\b|我方隊伍|敵方隊伍/)[0];
+  const head = headerHtml(html);
   return [...head.matchAll(/<img\b[^>]*\balt=(["'])([\s\S]*?)\1/gi)].map((item) => decode(item[2]).trim()).filter(Boolean);
 }
 
-function headerResult(chunk, text) {
-  const badge = /<span\b[^>]*badge[^>]*>([\s\S]*?)<\/span>/i.exec(chunk);
-  const badgeText = badge ? stripTags(badge[1]) : "";
-  const source = `${badgeText} ${text}`;
-  if (source.includes("失敗")) return "失敗";
-  if (source.includes("勝利")) return "勝利";
-  return "";
+function resultFrom(source) {
+  let result = "";
+  const re = /失敗|敗北|勝利/g;
+  let match;
+  while ((match = re.exec(source))) result = match[0] === "勝利" ? "勝" : "敗";
+  return result;
+}
+
+function headerHtml(chunk) {
+  const source = String(chunk);
+  const bodyAt = source.search(/accordion-body/i);
+  const cut = bodyAt >= 0 ? bodyAt : source.search(/<table\b|我方隊伍|敵方隊伍|藍方|紅方/i);
+  return cut < 0 ? source : source.slice(0, cut);
+}
+
+function headerResult(chunk) {
+  const head = headerHtml(chunk);
+  const badges = [...head.matchAll(/<span\b[^>]*badge[^>]*>([\s\S]*?)<\/span>/gi)];
+  if (badges.length) return resultFrom(stripTags(badges[badges.length - 1][1]));
+  return resultFrom(stripTags(head).split(/對局時間/)[0]);
+}
+
+function headerKda(text) {
+  const head = String(text).split(/對局時間/)[0];
+  const re = /(?<![\d.])(\d+)\s*\/\s*(?<![\d.])(\d+)\s*\/\s*(?<![\d.])(\d+)(?![\d.])/g;
+  let found = null;
+  let match;
+  while ((match = re.exec(head))) found = match;
+  if (!found) return { kills: "", deaths: "", assists: "" };
+  return { kills: found[1], deaths: found[2], assists: found[3] };
+}
+
+function headerMode(text) {
+  const head = String(text).split(/對局時間/)[0];
+  const re = /地圖\s*[:：]\s*([^\n|<]+)/g;
+  let found = "";
+  let match;
+  while ((match = re.exec(head))) found = match[1].trim();
+  return found;
+}
+
+function headerOwnerRow(keyword, hero, kda) {
+  const name = clip(keyword, 40);
+  const row = emptyBoardPlayer();
+  row.side = "blue";
+  row.owner = true;
+  row.hero = clip(hero, 40);
+  row.ign = name && !/^\d+$/.test(name) ? name : "";
+  row.kills = kda.kills;
+  row.deaths = kda.deaths;
+  row.assists = kda.assists;
+  if (/^\d+$/.test(name)) row.uid = name;
+  return row;
 }
 
 function stableId(parts) {
@@ -312,16 +599,24 @@ function stableId(parts) {
   return `aov${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
+function sameIgn(ign, keyword) {
+  const left = String(ign || "").trim().toLowerCase();
+  const right = String(keyword || "").trim().toLowerCase();
+  return Boolean(left && right && left === right);
+}
+
 function pickOwner(rows, keyword, headerHero) {
   const name = clip(keyword, 100);
   if (name && !/^\d+$/.test(name)) {
-    const byName = rows.find((row) => row.ign === name);
+    const byName = rows.find((row) => sameIgn(row.ign, name));
     if (byName) return byName;
   }
   if (name && /^\d+$/.test(name)) {
     const byUid = rows.find((row) => row.uid === name);
     if (byUid) return byUid;
   }
+  const marked = rows.find((row) => row.marked);
+  if (marked) return marked;
   if (headerHero) {
     const byHero = rows.find((row) => row.hero === headerHero && row.side !== "red") || rows.find((row) => row.hero === headerHero);
     if (byHero) return byHero;
@@ -349,41 +644,60 @@ function copyOwner(match, owner) {
   match.powerDelta = owner.powerDelta || match.powerDelta;
   match.ownerSide = owner.side === "red" ? "red" : "blue";
   if (owner.uid) match.ownerUid = owner.uid;
-  if (match.result === "勝利") match.winner = match.ownerSide;
-  else if (match.result === "失敗") match.winner = match.ownerSide === "red" ? "blue" : "red";
+  if (match.result === "勝") match.winner = match.ownerSide;
+  else if (match.result === "敗") match.winner = match.ownerSide === "red" ? "blue" : "red";
+  if (owner.kills !== "" || owner.deaths !== "" || owner.assists !== "") {
+    if (owner.kills !== "") match.kills = owner.kills;
+    if (owner.deaths !== "") match.deaths = owner.deaths;
+    if (owner.assists !== "") match.assists = owner.assists;
+  }
+  if (match.kills !== "" && match.deaths !== "" && match.assists !== "") {
+    match.kda = `${match.kills} / ${match.deaths} / ${match.assists}`;
+  }
+  match.mvp = owner.mvp === true;
+  match.badges = { ...emptyBadges(), ...(owner.badges || {}) };
 }
 
 function parseChunk(chunk, keyword, index) {
+  const head = headerHtml(chunk);
+  const headText = stripTags(head);
   const text = stripTags(chunk);
-  const header = headerResult(chunk, text);
-  const kda = kdaParts(text);
+  const header = headerResult(chunk);
+  const kda = headerKda(headText);
   const playedAt = playedAtFrom(text);
-  const mode = /地圖\s*[:：]\s*([^\n|<]+)/.exec(text)?.[1]?.trim() || "";
+  const mapped = catalogMode(headerMode(headText));
   const external = /(?:對局\s*(?:ID|編號)?|Match)\s*[:：]?\s*(\d{6,}-\d+)/i.exec(text)?.[1] || /(\d{8,}-\d+)/.exec(text)?.[1] || "";
-  const hero = headerAlts(chunk)[0] || "";
+  const alts = headerAlts(head);
+  const hero = alts[alts.length - 1] || "";
   if (!kda.kills && !playedAt && !external && !hero) return null;
-  const blueHtml = teamHtml(chunk, "我方隊伍");
-  const redHtml = teamHtml(chunk, "敵方隊伍");
-  let blue = rowsFromHtml(blueHtml, "blue");
-  let red = rowsFromHtml(redHtml, "red");
-  if (!blue.length && !red.length) {
-    blue = rowsFromHtml(chunk, "blue");
-  }
+  const sections = teamHtml(chunk);
+  const blue = sections ? rowsFromHtml(sections.blue, "blue") : rowsFromHtml(chunk, "blue");
+  const red = sections ? rowsFromHtml(sections.red, "red") : [];
   const board = [...blue, ...red].slice(0, 10);
-  const owner = pickOwner(board, keyword, hero);
+  let boardPartial = false;
+  let owner = pickOwner(board, keyword, hero);
+  if (!owner && !board.length && (kda.kills || kda.deaths || kda.assists || hero)) {
+    owner = headerOwnerRow(keyword, hero, kda);
+    board.push(owner);
+    boardPartial = true;
+  }
+  const notes = [];
+  if (mapped.raw && mapped.raw !== mapped.mode) notes.push(`AOVRanking 地圖：${mapped.raw}`);
+  if (boardPartial) notes.push("這頁沒有展開隊伍，記分板只有自己的 KDA。");
   const id = external || stableId([playedAt, hero, kda.kills, kda.deaths, kda.assists, String(index)]);
   const match = {
     id,
     externalMatchId: id,
     source: "aovweb",
-    label: [mode, hero].filter(Boolean).join(" · "),
+    label: [mapped.mode, hero].filter(Boolean).join(" · "),
     date: playedAt.slice(0, 10),
     playedAt,
-    duration: durationFrom(text),
-    mode: clip(mode, 80),
+    duration: durationFrom(headText),
+    mode: mapped.mode,
+    map: mapped.raw && mapped.raw !== mapped.mode ? mapped.raw : "",
     hero: clip(hero, 80),
     result: header,
-    kda: kda.kills ? `${kda.kills} / ${kda.deaths} / ${kda.assists}` : "",
+    kda: kda.kills || kda.deaths || kda.assists ? `${kda.kills} / ${kda.deaths} / ${kda.assists}` : "",
     kills: kda.kills,
     deaths: kda.deaths,
     assists: kda.assists,
@@ -401,10 +715,14 @@ function parseChunk(chunk, keyword, index) {
     ownerSide: owner ? (owner.side === "red" ? "red" : "blue") : "",
     winner: "",
     publish: false,
-    note: { zh: "", en: "" },
+    mvp: false,
+    badges: emptyBadges(),
+    note: { zh: notes.join(" "), en: "" },
     board: board.map((row) => {
       const next = { ...row };
       delete next.uid;
+      delete next.badges;
+      delete next.marked;
       return next;
     }),
   };
@@ -412,11 +730,14 @@ function parseChunk(chunk, keyword, index) {
   const marked = owner ? match.board.find((row) => row.ign === owner.ign && row.hero === owner.hero) : null;
   if (marked) marked.owner = true;
   delete match.ownerUid;
-  return { match, ownerUid: owner?.uid || "" };
+  return { match, ownerUid: owner?.uid || "", boardPartial };
 }
 
 function splitAccordion(html) {
-  const re = /<(div|article|section)\b[^>]*class=(["'])[^"']*\b(?:player-match-item|accordion-item)\b[^"']*\2[^>]*>/gi;
+  const itemRe = /<(div|article|section)\b[^>]*class=(["'])[^"']*\baccordion-item\b[^"']*\2[^>]*>/gi;
+  const playerRe = /<(div|article|section)\b[^>]*class=(["'])[^"']*\bplayer-match-item\b[^"']*\2[^>]*>/gi;
+  const re = itemRe.test(html) ? itemRe : playerRe;
+  re.lastIndex = 0;
   const marks = [];
   let match;
   while ((match = re.exec(html))) marks.push(match.index);
@@ -468,7 +789,27 @@ function parseSummary(html) {
     const total = Number(wins) + Number(losses);
     if (total) winRate = String(Math.round((Number(wins) / total) * 1000) / 10).replace(/\.0$/, "");
   }
-  return { heroes, wins, losses, played, winRate };
+  return { heroes, wins, losses, played, winRate, radar: radarFrom(text) };
+}
+
+function radarFrom(text) {
+  const block = /雷達[\s\S]{0,500}/.exec(String(text || ""))?.[0] || "";
+  if (!block) return {};
+  const grab = (re) => {
+    const match = re.exec(block);
+    if (!match) return "";
+    const value = match[1].replace(/\.0$/, "");
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0 || number > 100) return "";
+    return value;
+  };
+  return {
+    output: grab(/(?<!總)輸出\s*[:：]?\s*(\d{1,3}(?:\.\d+)?)/),
+    kda: grab(/KDA\s*[:：]?\s*(\d{1,3}(?:\.\d+)?)(?!\s*\/)/i),
+    farm: grab(/發育\s*[:：]?\s*(\d{1,3}(?:\.\d+)?)/),
+    teamfight: grab(/團戰\s*[:：]?\s*(\d{1,3}(?:\.\d+)?)/),
+    survival: grab(/生存\s*[:：]?\s*(\d{1,3}(?:\.\d+)?)/),
+  };
 }
 
 export function parseFightHistory(html, options = {}) {
@@ -479,6 +820,7 @@ export function parseFightHistory(html, options = {}) {
   const matches = [];
   const seen = new Set();
   let ownerUid = "";
+  let boardPartial = false;
   split.chunks.forEach((chunk, index) => {
     const parsed = parseChunk(chunk, keyword, index);
     if (!parsed?.match) return;
@@ -486,11 +828,50 @@ export function parseFightHistory(html, options = {}) {
     if (!key || seen.has(key)) return;
     seen.add(key);
     if (!ownerUid && parsed.ownerUid) ownerUid = parsed.ownerUid;
+    if (parsed.boardPartial) boardPartial = true;
     matches.push(parsed.match);
   });
   matches.sort((a, b) => String(b.playedAt).localeCompare(String(a.playedAt)));
   if (ownerUid) summary.uid = ownerUid;
-  return { matches: matches.slice(0, PLAYER_MATCH_LIMIT), summary, count: Math.min(matches.length, PLAYER_MATCH_LIMIT) };
+  return {
+    matches: matches.slice(0, PLAYER_MATCH_LIMIT),
+    summary,
+    count: Math.min(matches.length, PLAYER_MATCH_LIMIT),
+    boardPartial,
+  };
+}
+
+function shellBlob(html) {
+  const clean = withoutNoise(html);
+  return `${clean}\n${decode(clean)}`;
+}
+
+function hasMatchRows(blob) {
+  return /player-match-item|對局時間|對局\s*(?:ID|編號)|Match\s*ID/i.test(blob);
+}
+
+function isProtectedQueryShell(html) {
+  const blob = shellBlob(html);
+  if (hasMatchRows(blob)) return false;
+  return /aov-protected-query|正在載入歷史戰績|data-query-result/i.test(blob);
+}
+
+function isAovShell(html) {
+  const blob = shellBlob(html);
+  if (hasMatchRows(blob)) return false;
+  if (isProtectedQueryShell(html)) return true;
+  return /歷史戰績|FightHistory|accordion-item|class=(["'])[^"']*\baccordion\b/i.test(blob);
+}
+
+/** Classify a user-supplied history page before it is stored. */
+export function pastedFightHistory(html, options = {}) {
+  if (isProtectedQueryShell(html)) return { ok: false, code: "aov_shell" };
+  const page = aovPageStatus(200, html);
+  if (page === "challenge") return { ok: false, code: "aov_challenge" };
+  if (isAovShell(html)) return { ok: false, code: "aov_shell" };
+  const parsed = parseFightHistory(html, options);
+  if (!parsed.matches.length) return { ok: false, code: "aov_empty" };
+  return { ok: true, ...parsed };
 }
 
 function sumsOf(matches) {
@@ -544,6 +925,81 @@ function mergeHeroes(existing, heroes) {
   return list.slice(0, 16);
 }
 
+const MEDAL_KEYS = ["godlike", "penta", "quadra", "triple", "supreme", "gold", "silver", "loseMvp"];
+
+function resultTotals(matches) {
+  let played = 0;
+  let wins = 0;
+  for (const match of matches) {
+    if (match.result !== "勝" && match.result !== "敗") continue;
+    played += 1;
+    if (match.result === "勝") wins += 1;
+  }
+  if (!played) return null;
+  const rate = String(Math.round((wins / played) * 1000) / 10).replace(/\.0$/, "");
+  return { played: String(played), wins: String(wins), winRate: rate };
+}
+
+function seasonsFrom(matches, summary) {
+  const groups = new Map();
+  for (const match of matches) {
+    const mode = match?.mode || "";
+    if (!mode) continue;
+    if (!groups.has(mode)) groups.set(mode, []);
+    groups.get(mode).push(match);
+  }
+  const seasons = [];
+  for (const [mode, list] of groups) {
+    const totals = resultTotals(list);
+    const season = emptySeason();
+    season.id = stableId(["season", mode]);
+    season.mode = mode;
+    const onlyMode = groups.size === 1;
+    if (onlyMode && summary?.played) season.played = summary.played;
+    else if (totals) season.played = totals.played;
+    if (onlyMode && summary?.wins) season.wins = summary.wins;
+    else if (totals) season.wins = totals.wins;
+    if (onlyMode && summary?.winRate) season.winRate = summary.winRate;
+    else if (totals) season.winRate = totals.winRate;
+    let mvp = 0;
+    for (const match of list) {
+      if (match.mvp === true) mvp += 1;
+      for (const key of MEDAL_KEYS) {
+        if (match.badges?.[key] === true) season.medals[key] = String(Number(season.medals[key] || 0) + 1);
+      }
+    }
+    if (mvp > 0) season.mvp = String(mvp);
+    if (onlyMode && summary?.radar) {
+      for (const [key, value] of Object.entries(summary.radar)) {
+        if (value) season.radar[key] = value;
+      }
+    }
+    seasons.push(season);
+  }
+  return seasons;
+}
+
+function mergeSeasons(existing, incoming) {
+  const list = Array.isArray(existing) ? existing.map((item) => ({ ...item, radar: { ...(item?.radar || {}) }, medals: { ...(item?.medals || {}) } })) : [];
+  for (const next of incoming) {
+    const found = list.find((item) => item.mode === next.mode);
+    if (!found) {
+      list.push(next);
+      continue;
+    }
+    for (const key of ["played", "wins", "winRate", "mvp"]) {
+      if (!found[key] && next[key]) found[key] = next[key];
+    }
+    for (const [key, value] of Object.entries(next.radar || {})) {
+      if (!found.radar[key] && value) found.radar[key] = value;
+    }
+    for (const [key, value] of Object.entries(next.medals || {})) {
+      if (!found.medals[key] && value) found.medals[key] = value;
+    }
+  }
+  return list.slice(0, 8);
+}
+
 function mergeMatch(prev, next, publish) {
   const match = { ...next, note: next.note || { zh: "", en: "" }, highlight: next.highlight };
   if (!prev) {
@@ -594,6 +1050,9 @@ export function applyAovImport(player, parsed, options = {}) {
   }
   if (sums.gold) stats.gold = sums.gold;
   if (sums.damage) stats.damage = sums.damage;
+  const seasons = seasonsFrom(imported, summary);
+  const mvpCount = seasons.reduce((sum, season) => sum + (season.mvp ? Number(season.mvp) : 0), 0);
+  if (mvpCount > 0 && !stats.mvp) stats.mvp = String(mvpCount);
   const heroes = Array.isArray(summary.heroes) ? summary.heroes : [];
   const signatureHeroes = {
     zh: base.signatureHeroes?.zh || "",
@@ -618,6 +1077,7 @@ export function applyAovImport(player, parsed, options = {}) {
     signatureHeroes,
     stats,
     heroPool: mergeHeroes(base.heroPool, heroes),
+    seasons: mergeSeasons(base.seasons, seasons),
     matches,
     aov: {
       syncedAt,
@@ -678,13 +1138,14 @@ export async function fetchFightHistory(env, query) {
       }
     }
     const html = response.status === 429 ? "" : await readHtml(response);
+    if (response.status !== 429 && isProtectedQueryShell(html)) return { ok: false, code: "aov_shell" };
     const status = aovPageStatus(response.status, html);
     if (status === "rate_limited") return { ok: false, code: "aov_rate_limited" };
     if (status === "challenge") return { ok: false, code: "aov_challenge" };
     if (status === "blocked") return { ok: false, code: "aov_blocked" };
     if (status === "empty") return { ok: false, code: "aov_empty" };
     const parsed = parseFightHistory(html, { keyword });
-    if (!parsed.matches.length) return { ok: false, code: "aov_empty" };
+    if (!parsed.matches.length) return { ok: false, code: isAovShell(html) ? "aov_shell" : "aov_empty" };
     return { ok: true, ...parsed, keyword, fetched: true };
   } catch (error) {
     logFailure("aov_fetch_failed", error);

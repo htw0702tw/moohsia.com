@@ -20,6 +20,12 @@ function shown(value, pending) {
   return text ? text : pending;
 }
 
+function resultLabel(result) {
+  if (result === "勝") return "勝利";
+  if (result === "敗") return "敗北";
+  return result || "";
+}
+
 function ownerRows(player) {
   const rows = [];
   for (const match of player.matches || []) {
@@ -185,11 +191,15 @@ function boardCells(row, tab, page) {
   }
   if (tab === "output") return [row.heroDamage, tagged(page.tower, row.tower), row.damageRatio].filter(Boolean).join(" · ");
   if (tab === "survival") return [row.taken, tagged(page.healing, row.healing), tagged(page.control, row.control), row.takenPer].filter(Boolean).join(" · ");
-  if (tab === "farm") return [row.gold, tagged(page.minions, row.minions), row.gpm].filter(Boolean).join(" · ");
+  if (tab === "farm") {
+    return [row.gold, tagged(page.minions, row.minions), tagged(page.control, row.control), tagged(page.healing, row.healing), tagged(page.tower, row.tower), row.gpm]
+      .filter(Boolean)
+      .join(" · ");
+  }
   if (tab === "record") return [row.kills, row.deaths, row.assists, row.score, tagged(page.rankDelta, signedText(row.rankDelta))].filter(Boolean).join(" / ");
   if (tab === "team") return [row.teamfightCount, row.teamfightRate && `${row.teamfightRate}%`, row.heroDamagePct && `${row.heroDamagePct}%`].filter(Boolean).join(" · ");
   const kda = [row.kills, row.deaths, row.assists].filter((part) => part !== "").join(" / ");
-  return [kda, row.gold, row.score, tagged(page.minions, row.minions)].filter(Boolean).join(" · ");
+  return [kda, row.gold, row.score, tagged(page.minions, row.minions), tagged(page.healing, row.healing)].filter(Boolean).join(" · ");
 }
 
 function badgeLine(match, page) {
@@ -211,7 +221,7 @@ function scoreboard(match, page, tab) {
       match.map,
       match.hero,
       match.skin,
-      match.result,
+      resultLabel(match.result),
       kda || match.kda,
       match.gold,
       match.damage,
@@ -241,7 +251,7 @@ function scoreboard(match, page, tab) {
         </li>`;
       })
       .join("")}</ol>`;
-  const title = [match.blueScore, match.result || (match.winner === match.ownerSide && match.winner ? "VICTORY" : ""), match.redScore]
+  const title = [match.blueScore, resultLabel(match.result) || (match.winner === match.ownerSide && match.winner ? "VICTORY" : ""), match.redScore]
     .filter(Boolean)
     .join(" ");
   const subject = [match.hero, match.skin, badgeLine(match, page)].filter(Boolean).join(" · ");
@@ -264,7 +274,7 @@ function historyPanel(copy, player) {
   const list = matches
     .map((match) => {
       const kda = [match.kills, match.deaths, match.assists].filter((part) => part !== "").join("/");
-      const label = [match.date || match.playedAt, match.result, match.hero || match.label, kda].filter(Boolean).join(" · ");
+      const label = [match.date || match.playedAt, resultLabel(match.result), match.hero || match.label, kda].filter(Boolean).join(" · ");
       return `<button type="button" class="chip${match.id === current.id ? " is-on" : ""}" data-match="${esc(match.id)}">${esc(label || page.pending)}</button>`;
     })
     .join("");

@@ -1,5 +1,6 @@
 import "./admin.css";
-import { applyAovImport } from "../shared/aov-import.js";
+import { applyAovImport, fightHistoryUrl } from "../shared/aov-import.js";
+import { adminMessage, aovNeedsPaste, choosePastedHtml, importFailureMessage } from "./messages.js";
 import {
   applyPlayerInput,
   assignPlayerMedia,
@@ -182,38 +183,13 @@ const state = {
   applicationsAt: 0,
   aovForm: { keyword: "", uid: "", server: "1012", html: "" },
   aovBusy: false,
+  aovFocusPaste: false,
   playerUi: { tab: "profile", openMatch: "", catalog: null, catalogLoading: false },
 };
 
-const MESSAGES = {
-  invalid_login: "帳號或密碼不正確。",
-  rate_limited: "嘗試次數過多，請稍後再試。",
-  admin_not_configured: "尚未設定管理員密鑰。請先用 wrangler secret put。",
-  storage_unconfigured: "尚未綁定 CMS 資料庫。",
-  storage_unavailable: "現在讀不到內容資料庫。",
-  forbidden: "這個操作被拒絕。請重新整理後再試。",
-  unauthorized: "請先登入。",
-  blocked_content: "內容含有 Discord 邀請連結，或選手名字是保留名稱 moohsia，沒有儲存。",
-  invalid_content: "內容格式不正確。",
-  payload_too_large: "內容太長。",
-  notion_not_configured: "尚未設定 Notion 權杖或資料庫。草稿沒有改動。",
-  notion_sync_failed: "Notion 沒有同步成功。草稿沒有改動。",
-  catalog_refresh_failed: "官方英雄目錄沒有更新。",
-  invite_required: "核准時要貼上一次性 Discord 邀請。",
-  invite_reused: "這個邀請已經用過。",
-  mail_not_configured: "尚未設定寄信密鑰，申請已留在資料庫，但信沒有送出。",
-  mail_failed: "信沒有送出。狀態沒有改。",
-  already_reviewed: "這筆申請已經審過。",
-  media_type: "只接受圖片或 mp4／webm。",
-  media_too_large: "檔案太大。圖片 8MB，影片 32MB。",
-  media_unconfigured: "還沒有綁定 R2。",
-  aov_challenge: "AOVRanking 要求人機驗證，這次沒有抓到戰績。請用瀏覽器打開查詢頁，通過驗證後複製網頁原始碼，貼到下面再匯入。",
-  aov_rate_limited: "AOVRanking 暫時拒絕查詢（請求太頻繁）。請稍後再試，不要連續重抓。",
-  aov_cooldown: "剛剛才查過。請稍候再查，避免對 AOVRanking 造成負擔。",
-  aov_empty: "這份頁面裡沒有讀到對局。請確認是歷史戰績頁的原始碼。",
-  aov_blocked: "現在連不到 AOVRanking。可以改貼網頁原始碼。",
-  aov_invalid: "請填遊戲名稱，或填 UID 並選擇伺服器。",
-};
+function message(code, http) {
+  return adminMessage(code, http);
+}
 
 function esc(value) {
   return String(value ?? "")
@@ -239,17 +215,27 @@ function sectionId() {
   return NAV.find((item) => item[1] === path)?.[0] || "dashboard";
 }
 
-function message(code) {
-  return MESSAGES[code] || "沒有完成。請再試一次。";
-}
-
 async function api(path, options = {}) {
   const headers = new Headers(options.headers || {});
   if (options.body) headers.set("content-type", "application/json");
   if (state.csrf && options.method && options.method !== "GET") headers.set("x-csrf-token", state.csrf);
-  const response = await fetch(path, { ...options, headers, credentials: "same-origin" });
-  const data = await response.json().catch(() => ({}));
+  let response;
+  try {
+    response = await fetch(path, { ...options, headers, credentials: "same-origin" });
+  } catch {
+    return { ok: false, code: "network", http: 0 };
+  }
+  let data = null;
+  try {
+    const text = await response.text();
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = null;
+  }
   if (state.authed && response.status === 401 && path !== "/api/admin/login") dropSession();
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return { ok: false, code: "bad_response", http: response.status };
+  }
   return { http: response.status, ...data };
 }
 
@@ -478,17 +464,89 @@ function aovCooldownSeconds(syncedAt) {
   return Math.max(0, Math.ceil((60_000 - (Date.now() - at)) / 1000));
 }
 
+function ensureAovKeyword() {
+  const handle = String(state.draft?.player?.handle || "").trim();
+  if (!String(state.aovForm.keyword || "").trim() && handle) state.aovForm.keyword = handle;
+}
+
+function aovServer() {
+  return state.aovForm.server === "1011" ? "1011" : "1012";
+}
+
+function aovHistoryHref() {
+  ensureAovKeyword();
+  const uid = String(state.aovForm.uid || "").trim();
+  const keyword = uid || String(state.aovForm.keyword || "").trim();
+  if (!keyword) return "";
+  if (uid && !/^\d{1,20}$/.test(uid)) return "";
+  try {
+    return fightHistoryUrl({
+      searchType: uid ? "UID" : "playerName",
+      keyword,
+      server: aovServer(),
+    });
+  } catch {
+    return "";
+  }
+}
+
+function focusAovPaste() {
+  const node = document.querySelector("[data-aov-paste]");
+  if (!(node instanceof HTMLTextAreaElement)) return;
+  node.readOnly = false;
+  node.focus();
+  node.scrollIntoView({ block: "center" });
+}
+
+function currentPastedHtml() {
+  const node = document.querySelector("[data-aov=html]");
+  const live = node instanceof HTMLTextAreaElement ? node.value : "";
+  const html = choosePastedHtml(live, state.aovForm.html);
+  if (String(live).trim()) state.aovForm.html = live;
+  return html;
+}
+
+function captureAovPaste() {
+  currentPastedHtml();
+}
+
+function syncAovOpenLink() {
+  const link = document.querySelector("[data-aov-open]");
+  if (!(link instanceof HTMLAnchorElement)) return;
+  const href = aovHistoryHref();
+  if (href) link.href = href;
+}
+
+function aovSavedText(html) {
+  const text = String(html || "");
+  if (!text.trim()) return "";
+  return `已貼上 ${text.length} 字元，可按匯入`;
+}
+
 function aovImportPanel() {
+  ensureAovKeyword();
   const player = state.draft.player || {};
   const form = state.aovForm;
   const cooldown = aovCooldownSeconds(player.aov?.syncedAt);
+  const busy = state.aovBusy ? " disabled" : "";
   const lastSync = player.aov?.syncedAt
     ? `上次匯入 ${esc(String(player.aov.syncedAt).replace("T", " ").replace(/\.\d+Z$/, "Z").slice(0, 19))}，${esc(player.aov.count || "0")} 場。`
     : "尚未從 AOVRanking 匯入。";
-  return `<section class="card">
+  const href = aovHistoryHref();
+  const open = href
+    ? `<a class="btn" data-aov-open href="${esc(href)}" target="_blank" rel="noopener noreferrer">打開歷史戰績頁</a>`
+    : `<span class="hint">填好遊戲名稱或 UID 後，就能打開對應的歷史戰績頁。</span>`;
+  return `<section class="card aov-import${state.aovFocusPaste ? " is-paste" : ""}">
     <h2>從 AOVRanking 匯入</h2>
-    <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
+    <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。伺服器直接抓取常常會被安全驗證擋住。可靠的做法是貼上你瀏覽器裡已通過驗證的頁面。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
     <p class="hint">${lastSync}${cooldown ? ` 請再等 ${cooldown} 秒再向對方查詢。` : ""}</p>
+    <ol class="aov-steps hint">
+      <li>打開歷史戰績頁</li>
+      <li>通過安全驗證，等對局列表出現</li>
+      <li>等畫面上出現戰績後，用 F12 → 元素 → 複製 html 的 outerHTML 貼上，或上傳已載入完成的 .html。檢視原始碼看不到對局</li>
+      <li>按「用貼上的頁面匯入」</li>
+    </ol>
+    <p class="hint">標題列有結果、KDA 與地圖。地圖「經典競技」、「競賽模式」和「冠軍賽」會存成排位賽，「傳說之巔」存成巔峰對決。結果會存成勝或敗。每一場的藍方、紅方記分板要等該場展開後才寫進頁面；英雄取玩家名稱旁的圖片，自己在哪一隊看名稱是否對上關鍵字。沒展開的場次，記分板只填自己的 KDA。若這次只展開了第一場，請再展開其餘場次，或上傳已展開記分板的 .html。</p>
     <div class="pair">
       <label>遊戲名稱<input data-aov="keyword" value="${esc(form.keyword)}" ${CMS_TEXT}></label>
       <label>UID<input data-aov="uid" value="${esc(form.uid)}" inputmode="numeric" ${CMS_TEXT}></label>
@@ -499,14 +557,20 @@ function aovImportPanel() {
         </select>
       </label>
     </div>
+    <p class="hint">名稱查詢用遊戲名稱。UID 有填的時候，連結與查詢改走 UID，並帶上伺服器（2服純潔之翼會加上 dwLogicWorldId=1012）。遊戲名稱留白時，會用選手的遊戲 ID。</p>
+    <div class="row-actions">${open}</div>
+    <label class="aov-paste-label">貼上已載入的歷史戰績頁<textarea data-aov="html" data-aov-paste rows="16" ${CMS_TEXT}></textarea></label>
+    <p class="aov-saved" data-aov-saved>${esc(aovSavedText(form.html))}</p>
+    <p class="hint">畫面重畫時這格會清空，避免整份原始碼被刷掉。字數還在就代表內容還在，直接按匯入即可。</p>
+    <label>或選擇另存的網頁（.html / .txt）<input data-aov-file type="file" accept=".html,.htm,.txt,text/html,text/plain"></label>
     <div class="row-actions">
-      <button class="primary" type="button" data-action="aov-import"${cooldown ? " disabled" : ""}>從 AOVRanking 匯入</button>
-      <button class="btn" type="button" data-action="aov-publish"${cooldown ? " disabled" : ""}>匯入並發布</button>
+      <button class="primary" type="button" data-action="aov-paste"${busy}>用貼上的頁面匯入</button>
     </div>
-    <p class="hint">名稱查詢用遊戲名稱。UID 有填的時候改走 UID，並帶上上面的伺服器（2服是純潔之翼）。「匯入並發布」會公開這次匯入的對局並發布到網站。</p>
-    <label>如果出現驗證頁，貼上歷史戰績頁的原始碼<textarea data-aov="html" rows="5" ${CMS_TEXT}>${esc(form.html)}</textarea></label>
-    <p class="hint">在瀏覽器通過驗證後，檢視頁面原始碼，整頁複製貼上。遊戲名稱留白時，會用上面的遊戲 ID。</p>
-    <button class="btn" type="button" data-action="aov-paste">用貼上的頁面匯入</button>
+    <p class="hint">若仍想由伺服器代查，用下面兩個按鈕。被驗證頁擋住時，錯誤會寫明原因，請回到上面貼上原始碼。</p>
+    <div class="row-actions">
+      <button class="btn" type="button" data-action="aov-import"${cooldown || state.aovBusy ? " disabled" : ""}>從 AOVRanking 匯入</button>
+      <button class="btn" type="button" data-action="aov-publish"${cooldown || state.aovBusy ? " disabled" : ""}>匯入並發布</button>
+    </div>
   </section>`;
 }
 
@@ -637,6 +701,7 @@ function shell() {
 }
 
 function render() {
+  captureAovPaste();
   const app = document.querySelector("#app");
   if (!app) return;
   if (!state.authed) {
@@ -659,8 +724,21 @@ function markDirty(text) {
 function onInput(event) {
   const target = event.target;
   if (!(target instanceof HTMLElement) || !state.draft) return;
+  if (target instanceof HTMLInputElement && target.type === "file" && "aovFile" in target.dataset) {
+    const file = target.files?.[0];
+    target.value = "";
+    if (file) void readAovFile(file);
+    return;
+  }
   if (target.dataset.aov) {
+    if (target.dataset.aov === "html") {
+      state.aovForm.html = target.value;
+      const note = document.querySelector("[data-aov-saved]");
+      if (note) note.textContent = aovSavedText(target.value);
+      return;
+    }
     state.aovForm[target.dataset.aov] = target.value;
+    if (target.dataset.aov === "keyword" || target.dataset.aov === "uid" || target.dataset.aov === "server") syncAovOpenLink();
     return;
   }
   if (target.dataset.path && target.dataset.lang) {
@@ -708,88 +786,175 @@ function onInput(event) {
   if (applyPlayerInput(state.draft.player, target, state.playerUi.catalog)) markDirty("有未儲存的修改");
 }
 
+function isHistoryFile(file) {
+  const name = String(file?.name || "").toLowerCase();
+  const type = String(file?.type || "").toLowerCase();
+  return name.endsWith(".html") || name.endsWith(".htm") || name.endsWith(".txt") || type === "text/html" || type === "text/plain";
+}
+
+async function readAovFile(file) {
+  if (!isHistoryFile(file)) {
+    state.error = "請選擇另存的 .html 或 .txt。";
+    state.status = "";
+    render();
+    return;
+  }
+  state.aovBusy = true;
+  state.error = "";
+  state.status = "正在讀取檔案";
+  render();
+  let text = "";
+  try {
+    text = await file.text();
+  } catch {
+    state.aovBusy = false;
+    state.status = "";
+    state.error = "這個檔案讀不到。請改貼原始碼，或另存成 .html 再選一次。";
+    render();
+    return;
+  }
+  state.aovBusy = false;
+  if (text.length > 1_400_000) {
+    state.error = "這個檔案太長。請只存歷史戰績那一頁。";
+    state.status = "";
+    render();
+    return;
+  }
+  if (text.trim().length < 40) {
+    state.error = message("aov_empty");
+    state.status = "";
+    state.aovFocusPaste = true;
+    render();
+    focusAovPaste();
+    return;
+  }
+  state.aovForm.html = text;
+  state.error = "";
+  state.status = aovSavedText(text);
+  render();
+}
+
+function failAovImport(data) {
+  state.aovBusy = false;
+  state.status = "";
+  state.error = importFailureMessage(data?.code, data?.http);
+  state.aovFocusPaste = aovNeedsPaste(data?.code);
+  render();
+  if (state.aovFocusPaste) focusAovPaste();
+}
+
 async function importAov(action) {
   if (state.aovBusy || !state.draft?.player) return;
+  ensureAovKeyword();
   const form = state.aovForm;
   const pasted = action === "aov-paste";
   const uid = String(form.uid || "").trim();
   const name = String(form.keyword || "").trim() || state.draft.player.handle || "";
   const keyword = uid || name;
   const searchType = uid ? "UID" : "playerName";
+  const server = aovServer();
+  const html = pasted ? currentPastedHtml() : "";
   if (!pasted && !keyword) {
     state.error = message("aov_invalid");
+    state.aovFocusPaste = false;
     render();
     return;
   }
-  if (pasted && String(form.html || "").trim().length < 40) {
+  if (pasted && html.trim().length < 40) {
     state.error = message("aov_empty");
+    state.aovFocusPaste = true;
     render();
+    focusAovPaste();
     return;
   }
   state.aovBusy = true;
   state.error = "";
+  state.aovFocusPaste = false;
   state.status = pasted ? "正在讀取貼上的頁面" : "正在向 AOVRanking 查詢";
   render();
-  const data = await api("/api/admin/aov/import", {
-    method: "POST",
-    body: JSON.stringify({
-      searchType,
+  try {
+    const data = await api("/api/admin/aov/import", {
+      method: "POST",
+      body: JSON.stringify({
+        searchType,
+        keyword,
+        server,
+        html,
+      }),
+    });
+    state.aovBusy = false;
+    if (!state.authed) return;
+    if (!data.ok) {
+      failAovImport(data);
+      return;
+    }
+    const publish = action === "aov-publish";
+    state.draft.player = applyAovImport(state.draft.player, data, {
+      publish,
       keyword,
-      server: form.server || "1012",
-      html: pasted ? form.html : "",
-    }),
-  });
-  state.aovBusy = false;
-  if (!state.authed) return;
-  if (!data.ok) {
-    state.error = message(data.code);
-    state.status = "";
+      searchType,
+      server,
+      syncedAt: data.syncedAt,
+    });
+    const count = data.count || data.matches?.length || 0;
+    const partial = data.boardPartial
+      ? "有些對局沒有展開隊伍，那些場次的記分板只有自己的 KDA。請在歷史戰績頁展開各場，或上傳已展開藍方、紅方記分板的頁面後再匯入。"
+      : "";
+    if (publish) {
+      state.status = `已讀到 ${count} 場，正在發布`;
+      await persist("publish");
+      return;
+    }
+    markDirty(`已併入草稿 ${count} 場，尚未公開。確認後可按「匯入並發布」。${partial}`);
     render();
-    return;
+  } catch {
+    if (!state.authed) {
+      state.aovBusy = false;
+      return;
+    }
+    failAovImport({ code: "network", http: 0 });
   }
-  const publish = action === "aov-publish";
-  state.draft.player = applyAovImport(state.draft.player, data, {
-    publish,
-    keyword,
-    searchType,
-    server: form.server || "1012",
-    syncedAt: data.syncedAt,
-  });
-  const count = data.count || data.matches?.length || 0;
-  if (publish) {
-    state.status = `已讀到 ${count} 場，正在發布`;
-    await persist("publish");
-    return;
-  }
-  markDirty(`已併入草稿 ${count} 場，尚未公開。確認後可按「匯入並發布」。`);
-  render();
 }
 
 async function persist(mode) {
   state.error = "";
   state.status = mode === "publish" ? "發布中" : "儲存中";
-  const body = JSON.stringify(state.draft);
-  render();
-  const data = await api(mode === "publish" ? "/api/admin/publish" : "/api/admin/content", {
-    method: mode === "publish" ? "POST" : "PUT",
-    body,
-  });
-  if (!data.ok) {
-    state.error = message(data.code);
+  let body = "";
+  try {
+    body = JSON.stringify(state.draft);
+  } catch {
+    state.error = message("invalid_content");
     state.status = "";
     render();
     return;
   }
-  applyPayload(data);
-  state.status = mode === "publish" ? "已發布到網站" : "草稿已儲存";
   render();
+  try {
+    const data = await api(mode === "publish" ? "/api/admin/publish" : "/api/admin/content", {
+      method: mode === "publish" ? "POST" : "PUT",
+      body,
+    });
+    if (!data.ok) {
+      state.error = message(data.code, data.http);
+      state.status = "";
+      render();
+      return;
+    }
+    applyPayload(data);
+    state.status = mode === "publish" ? "已發布到網站" : "草稿已儲存";
+    render();
+  } catch {
+    state.error = message("network", 0);
+    state.status = "";
+    render();
+  }
 }
 
 async function discardDraft() {
   if (!window.confirm("草稿會回到上次發布的內容。這頁還沒儲存的修改也會消失。")) return;
   const data = await api("/api/admin/discard", { method: "POST", body: "{}" });
   if (!data.ok) {
-    state.error = message(data.code);
+    state.error = message(data.code, data.http);
     render();
     return;
   }
@@ -960,7 +1125,7 @@ async function runJob(path, pending, done) {
   render();
   const data = await api(path, { method: "POST", body: "{}" });
   if (!data.ok) {
-    state.error = message(data.code);
+    state.error = message(data.code, data.http);
     state.status = "";
     render();
     return;
@@ -982,7 +1147,7 @@ async function onSubmit(event) {
     body: JSON.stringify({ username, password }),
   });
   if (!data.ok) {
-    state.error = message(data.code);
+    state.error = message(data.code, data.http);
     render();
     return;
   }
@@ -990,7 +1155,7 @@ async function onSubmit(event) {
   state.csrf = data.csrf;
   const content = await api("/api/admin/content");
   if (!content.ok) {
-    state.error = message(content.code);
+    state.error = message(content.code, content.http);
     render();
     return;
   }
@@ -1068,7 +1233,7 @@ async function ensureApplications() {
   if (!state.authed) return;
   state.applicationsAt = Date.now();
   if (!data.ok) {
-    state.error = message(data.code);
+    state.error = message(data.code, data.http);
     state.applications = [];
   } else {
     state.applications = data.applications || [];
@@ -1092,7 +1257,7 @@ async function reviewApplication(id, action, fields) {
     return;
   }
   if (!data.ok) {
-    state.error = message(data.code);
+    state.error = message(data.code, data.http);
     state.status = "";
     render();
     return;
@@ -1149,7 +1314,7 @@ async function uploadPlayerMedia(target, dropped) {
     return;
   }
   if (!data.ok) {
-    state.error = message(data.code || "media_type");
+    state.error = message(data.code || "media_type", response.status);
     state.status = "";
     render();
     return;
@@ -1200,7 +1365,7 @@ async function boot() {
     state.csrf = session.csrf;
     const content = await api("/api/admin/content");
     if (content.ok) applyPayload(content);
-    else state.error = message(content.code);
+    else state.error = message(content.code, content.http);
     armIdle();
   }
   render();
