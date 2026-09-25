@@ -99,14 +99,18 @@ function columnKey(text) {
     ["勳章", "award"],
     ["榮譽", "award"],
     ["對塔傷害", "tower"],
+    ["塔傷", "tower"],
     ["對塔", "tower"],
     ["控制時間", "control"],
+    ["控場", "control"],
     ["控制", "control"],
     ["治療量", "healing"],
     ["治療", "healing"],
+    ["排位積分變化", "rankDelta"],
     ["排位積分", "rankDelta"],
     ["積分變化", "rankDelta"],
     ["積分", "rankDelta"],
+    ["戰力變化詳情", "powerDetail"],
     ["補兵", "minions"],
     ["分均經濟", "gpm"],
     ["GPM", "gpm"],
@@ -140,19 +144,21 @@ function parseTables(html) {
   let match;
   while ((match = re.exec(html))) {
     const rows = [];
-    const rowRe = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+    const rowRe = /<tr\b([^>]*)>([\s\S]*?)<\/tr>/gi;
     let row;
     while ((row = rowRe.exec(match[1]))) {
       const cells = [];
       const cellRe = /<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi;
       let cell;
-      while ((cell = cellRe.exec(row[1]))) {
+      while ((cell = cellRe.exec(row[2]))) {
         const alts = [...cell[1].matchAll(/<img\b[^>]*\balt=(["'])([\s\S]*?)\1/gi)]
           .map((item) => decode(item[2]).trim())
           .filter(Boolean);
         cells.push({ text: stripTags(cell[1]), alts, mvp: /MVP/i.test(cell[1]) });
       }
-      if (cells.length) rows.push(cells);
+      if (!cells.length) continue;
+      cells.marked = /table-warning/.test(row[1]);
+      rows.push(cells);
     }
     if (rows.length) tables.push(rows);
   }
@@ -270,16 +276,41 @@ function rowMedals(cells) {
   return { mvp: /MVP/i.test(bits) && !loseMvp, badges };
 }
 
+function deltaFrom(text) {
+  const source = String(text || "");
+  const paren = /\(([+-]\d+)\)/.exec(source);
+  if (paren) return paren[1].replace(/^\+/, "");
+  return numberFrom(source, { signed: true });
+}
+
+function pctOf(text) {
+  return /\(([\d.]+)\s*%\)/.exec(String(text || ""))?.[1] || "";
+}
+
+function notesFromCells(cells) {
+  const text = Object.values(cells)
+    .map((cell) => cell?.text || "")
+    .join("\n");
+  return {
+    lane: /分路(?:\([^)]*\))?\s*[:：]\s*([^\s\n]+)/.exec(text)?.[1] || "",
+    reputation: /信譽分\s*[:：]\s*([+-]?\d+)/.exec(text)?.[1]?.replace(/^\+/, "") || "",
+    level: /Lv\.?\s*(\d+)/i.exec(text)?.[1] || "",
+  };
+}
+
 function materialize(row) {
   const cells = row.cells || {};
   const kda = kdaParts(cells.kda?.text || "");
   const medals = rowMedals(cells);
+  const notes = notesFromCells(cells);
+  const heroAlt = cells.hero?.alts?.[0] || cells.ign?.alts?.[0] || "";
   return {
     side: row.side === "red" ? "red" : "blue",
-    hero: clip(row.hero || cells.hero?.alts?.[0] || cells.hero?.text || "", 40),
+    hero: clip(row.hero || heroAlt || cells.hero?.text || "", 40),
     ign: clip(row.ign || ignFrom(cells.ign?.text || ""), 40),
+    marked: row.marked === true,
     uid: row.uid || uidFrom(cells.ign?.text || ""),
-    lane: clip(cells.lane?.text || "", 24),
+    lane: clip(cells.lane?.text || notes.lane, 24),
     badge: clip(cells.badge?.text || "", 24),
     kills: kda.kills,
     deaths: kda.deaths,
@@ -290,17 +321,17 @@ function materialize(row) {
     owner: false,
     items: itemsFrom(cells.items),
     heroDamage: numberFrom(cells.heroDamage?.text),
-    heroDamagePct: numberFrom(cells.heroDamagePct?.text, { places: 2 }),
+    heroDamagePct: numberFrom(cells.heroDamagePct?.text, { places: 2 }) || pctOf(cells.heroDamage?.text),
     taken: numberFrom(cells.taken?.text),
-    takenPct: numberFrom(cells.takenPct?.text, { places: 2 }),
-    level: numberFrom(cells.level?.text),
+    takenPct: numberFrom(cells.takenPct?.text, { places: 2 }) || pctOf(cells.taken?.text),
+    level: numberFrom(cells.level?.text) || notes.level,
     minions: numberFrom(cells.minions?.text),
     control: numberFrom(cells.control?.text, { places: 3 }),
     healing: numberFrom(cells.healing?.text),
     tower: numberFrom(cells.tower?.text),
-    rankDelta: numberFrom(cells.rankDelta?.text, { signed: true }),
-    reputation: numberFrom(cells.reputation?.text, { signed: true }),
-    powerDelta: numberFrom(cells.powerDelta?.text, { signed: true }),
+    rankDelta: deltaFrom(cells.rankDelta?.text),
+    reputation: numberFrom(cells.reputation?.text, { signed: true }) || notes.reputation,
+    powerDelta: deltaFrom(cells.powerDelta?.text),
     gpm: numberFrom(cells.gpm?.text),
     teamfightCount: numberFrom(cells.teamfightCount?.text),
     teamfightRate: numberFrom(cells.teamfightRate?.text, { places: 2 }),
@@ -310,30 +341,51 @@ function materialize(row) {
   };
 }
 
+function assignHeaderCell(cells, headerText, cell) {
+  if (!cell) return;
+  const parts = String(headerText || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length > 1) {
+    const lines = String(cell.text || "")
+      .split(/\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    parts.forEach((label, index) => {
+      const key = columnKey(label);
+      if (!key || cells[key]) return;
+      cells[key] = { text: lines[index] || "", alts: [], mvp: false };
+    });
+    return;
+  }
+  const key = columnKey(headerText);
+  if (key && !cells[key]) cells[key] = cell;
+}
+
 function rowsFromHtml(html, side) {
   const byKey = new Map();
   const order = [];
   for (const table of parseTables(html)) {
-    const header = table[0].map((cell) => columnKey(cell.text));
-    if (!header.some(Boolean)) continue;
+    const header = table[0].map((cell) => cell.text || "");
+    if (!header.some((text) => columnKey(text) || text.includes("|"))) continue;
     for (const raw of table.slice(1)) {
       const cells = {};
-      header.forEach((key, index) => {
-        if (key && raw[index]) cells[key] = raw[index];
-      });
+      header.forEach((text, index) => assignHeaderCell(cells, text, raw[index]));
       const ign = ignFrom(cells.ign?.text || "");
-      const hero = cells.hero?.alts?.[0] || stripTags(cells.hero?.text || "");
+      const hero = cells.hero?.alts?.[0] || stripTags(cells.hero?.text || "") || cells.ign?.alts?.[0] || "";
       const uid = uidFrom(cells.ign?.text || "");
       if (!ign && !hero) continue;
       const id = `${ign}|${hero}`;
       if (!byKey.has(id)) {
-        byKey.set(id, { side, ign, hero, uid: "", cells: {} });
+        byKey.set(id, { side, ign, hero, uid: "", marked: false, cells: {} });
         order.push(id);
       }
       const row = byKey.get(id);
       if (hero) row.hero = hero;
       if (ign) row.ign = ign;
       if (uid) row.uid = uid;
+      if (raw.marked) row.marked = true;
       Object.assign(row.cells, cells);
     }
   }
@@ -462,6 +514,8 @@ function pickOwner(rows, keyword, headerHero) {
     const byUid = rows.find((row) => row.uid === name);
     if (byUid) return byUid;
   }
+  const marked = rows.find((row) => row.marked);
+  if (marked) return marked;
   if (headerHero) {
     const byHero = rows.find((row) => row.hero === headerHero && row.side !== "red") || rows.find((row) => row.hero === headerHero);
     if (byHero) return byHero;
@@ -576,6 +630,7 @@ function parseChunk(chunk, keyword, index) {
       const next = { ...row };
       delete next.uid;
       delete next.badges;
+      delete next.marked;
       return next;
     }),
   };
@@ -587,7 +642,10 @@ function parseChunk(chunk, keyword, index) {
 }
 
 function splitAccordion(html) {
-  const re = /<(div|article|section)\b[^>]*class=(["'])[^"']*\b(?:player-match-item|accordion-item)\b[^"']*\2[^>]*>/gi;
+  const itemRe = /<(div|article|section)\b[^>]*class=(["'])[^"']*\baccordion-item\b[^"']*\2[^>]*>/gi;
+  const playerRe = /<(div|article|section)\b[^>]*class=(["'])[^"']*\bplayer-match-item\b[^"']*\2[^>]*>/gi;
+  const re = itemRe.test(html) ? itemRe : playerRe;
+  re.lastIndex = 0;
   const marks = [];
   let match;
   while ((match = re.exec(html))) marks.push(match.index);

@@ -18,6 +18,7 @@ import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 
 const fixture = readFileSync(new URL("./fixtures/aov-fight-history.html", import.meta.url), "utf8");
 const headerFixture = readFileSync(new URL("./fixtures/aov-fight-history-headers.html", import.meta.url), "utf8");
+const expandedFixture = readFileSync(new URL("./fixtures/aov-fight-history-expanded.html", import.meta.url), "utf8");
 
 test("fight history URL matches the verified AOVRanking GET", () => {
   assert.equal(
@@ -583,6 +584,94 @@ test("header-only accordion keeps 勝/敗 and header KDA without inventing a ful
   assert.equal(kept.board[0].kills, "7");
   assert.equal(kept.board[0].deaths, "10");
   assert.equal(kept.board[0].assists, "5");
+});
+
+test("expanded accordion tables fill both teams and the owner row", () => {
+  assert.equal(expandedFixture.includes("ticket="), false);
+  assert.equal(expandedFixture.includes("CfDJ"), false);
+  const pasted = pastedFightHistory(expandedFixture, { keyword: "htw0702aov" });
+  assert.equal(pasted.ok, true);
+  assert.equal(pasted.count, 2);
+  assert.equal(pasted.boardPartial, true);
+  assert.equal(pasted.summary.wins, "31");
+  assert.equal(pasted.summary.played, "50");
+  assert.equal(pasted.summary.uid, "3678194289083498");
+
+  const loss = pasted.matches.find((match) => match.externalMatchId === "1790313541-5675");
+  assert.equal(loss.result, "敗");
+  assert.equal(loss.mode, "排位賽");
+  assert.equal(loss.map, "經典競技");
+  assert.equal(loss.hero, "娜塔亞");
+  assert.equal(loss.kda, "7 / 10 / 5");
+  assert.equal(loss.kills, "7");
+  assert.equal(loss.deaths, "10");
+  assert.equal(loss.assists, "5");
+  assert.equal(loss.ownerSide, "red");
+  assert.equal(loss.winner, "blue");
+  assert.equal(loss.gold, "9412");
+  assert.equal(loss.damage, "125580");
+  assert.equal(loss.taken, "117292");
+  assert.equal(loss.minions, "30");
+  assert.equal(loss.control, "8.382");
+  assert.equal(loss.healing, "7964");
+  assert.equal(loss.tower, "2743");
+  assert.equal(loss.lane, "中路");
+  assert.equal(loss.rankDelta, "-100");
+  assert.equal(loss.powerDelta, "-18");
+  assert.equal(loss.reputation, "100");
+  assert.equal(loss.board.length, 10);
+  assert.equal(loss.board.filter((row) => row.side === "blue").length, 5);
+  assert.equal(loss.board.filter((row) => row.side === "red").length, 5);
+  assert.equal(loss.note.zh.includes("記分板只有自己"), false);
+  const owner = loss.board.find((row) => row.owner);
+  assert.equal(loss.board.filter((row) => row.owner).length, 1);
+  assert.equal(owner.ign, "htw0702aov");
+  assert.equal(owner.hero, "娜塔亞");
+  assert.equal(owner.side, "red");
+  assert.equal(owner.kills, "7");
+  assert.equal(owner.deaths, "10");
+  assert.equal(owner.assists, "5");
+  assert.equal(owner.score, "8.7");
+  assert.equal(owner.items[0], "裝備 1423");
+  assert.equal(owner.items[5], "裝備 1242");
+  assert.equal(owner.heroDamage, "125580");
+  assert.equal(owner.heroDamagePct, "27.4");
+  assert.equal(owner.taken, "117292");
+  assert.equal(owner.takenPct, "27.9");
+  assert.equal(owner.gold, "9412");
+  assert.equal(owner.minions, "30");
+  assert.equal(owner.control, "8.382");
+  assert.equal(owner.healing, "7964");
+  assert.equal(owner.tower, "2743");
+  assert.equal(owner.lane, "中路");
+  assert.equal(owner.rankDelta, "-100");
+  assert.equal(owner.powerDelta, "-18");
+  assert.equal(owner.reputation, "100");
+  assert.equal(owner.level, "15");
+  assert.equal(owner.uid, undefined);
+  assert.equal(loss.board[0].side, "blue");
+  assert.equal(loss.board[0].hero, "弗洛倫");
+  assert.equal(loss.board[0].ign, "藍方一");
+
+  const collapsed = pasted.matches.find((match) => match.kda === "14 / 6 / 4");
+  assert.equal(collapsed.result, "勝");
+  assert.equal(collapsed.mode, "排位賽");
+  assert.equal(collapsed.board.length, 1);
+  assert.equal(collapsed.board[0].owner, true);
+  assert.equal(collapsed.board[0].kills, "14");
+  assert.match(collapsed.note.zh, /記分板只有自己的 KDA/);
+
+  const stored = cleanPlayer(
+    applyAovImport(emptyPlayer(), pasted, { keyword: "htw0702aov", searchType: "playerName", server: "1012" }),
+  );
+  const kept = stored.matches.find((match) => match.externalMatchId === "1790313541-5675");
+  assert.equal(kept.ownerSide, "red");
+  assert.equal(kept.winner, "blue");
+  assert.equal(kept.kda, "7 / 10 / 5");
+  assert.equal(kept.board.length, 10);
+  assert.equal(kept.board.find((row) => row.owner).powerDelta, "-18");
+  assert.equal(kept.board.find((row) => row.owner).rankDelta, "-100");
+  assert.equal(stored.uid, "3678194289083498");
 });
 
 test("pasted challenge page and view-source shell are distinct errors", async () => {
