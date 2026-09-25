@@ -1,7 +1,9 @@
 import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
+import { refreshCatalog } from "../shared/catalog-store.js";
 import { isAdminHost } from "../shared/hosts.js";
 import { logFailure } from "../shared/log.js";
+import { syncNotionDraft } from "../shared/notion-sync.js";
 import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
 
 /**
@@ -17,6 +19,14 @@ import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
  * @property {string} [ADMIN_SESSION_SECRET]
  * @property {D1Database} [CMS_DB]
  * @property {KVNamespace} [CMS_KV]
+ * @property {string} [NOTION_TOKEN]
+ * @property {string} [NOTION_WEBHOOK_SECRET]
+ * @property {string} [NOTION_ROSTER_DB]
+ * @property {string} [NOTION_NEWS_DB]
+ * @property {string} [NOTION_COPY_DB]
+ * @property {string} [NOTION_PROFILE_DB]
+ * @property {string} [NOTION_PLAYER_DB]
+ * @property {string} [NOTION_MATCH_DB]
  */
 
 const PUBLIC_FALLBACK = "/index.html";
@@ -115,6 +125,19 @@ async function servePublic(request, env) {
   return serveAsset(request, env, PUBLIC_FALLBACK);
 }
 
+async function runScheduled(env) {
+  try {
+    await syncNotionDraft(env);
+  } catch (error) {
+    logFailure("notion_cron_failed", error);
+  }
+  try {
+    await refreshCatalog(env);
+  } catch (error) {
+    logFailure("catalog_cron_failed", error);
+  }
+}
+
 export default {
   /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
@@ -126,5 +149,10 @@ export default {
       logFailure("worker_error", error);
       return text(500, "Service unavailable");
     }
+  },
+
+  /** Draft-only Notion sync and official catalog refresh. Does not publish the site. */
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(runScheduled(env));
   },
 };

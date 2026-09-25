@@ -1,5 +1,8 @@
 import { CONTACT_EMAIL, WORKER_NAME } from "./brand.js";
+import { loadCatalog } from "./catalog-store.js";
+import { syncNotionDraft } from "./notion-sync.js";
 import { loadPublicPayload } from "./public-content.js";
+import { timingSafeText } from "./session.js";
 import { validateVerification } from "./validate.js";
 
 const MAX_BODY = 2048;
@@ -66,6 +69,27 @@ async function readLimited(request) {
   return { text: new TextDecoder().decode(buffer) };
 }
 
+async function notionWebhook(request, env) {
+  const secret = typeof env?.NOTION_WEBHOOK_SECRET === "string" ? env.NOTION_WEBHOOK_SECRET.trim() : "";
+  if (secret.length < 16) return json(503, { ok: false, code: "notion_not_configured" });
+  const header = request.headers.get("authorization") || "";
+  const match = /^Bearer\s+(\S+)$/i.exec(header);
+  if (!match) return json(401, { ok: false, code: "unauthorized" });
+  const allowed = await timingSafeText(match[1], secret);
+  if (!allowed) return json(401, { ok: false, code: "unauthorized" });
+  try {
+    await request.body?.cancel();
+  } catch {
+    /* body already consumed */
+  }
+  const result = await syncNotionDraft(env);
+  if (!result.ok) {
+    const status = result.code === "blocked_content" ? 400 : result.code === "notion_sync_failed" ? 502 : 503;
+    return json(status, { ok: false, code: result.code });
+  }
+  return json(200, { ok: true, updatedAt: result.updatedAt, counts: result.counts || {} });
+}
+
 function receipt() {
   return {
     ok: true,
@@ -102,6 +126,36 @@ export async function handleApi(request, env = {}) {
       });
     }
     return json(200, payload, { "cache-control": "public, max-age=0, must-revalidate" });
+  }
+
+  if (path === "/api/catalog") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    const catalog = await loadCatalog(env);
+    if (request.method === "HEAD") {
+      return new Response(null, { status: 200, headers: { "cache-control": "public, max-age=300" } });
+    }
+    return json(
+      200,
+      {
+        ok: true,
+        source: catalog.source,
+        fetchedAt: catalog.fetchedAt,
+        attribution: catalog.attribution,
+        roles: catalog.roles,
+        heroes: catalog.heroes,
+        modes: catalog.modes,
+      },
+      { "cache-control": "public, max-age=300" },
+    );
+  }
+
+  if (path === "/api/notion/webhook") {
+    if (request.method !== "POST") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    }
+    return notionWebhook(request, env);
   }
 
   if (path === "/api/health") {

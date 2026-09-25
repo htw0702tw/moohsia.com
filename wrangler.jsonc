@@ -36,7 +36,12 @@
       "binding": "CMS_KV",
       "id": "8a4e759892304f2882e47407ec3f0562"
     }
-  ]
+  ],
+  // Daily 18:15 UTC (02:15 Taipei). Pulls Notion into the CMS draft and
+  // refreshes the official hero/mode catalog in D1/KV. It does not publish.
+  "triggers": {
+    "crons": ["15 18 * * *"]
+  }
   // Custom domains are attached in the Cloudflare dashboard (or by uncommenting
   // after the moohsia.com zone is on this account). Do not route this Worker
   // over the existing `moohsia-cloud` AI/chat API. Add admin.moohsia.com on

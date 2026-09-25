@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL } from "../shared/brand.js";
+import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 
 /**
  * Editable team facts.
@@ -37,6 +38,9 @@ const zh = {
     roster: "成員",
     news: "動態",
     contact: "聯絡",
+    player: "選手",
+    heroes: "英雄",
+    modes: "模式",
     menu: "選單",
     close: "關閉",
     lang: "切換為 English",
@@ -138,6 +142,16 @@ const zh = {
     finaleKicker: "06 — TRANSMIT",
     finaleTitle: "聯絡戰隊",
     finaleBody: "媒體、合作與戰隊事務，請寄到這個信箱。目前不開放招募。",
+    playerKicker: "07 — PLAYER",
+    playerTitle: "選手數據",
+    playerLead: "只顯示已經公開的個人資料。",
+    playerCta: "打開選手頁",
+    playerEmpty: "個人數據尚未公布。",
+    catalogKicker: "08 — CATALOG",
+    catalogTitle: "英雄與模式",
+    catalogLead: "官方公開名單。不是戰隊戰績。",
+    heroesCta: "英雄名單",
+    modesCta: "遊戲模式",
   },
   about: {
     kicker: "02 — TEAM",
@@ -212,6 +226,52 @@ const zh = {
     lead: "這個網址不在戰隊站內。",
     back: "回到首頁",
   },
+  player: {
+    kicker: "07 — PLAYER",
+    title: "選手數據",
+    lead: "個人戰績只顯示已公開的資料。",
+    emptyTitle: "尚未公布",
+    emptyBody: "個人數據還沒有公開。填上並發布之後，才會出現在這裡。",
+    pending: "待公布",
+    handleLabel: "遊戲 ID",
+    nameLabel: "顯示名稱",
+    roleLabel: "位置",
+    laneLabel: "路線",
+    rankLabel: "段位",
+    seasonLabel: "賽季",
+    serverLabel: "伺服器",
+    titleLabel: "頭銜",
+    heroesLabel: "常用英雄",
+    bioLabel: "簡介",
+    statsKicker: "RECORD",
+    matchesKicker: "MATCHES",
+    matchesEmpty: "沒有已公開的對局。",
+    played: "場次",
+    wins: "勝場",
+    winRate: "勝率",
+    kda: "KDA",
+    mvp: "MVP",
+  },
+  heroes: {
+    kicker: "08 — HEROES",
+    title: "英雄",
+    lead: "名單來自 Garena 傳說對決公開英雄列表。",
+    emptyTitle: "目錄暫時讀不到",
+    emptyBody: "請稍後再看。",
+    source: "資料來源：Garena 傳說對決官方網站",
+    all: "全部",
+    open: "官方頁面",
+    count: "位英雄",
+  },
+  modes: {
+    kicker: "09 — MODES",
+    title: "模式",
+    lead: "模式名稱來自 Garena 公開頁。是否正在開放，以遊戲內為準。",
+    emptyTitle: "目錄暫時讀不到",
+    emptyBody: "請稍後再看。",
+    source: "每張卡片連到原始公告。",
+    players: "人數",
+  },
 };
 
 const en = {
@@ -226,6 +286,9 @@ const en = {
     roster: "Roster",
     news: "News",
     contact: "Contact",
+    player: "Player",
+    heroes: "Heroes",
+    modes: "Modes",
     menu: "Menu",
     close: "Close",
     lang: "切換為繁體中文",
@@ -327,6 +390,16 @@ const en = {
     finaleKicker: "06 — TRANSMIT",
     finaleTitle: "Reach the team",
     finaleBody: "Press, partners, and team business: write to this address. Recruitment is closed.",
+    playerKicker: "07 — PLAYER",
+    playerTitle: "Player record",
+    playerLead: "Only published personal data is shown.",
+    playerCta: "Open the player page",
+    playerEmpty: "Personal record not published.",
+    catalogKicker: "08 — CATALOG",
+    catalogTitle: "Heroes and modes",
+    catalogLead: "Official public catalog. Not a team result.",
+    heroesCta: "Hero roster",
+    modesCta: "Game modes",
   },
   about: {
     kicker: "02 — TEAM",
@@ -401,6 +474,52 @@ const en = {
     lead: "That address is not part of the team site.",
     back: "Back home",
   },
+  player: {
+    kicker: "07 — PLAYER",
+    title: "Player record",
+    lead: "Personal stats appear only after they are published.",
+    emptyTitle: "Not published",
+    emptyBody: "The personal record is not public yet. It shows up here after it is filled in and published.",
+    pending: "To be announced",
+    handleLabel: "Game ID",
+    nameLabel: "Display name",
+    roleLabel: "Role",
+    laneLabel: "Lane",
+    rankLabel: "Rank",
+    seasonLabel: "Season",
+    serverLabel: "Server",
+    titleLabel: "Title",
+    heroesLabel: "Signature heroes",
+    bioLabel: "Bio",
+    statsKicker: "RECORD",
+    matchesKicker: "MATCHES",
+    matchesEmpty: "No published matches.",
+    played: "Played",
+    wins: "Wins",
+    winRate: "Win rate",
+    kda: "KDA",
+    mvp: "MVP",
+  },
+  heroes: {
+    kicker: "08 — HEROES",
+    title: "Heroes",
+    lead: "The list comes from the public Garena Arena of Valor hero page.",
+    emptyTitle: "Catalog unavailable",
+    emptyBody: "Try again in a moment.",
+    source: "Source: the official Garena Arena of Valor site",
+    all: "All",
+    open: "Official page",
+    count: "heroes",
+  },
+  modes: {
+    kicker: "09 — MODES",
+    title: "Modes",
+    lead: "Mode names come from public Garena pages. What is in rotation is whatever the game shows.",
+    emptyTitle: "Catalog unavailable",
+    emptyBody: "Try again in a moment.",
+    source: "Each card links to the original post.",
+    players: "Players",
+  },
 };
 
 function snapshot() {
@@ -411,6 +530,7 @@ function snapshot() {
     profileFields: structuredClone(profileFields),
     rosterMembers: structuredClone(rosterMembers),
     newsPosts: structuredClone(newsPosts),
+    player: emptyPlayer(),
     copy: {
       zh: structuredClone(zh),
       en: structuredClone(en),
@@ -435,6 +555,12 @@ function mergeCopy(base, incoming) {
   return base;
 }
 
+function adoptPublicPlayer(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const matches = Array.isArray(value.matches) ? value.matches.map((match) => ({ ...match, publish: true })) : [];
+  return toPublicPlayer(cleanPlayer({ ...value, publish: true, matches }));
+}
+
 function usableEmail(value, fallback) {
   const text = typeof value === "string" ? value.trim() : "";
   if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(text) && text.length <= 120) return text;
@@ -457,6 +583,7 @@ export function applyPublishedContent(payload) {
     profileFields: Array.isArray(doc.profileFields) ? doc.profileFields : base.profileFields,
     rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers : base.rosterMembers,
     newsPosts: Array.isArray(doc.newsPosts) ? doc.newsPosts : base.newsPosts,
+    player: adoptPublicPlayer(doc.player),
     copy: {
       zh: mergeCopy(base.copy.zh, doc.copy?.zh),
       en: mergeCopy(base.copy.en, doc.copy?.en),
@@ -488,6 +615,12 @@ export function getContactEmail() {
   return current.contactEmail;
 }
 
+export function getPlayer() {
+  const player = current.player;
+  if (!player || player.publish === false) return null;
+  return player;
+}
+
 export function getMailto() {
   return `mailto:${current.contactEmail}`;
 }
@@ -496,6 +629,9 @@ export const NAV = [
   { href: "/", key: "home" },
   { href: "/about", key: "about" },
   { href: "/roster", key: "roster" },
+  { href: "/player", key: "player" },
+  { href: "/heroes", key: "heroes" },
+  { href: "/modes", key: "modes" },
   { href: "/news", key: "news" },
   { href: "/contact", key: "contact" },
 ];

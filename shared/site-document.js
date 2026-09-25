@@ -1,5 +1,6 @@
 import { getDefaultDocument } from "../src/content.js";
 import { CONTACT_EMAIL } from "./brand.js";
+import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
 
 const TEXT_MAX = 2000;
 const LONG_MAX = 5000;
@@ -154,15 +155,17 @@ function rosterNameKey(value) {
     .replace(/[\s\p{P}\p{S}]+/gu, "");
 }
 
-function assertRosterNames(members) {
-  if (!Array.isArray(members)) return;
-  for (const member of members) {
-    for (const name of [member?.name?.zh, member?.name?.en]) {
-      if (rosterNameKey(name) === RESERVED_ROSTER_NAME) {
-        throw new ContentRejected("blocked_content");
-      }
+function assertNameList(names) {
+  for (const name of names) {
+    if (rosterNameKey(name) === RESERVED_ROSTER_NAME) {
+      throw new ContentRejected("blocked_content");
     }
   }
+}
+
+function assertRosterNames(members) {
+  if (!Array.isArray(members)) return;
+  for (const member of members) assertNameList([member?.name?.zh, member?.name?.en]);
 }
 
 /**
@@ -177,6 +180,7 @@ function assertPublicSafe(doc) {
     if (DISCORD_INVITE.test(value)) throw new ContentRejected("blocked_content");
   }
   assertRosterNames(doc?.rosterMembers);
+  assertNameList(playerNameKeys(doc?.player));
 }
 
 /** @param {unknown} input */
@@ -191,6 +195,7 @@ export function sanitizeDocument(input) {
     profileFields: cleanProfile(source.profileFields, base.profileFields),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
+    player: cleanPlayer(source.player),
     copy: {
       zh: sanitizeBySchema(base.copy.zh, copy.zh),
       en: sanitizeBySchema(base.copy.en, copy.en),
@@ -212,6 +217,7 @@ export function toPublicDocument(doc) {
     newsPosts: doc.newsPosts
       .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
       .map(({ id, date, title, body }) => ({ id, date, title, body })),
+    player: toPublicPlayer(doc.player),
     copy: doc.copy,
   };
 }

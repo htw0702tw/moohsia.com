@@ -5,6 +5,7 @@ const NAV = [
   ["home", "/edit/home", "首頁"],
   ["about", "/edit/about", "戰隊"],
   ["roster", "/edit/roster", "成員"],
+  ["player", "/edit/player", "選手數據"],
   ["news", "/edit/news", "動態"],
   ["contact", "/edit/contact", "聯絡"],
   ["chrome", "/edit/chrome", "導覽與頁尾"],
@@ -166,6 +167,7 @@ const state = {
   status: "",
   error: "",
   samples: {},
+  notion: null,
 };
 
 const MESSAGES = {
@@ -179,6 +181,9 @@ const MESSAGES = {
   blocked_content: "內容含有 Discord 邀請連結，或選手名字是保留名稱 moohsia，沒有儲存。",
   invalid_content: "內容格式不正確。",
   payload_too_large: "內容太長。",
+  notion_not_configured: "尚未設定 Notion 權杖或資料庫。草稿沒有改動。",
+  notion_sync_failed: "Notion 沒有同步成功。草稿沒有改動。",
+  catalog_refresh_failed: "官方英雄目錄沒有更新。",
 };
 
 function esc(value) {
@@ -262,6 +267,7 @@ function applyPayload(data) {
   state.publishedAt = data.publishedAt || "";
   state.dirty = Boolean(data.dirty);
   state.localDirty = false;
+  state.notion = data.notion || state.notion;
   if (state.draft?.copy?.zh) captureSamples(state.draft.copy.zh, "");
 }
 
@@ -428,6 +434,84 @@ function contactEditor() {
   </section>`;
 }
 
+function notionLine() {
+  const notion = state.notion;
+  if (!notion) return "尚未讀到 Notion 狀態。";
+  if (!notion.configured) return "Notion 尚未設定。管理頁仍可直接編輯並發布。";
+  const ready = ["roster", "news", "copy", "profile", "player", "matches"].filter((key) => notion[key]);
+  return `已接上：${ready.join("、") || "無"}。同步只改草稿，公開頁要再按發布。`;
+}
+
+function playerEditor() {
+  const player = state.draft.player || {
+    publish: false,
+    handle: "",
+    name: { zh: "", en: "" },
+    role: { zh: "", en: "" },
+    lane: { zh: "", en: "" },
+    rank: { zh: "", en: "" },
+    season: { zh: "", en: "" },
+    server: { zh: "", en: "" },
+    title: { zh: "", en: "" },
+    bio: { zh: "", en: "" },
+    signatureHeroes: { zh: "", en: "" },
+    stats: { played: "", wins: "", winRate: "", kda: "", mvp: "" },
+    matches: [],
+  };
+  const pair = (label, field) => `<div class="pair">
+    <label>${label} 繁中<input data-player="${field}" data-lang="zh" value="${esc(player[field]?.zh)}" ${CMS_TEXT}></label>
+    <label>${label} EN<input data-player="${field}" data-lang="en" value="${esc(player[field]?.en)}" ${CMS_TEXT}></label>
+  </div>`;
+  const matches = (player.matches || [])
+    .map((match, index) => {
+      return `<article class="repeat">
+        <header><b>對局 ${index + 1}</b><button class="ghost" type="button" data-action="match-remove" data-index="${index}">刪除</button></header>
+        <div class="pair">
+          <label>名稱<input data-match="${index}" data-field="label" value="${esc(match.label)}" ${CMS_TEXT}></label>
+          <label>日期<input data-match="${index}" data-field="date" type="date" value="${esc(match.date)}" ${CMS_TEXT}></label>
+          <label>模式<input data-match="${index}" data-field="mode" value="${esc(match.mode)}" ${CMS_TEXT}></label>
+          <label>英雄<input data-match="${index}" data-field="hero" value="${esc(match.hero)}" ${CMS_TEXT}></label>
+          <label>結果<input data-match="${index}" data-field="result" value="${esc(match.result)}" ${CMS_TEXT}></label>
+          <label>KDA<input data-match="${index}" data-field="kda" value="${esc(match.kda)}" ${CMS_TEXT}></label>
+        </div>
+        <label>註記 繁中<input data-match="${index}" data-field="note" data-lang="zh" value="${esc(match.note?.zh)}" ${CMS_TEXT}></label>
+        <label>註記 EN<input data-match="${index}" data-field="note" data-lang="en" value="${esc(match.note?.en)}" ${CMS_TEXT}></label>
+        <label class="check"><input type="checkbox" data-match="${index}" data-field="publish"${match.publish ? " checked" : ""}>這場對局公開</label>
+      </article>`;
+    })
+    .join("");
+  const stat = (label, key) =>
+    `<label>${label}<input data-player-stat="${key}" value="${esc(player.stats?.[key])}" ${CMS_TEXT}></label>`;
+  return `<section class="stack">
+    <h1>選手數據</h1>
+    <p class="hint">這是個人戰績，不是戰隊名單。預設不公開。勾選公開並且按「發布到網站」之後，選手頁才會顯示。空白欄位會顯示待公布，不會自動補段位、頭銜或場次。遊戲 ID 不能剛好是 moohsia。</p>
+    <label class="check"><input type="checkbox" data-player="publish"${player.publish ? " checked" : ""}>公開這份個人數據</label>
+    <label>遊戲 ID<input data-player="handle" value="${esc(player.handle)}" ${CMS_TEXT}></label>
+    ${pair("顯示名稱", "name")}
+    ${pair("位置", "role")}
+    ${pair("路線", "lane")}
+    ${pair("段位", "rank")}
+    ${pair("賽季", "season")}
+    ${pair("伺服器", "server")}
+    ${pair("頭銜", "title")}
+    ${pair("常用英雄", "signatureHeroes")}
+    <label>簡介 繁中<textarea data-player="bio" data-lang="zh" rows="4" ${CMS_TEXT}>${esc(player.bio?.zh)}</textarea></label>
+    <label>簡介 EN<textarea data-player="bio" data-lang="en" rows="4" ${CMS_TEXT}>${esc(player.bio?.en)}</textarea></label>
+    <h2>數字</h2>
+    <p class="hint">留白代表尚未填寫。請只填你要公開的數字，不要估。</p>
+    <div class="pair">
+      ${stat("場次", "played")}
+      ${stat("勝場", "wins")}
+      ${stat("勝率", "winRate")}
+      ${stat("KDA", "kda")}
+      ${stat("MVP", "mvp")}
+    </div>
+    <h2>對局</h2>
+    <div class="repeats">${matches}</div>
+    <button class="btn" type="button" data-action="match-add">新增對局</button>
+  </section>`;
+}
+
 function dashboard() {
   const pending = state.dirty || state.localDirty;
   return `<section class="stack">
@@ -442,6 +526,12 @@ function dashboard() {
       .map((item) => `<a href="${item[1]}" data-nav>${esc(item[2])}</a>`)
       .join("")}</div>
     <p class="hint">招募文案可以改字，但這裡沒有試訓報名表。賽程區塊是占位文字，確認之前保持尚未公布即可。</p>
+    <h2>Notion</h2>
+    <p class="hint">${esc(notionLine())} 只有 Publish 勾選的列會進草稿。新聞未勾選會留成草稿，公開頁看不到。</p>
+    <div class="row-actions">
+      <button class="btn" type="button" data-action="notion-sync">從 Notion 同步草稿</button>
+      <button class="btn" type="button" data-action="catalog-refresh">更新官方英雄目錄</button>
+    </div>
   </section>`;
 }
 
@@ -451,6 +541,7 @@ function pageBody() {
   if (id === "dashboard") return dashboard();
   if (id === "about") return `${profileEditor()}${copyBlocks("about")}`;
   if (id === "roster") return rosterEditor();
+  if (id === "player") return playerEditor();
   if (id === "news") return newsEditor();
   if (id === "contact") return contactEditor();
   if (id === "home") {
@@ -559,6 +650,29 @@ function onInput(event) {
     if (!field) return;
     if (target.dataset.part === "label") field[target.dataset.lang] = target.value;
     else field.value[target.dataset.lang] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  const player = state.draft.player;
+  if (!player) return;
+  if (target.dataset.playerStat) {
+    player.stats[target.dataset.playerStat] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.player) {
+    if (target.dataset.player === "publish") player.publish = target instanceof HTMLInputElement && target.checked;
+    else if (target.dataset.player === "handle") player.handle = target.value;
+    else if (target.dataset.lang) player[target.dataset.player][target.dataset.lang] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.match != null) {
+    const match = player.matches[Number(target.dataset.match)];
+    if (!match) return;
+    if (target.dataset.field === "publish") match.publish = target instanceof HTMLInputElement && target.checked;
+    else if (target.dataset.field === "note" && target.dataset.lang) match.note[target.dataset.lang] = target.value;
+    else match[target.dataset.field] = target.value;
     markDirty("有未儲存的修改");
   }
 }
@@ -700,7 +814,53 @@ function onClick(event) {
     state.draft.profileFields.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
     markDirty("有未儲存的修改");
     render();
+    return;
   }
+  if (action === "match-add") {
+    state.draft.player.matches.push({
+      id: newId(),
+      label: "",
+      date: "",
+      mode: "",
+      hero: "",
+      result: "",
+      kda: "",
+      note: { zh: "", en: "" },
+      publish: false,
+    });
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "match-remove") {
+    state.draft.player.matches.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "notion-sync") {
+    void runJob("/api/admin/notion/sync", "正在從 Notion 同步", "Notion 草稿已更新");
+    return;
+  }
+  if (action === "catalog-refresh") {
+    void runJob("/api/admin/catalog/refresh", "正在更新英雄目錄", "官方目錄已更新");
+  }
+}
+
+async function runJob(path, pending, done) {
+  state.error = "";
+  state.status = pending;
+  render();
+  const data = await api(path, { method: "POST", body: "{}" });
+  if (!data.ok) {
+    state.error = message(data.code);
+    state.status = "";
+    render();
+    return;
+  }
+  if (data.draft) applyPayload(data);
+  state.status = done;
+  render();
 }
 
 async function onSubmit(event) {

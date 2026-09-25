@@ -1,5 +1,7 @@
 import { getDefaultDocument } from "../src/content.js";
+import { refreshCatalog } from "./catalog-store.js";
 import { storeFromEnv } from "./cms-store.js";
+import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { logFailure } from "./log.js";
 import { verifyPassword } from "./password.js";
 import { clearLoginFailures, clientIp, loginBlocked, recordLoginFailure } from "./rate-limit.js";
@@ -141,7 +143,7 @@ async function openStore(env) {
   }
 }
 
-function editorPayload(row) {
+function editorPayload(row, env) {
   const draft = sanitizeDocument(JSON.parse(row.draft_json));
   let published = null;
   if (row.published_json) published = sanitizeDocument(JSON.parse(row.published_json));
@@ -152,6 +154,7 @@ function editorPayload(row) {
     publishedAt: row.published_at,
     draft,
     published,
+    notion: notionStatus(env),
   };
 }
 
@@ -199,7 +202,7 @@ async function readContent(request, env) {
   const opened = await openStore(env);
   if (opened.error) return opened.error;
   try {
-    return json(200, editorPayload(opened.row));
+    return json(200, editorPayload(opened.row, env));
   } catch (error) {
     if (error instanceof ContentRejected) return json(400, { ok: false, code: error.code });
     return json(500, { ok: false, code: "invalid_content" });
@@ -218,14 +221,14 @@ async function writeContent(request, env, mode) {
     const now = new Date().toISOString();
     if (mode === "discard") {
       const row = await opened.store.discard(now);
-      return json(200, editorPayload(row));
+      return json(200, editorPayload(row, env));
     }
     const parsed = await readJson(request, DOC_MAX);
     if (parsed.error) return parsed.error;
     const doc = sanitizeDocument(parsed.data);
     const jsonText = JSON.stringify(doc);
     const row = mode === "publish" ? await opened.store.publish(jsonText, now) : await opened.store.saveDraft(jsonText, now);
-    return json(200, editorPayload(row));
+    return json(200, editorPayload(row, env));
   } catch (error) {
     if (error instanceof ContentRejected) return json(400, { ok: false, code: error.code });
     logFailure("cms_write_failed", error);
@@ -273,5 +276,37 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return writeContent(request, env, "discard");
   }
+  if (path === "/api/admin/notion/sync") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return notionSync(request, env);
+  }
+  if (path === "/api/admin/catalog/refresh") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return catalogRefresh(request, env);
+  }
   return json(404, { ok: false, code: "not_found" });
+}
+
+async function notionSync(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  const result = await syncNotionDraft(env);
+  if (!result.ok) {
+    const status = result.code === "blocked_content" ? 400 : result.code === "notion_sync_failed" ? 502 : 503;
+    return json(status, { ok: false, code: result.code });
+  }
+  if (!result.row) return json(503, { ok: false, code: "storage_unavailable" });
+  return json(200, { ...editorPayload(result.row, env), notionSync: result.counts || {} });
+}
+
+async function catalogRefresh(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  const result = await refreshCatalog(env);
+  if (!result.ok) return json(502, { ok: false, code: result.code || "catalog_refresh_failed" });
+  return json(200, result);
 }

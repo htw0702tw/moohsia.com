@@ -35,14 +35,18 @@ npm start
 | `npm run deploy` | 建置並部署名為 `moohsia-com` 的 Worker |
 | `npm run cms:hash` | 產生 `ADMIN_PASSWORD_HASH` |
 | `npm run cms:migrate` | 對正式 D1 套用 CMS migration |
+| `npm run catalog:refresh` | 從 Garena 公開頁重抓英雄與模式，寫進 `data/aov-catalog.json` |
 
 ## 頁面
 
 | 路徑 | 內容 |
 | --- | --- |
-| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、動態空狀態、聯絡 |
+| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、選手數據空狀態、英雄預覽、動態、聯絡 |
 | `/about` | 戰隊。未確認欄位顯示待公布 |
-| `/roster` | 成員。沒有名單時以待公布席位呈現，並註明不是已公開選手 |
+| `/roster` | 成員。沒有名單時以待公布席位呈現，並附個人數據入口 |
+| `/player` | 個人數據。未發布時是空狀態，不顯示段位或頭銜 |
+| `/heroes` | 官方英雄名單（Garena 公開頁） |
+| `/modes` | 官方模式名稱（Garena 公開公告），不代表遊戲內正在開放 |
 | `/news` | 動態。沒有公告時為廣播空狀態 |
 | `/contact` | 只有 `Info@moohsia.com` |
 
@@ -100,7 +104,170 @@ npm run cms:migrate:local
 npm run cms:migrate
 ```
 
-`migrations/0001_init.sql` 只建 `site_documents`。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。
+`migrations/0001_init.sql` 建 `site_documents`。`migrations/0002_player_and_catalog.sql` 再加 `player_records` 與 `aov_catalog`。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。英雄與模式則退回倉庫裡的官方快照。第二次 migration 不會改掉已經發布的文案。
+
+## 個人數據
+
+個人戰績跟戰隊文案放在同一份 CMS 文件的 `player` 欄位，並在 D1 的 `player_records`（id 為 `owner`）留一份可查詢的複本。儲存草稿只更新 `draft_json`。按 **發布到網站** 才寫入 `published_json`。
+
+公開頁只在 `publish` 為 true 時顯示這份資料。預設是 false，所以 `/player` 與首頁是空狀態，不會出現段位、頭銜、場次或勝率。空白欄位在已公開的資料裡顯示「待公布」，系統不會補數字。
+
+遊戲 ID 留空，等擁有者自己填。現有 CMS 測試允許選手名字 `htw0702aov`；保留名稱仍是剛好等於 `moohsia`（大小寫、空白、標點去掉之後）。不要把這個 ID 寫進公開程式的預設文案。
+
+對局也有自己的公開勾選。個人檔案沒有公開時，對局不會出現在網站上。
+
+管理頁在 **選手數據**。Notion 的選手資料庫可以覆寫這份草稿，規則見下一節。
+
+## Notion 同步
+
+Notion 是編輯來源。同步**只寫入 CMS 草稿**，不會直接改公開網站。擁有者在 admin.moohsia.com 看過草稿後，按 **發布到網站**，公開頁才換。這是唯一的發布閘門：資料列還要勾 **Publish**，沒勾的不會進公開頁。
+
+觸發方式有三種，做的是同一件事：
+
+| 方式 | 怎麼跑 |
+| --- | --- |
+| 管理按鈕 | 總覽的 **從 Notion 同步草稿**。要已登入，並帶 CSRF |
+| 排程 | Worker cron `15 18 * * *`（UTC 18:15，台北約 02:15）。只更新草稿與英雄目錄 |
+| Webhook | `POST https://moohsia.com/api/notion/webhook`，標頭 `Authorization: Bearer <NOTION_WEBHOOK_SECRET>` |
+
+密鑰用 `wrangler secret put`，不要寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串（同名 var 與 secret 不能並存）。
+
+```bash
+npx wrangler secret put NOTION_TOKEN
+npx wrangler secret put NOTION_WEBHOOK_SECRET
+npx wrangler secret put NOTION_ROSTER_DB
+npx wrangler secret put NOTION_NEWS_DB
+npx wrangler secret put NOTION_COPY_DB
+npx wrangler secret put NOTION_PROFILE_DB
+npx wrangler secret put NOTION_PLAYER_DB
+npx wrangler secret put NOTION_MATCH_DB
+```
+
+`NOTION_TOKEN` 是 Notion 內部整合權杖。每個資料庫 ID 是網址裡那串 32 碼，整合要被邀請進那些資料庫。沒設權杖或一個資料庫都沒設時，同步回 `notion_not_configured`，管理頁仍可手動編輯。只設定其中幾個資料庫也可以，沒設定的區塊維持原草稿。
+
+API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫的標題屬性（title）可以改名；程式讀的是 title 型別那一欄。其餘欄位名稱要一致。勾選欄位是 checkbox。
+
+### 成員 `NOTION_ROSTER_DB`
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| 標題 | title | 繁中名字 |
+| Name EN | rich text | 英文名字 |
+| Role | rich text | 繁中位置 |
+| Role EN | rich text | 英文位置 |
+| Hidden | checkbox | 勾了就留在草稿，但公開頁不顯示 |
+| Publish | checkbox | 沒勾的列不會進草稿 |
+| Order | number | 小的排前面 |
+
+名字剛好是 `moohsia` 會整次同步失敗，草稿不改。Discord 邀請網址也會擋下。
+
+### 動態 `NOTION_NEWS_DB`
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| 標題 | title | 繁中標題 |
+| Title EN | rich text | 英文標題 |
+| Body | rich text | 繁中內文 |
+| Body EN | rich text | 英文內文 |
+| Date | date | `YYYY-MM-DD` |
+| Publish | checkbox | 勾了是公開稿，沒勾是草稿 |
+| Order | number | 排序 |
+
+沒勾 Publish 的公告會進草稿，狀態是 draft。就算之後發布整站，公開頁仍不顯示。
+
+### 文案 `NOTION_COPY_DB`
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| 標題 | title | 鍵，例如 `zh.home.tagline` |
+| Text | rich text | 要寫入的句子 |
+| Publish | checkbox | 沒勾就保留網站上原來的句子 |
+
+只會改已經存在、而且是字串的欄位。陣列（標籤、原則、狀態列）請在管理頁改。`contactEmail` 這把鍵會改公開信箱，仍必須是合法 email，預設維持 `Info@moohsia.com`。
+
+常用鍵：`zh.home.tagline`、`en.home.tagline`、`zh.home.lead`、`zh.about.lead`、`zh.about.manifesto`、`en.about.manifesto`、`zh.contact.lead`、`zh.contact.writeBody`、`zh.roster.lead`、`zh.player.emptyBody`。英文把前綴換成 `en`。
+
+### 戰隊欄位 `NOTION_PROFILE_DB`
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| 標題 | title | 繁中欄名 |
+| Label EN | rich text | 英文欄名 |
+| Value | rich text | 繁中內容 |
+| Value EN | rich text | 英文內容 |
+| Publish | checkbox | 沒勾的欄位不會出現 |
+| Order | number | 排序 |
+
+這個資料庫有設定而且同步成功時，會整份換掉戰隊欄位。沒有任何 Publish 列時，關於頁的欄位表是空的。
+
+### 個人數據 `NOTION_PLAYER_DB`
+
+一個資料庫可以有多列。有勾 Publish 的列裡，Order 最小的那列勝出。一列都沒勾時，草稿裡的個人檔案改回未公開，下次發布網站後公開頁回到空狀態。
+
+標題屬性請命名成遊戲 ID（程式把 title 欄當成 handle）。不要把標題欄命名成 `Title`，否則會和頭銜欄撞名。
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| Handle（標題） | title | 遊戲 ID。留到你要公開再填 |
+| Name / Name EN | rich text | 顯示名稱 |
+| Role / Role EN | rich text | 位置 |
+| Lane / Lane EN | rich text | 路線 |
+| Rank / Rank EN | rich text | 段位。沒有就留白 |
+| Season / Season EN | rich text | 賽季 |
+| Server / Server EN | rich text | 伺服器 |
+| Title / Title EN | rich text | 頭銜。沒有就留白 |
+| Bio / Bio EN | rich text | 簡介 |
+| Heroes / Heroes EN | rich text | 常用英雄，純文字 |
+| Played、Wins、Win Rate、KDA、MVP | rich text | 數字。留白表示尚未填 |
+| Publish | checkbox | 整份個人頁的公開開關 |
+| Order | number | 多列時取最小 |
+
+### 對局 `NOTION_MATCH_DB`
+
+| 屬性 | 型別 | 用途 |
+| --- | --- | --- |
+| 標題 | title | 這場的名稱 |
+| Date | date | 日期 |
+| Mode | rich text | 模式 |
+| Hero | rich text | 英雄 |
+| Result | rich text 或 select | 結果，原樣顯示 |
+| KDA | rich text | KDA |
+| Note / Note EN | rich text | 註記 |
+| Publish | checkbox | 這場是否可公開 |
+| Order | number | 排序 |
+
+個人檔案的 Publish 沒勾時，這些對局也不會出現在公開頁。
+
+## 官方英雄與模式
+
+英雄來自 Garena 傳說對決公開列表 <https://moba.garena.tw/game/heroes/>。頁面上的 `data-tags` 對應六種定位：坦克、戰士、刺客、法師、射手、輔助。肖像圖在官方 CDN `cdngarenanow-a.akamaihd.net`，卡片連回 `https://moba.garena.tw/game/hero/<id>`。英文定位是這六個中文標籤的譯名，不是另一份官方英文英雄名。
+
+模式名稱只在官方公開頁裡真的出現該字串時才收錄，並附上原文摘錄與來源網址。目前來源包括：
+
+| 模式 | 公開頁 |
+| --- | --- |
+| 5V5經典競技 | <https://moba.garena.tw/news/show/2504> |
+| 混沌大亂鬥 | <https://moba.garena.tw/news/show/1768> |
+| 三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰 | <https://moba.garena.tw/news/show/2397> |
+| 幻化之戰 | <https://moba.garena.tw/news/show/3148> |
+| 雙人飛車賽 | <https://moba.garena.tw/news/show/2914> |
+
+這些頁面證明 Garena 公開使用過這些名稱。季節與限時模式是否正在開放，以遊戲內為準。網站不把舊公告說成目前賽季。
+
+快照在 [`data/aov-catalog.json`](data/aov-catalog.json)。更新方式：
+
+```bash
+npm run catalog:refresh
+```
+
+這支腳本只讀上述公開頁，不登入、不打需要帳號的介面。把新的 JSON 提交後再部署，Worker 在 D1／KV 還沒有目錄時會用這份快照。
+
+正式環境還可以把目錄寫進 D1 `aov_catalog` 與 `CMS_KV` 鍵 `aov-catalog`：
+
+- 每日 cron 會抓公開頁並寫入。抓取失敗就留著上一份。
+- 管理頁 **更新官方英雄目錄** 做同一件事，前提是已經跑過 `0002` migration，或至少綁了 `CMS_KV`。
+
+`GET /api/catalog` 回英雄、定位與模式。沒有帳號資料。
 
 ### 草稿與發布
 
@@ -174,7 +341,7 @@ npx wrangler secret put DISCORD_INVITE_URL
 
 ## 部署到 moohsia.com
 
-這個專案的 Worker 名稱是 **`moohsia-com`**。它只負責戰隊網站。
+Worker 名稱是 **`moohsia-com`**。它只負責戰隊網站。正式部署由協調者執行，不要在這次變更裡直接部署，也不要改或部署 **`moohsia-cloud`** / `api.moohsia.com`。
 
 既有的 Worker **`moohsia-cloud`** 是另一個 AI／聊天 API，不要用這次部署覆蓋它，也不要改它的程式。若 `moohsia.com` 目前指到 `moohsia-cloud`，先在該 Worker 拿掉這條 route，再把網域接到 `moohsia-com`。聊天 API 可繼續留在自己的 `workers.dev` 網址，或日後另放子網域；本專案不設定那條路由。
 

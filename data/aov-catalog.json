@@ -1,0 +1,1749 @@
+{
+  "source": "official-snapshot",
+  "fetchedAt": "2026-09-25T04:13:35.259Z",
+  "attribution": {
+    "heroes": "https://moba.garena.tw/game/heroes/",
+    "images": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/",
+    "publisher": "Garena Online",
+    "note": "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names are copied from public Garena news pages and are not a live queue."
+  },
+  "roles": [
+    {
+      "id": "tank",
+      "zh": "坦克",
+      "en": "Tank"
+    },
+    {
+      "id": "soldier",
+      "zh": "戰士",
+      "en": "Warrior"
+    },
+    {
+      "id": "assassin",
+      "zh": "刺客",
+      "en": "Assassin"
+    },
+    {
+      "id": "master",
+      "zh": "法師",
+      "en": "Mage"
+    },
+    {
+      "id": "archer",
+      "zh": "射手",
+      "en": "Marksman"
+    },
+    {
+      "id": "aid",
+      "zh": "輔助",
+      "en": "Support"
+    }
+  ],
+  "heroes": [
+    {
+      "id": "5",
+      "name": {
+        "zh": "勇",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/5/20190117014152-8480.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/5"
+    },
+    {
+      "id": "24",
+      "name": {
+        "zh": "渥馬爾",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/24/20161223112400-4818.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/24"
+    },
+    {
+      "id": "25",
+      "name": {
+        "zh": "愛麗絲",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/25/20161006042200-9724.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/25"
+    },
+    {
+      "id": "46",
+      "name": {
+        "zh": "特爾安娜絲",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/46/20170704114328-4949.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/46"
+    },
+    {
+      "id": "47",
+      "name": {
+        "zh": "齊爾",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/47/20170704111455-7252.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/47"
+    },
+    {
+      "id": "65",
+      "name": {
+        "zh": "閃電俠",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/65/20180413075946-1482.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/65"
+    },
+    {
+      "id": "68",
+      "name": {
+        "zh": "瑪迦",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/68/20180615092509-1760.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/68"
+    },
+    {
+      "id": "71",
+      "name": {
+        "zh": "古木",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/71/20180917071916-4961.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/71"
+    },
+    {
+      "id": "80",
+      "name": {
+        "zh": "瀾",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/80/20190426081950-6265.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/80"
+    },
+    {
+      "id": "81",
+      "name": {
+        "zh": "達爾西",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/81/20190121105616-5094.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/81"
+    },
+    {
+      "id": "85",
+      "name": {
+        "zh": "葉娜",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/85/20191208090558-9539.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/85"
+    },
+    {
+      "id": "92",
+      "name": {
+        "zh": "安格列",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/92/20191208073209-7067.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/92"
+    },
+    {
+      "id": "108",
+      "name": {
+        "zh": "布萊特",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/108/54000.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/108"
+    },
+    {
+      "id": "109",
+      "name": {
+        "zh": "伊格",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/109/53800.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/109"
+    },
+    {
+      "id": "110",
+      "name": {
+        "zh": "洛里昂",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/110/53900.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/110"
+    },
+    {
+      "id": "111",
+      "name": {
+        "zh": "令月",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/111/54500.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/111"
+    },
+    {
+      "id": "112",
+      "name": {
+        "zh": "緹莉",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/112/54600.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/112"
+    },
+    {
+      "id": "113",
+      "name": {
+        "zh": "芽芽",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/113/54300.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/113"
+    },
+    {
+      "id": "104",
+      "name": {
+        "zh": "青硯",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/104/54400.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/104"
+    },
+    {
+      "id": "105",
+      "name": {
+        "zh": "霧己",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/105/54200.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/105"
+    },
+    {
+      "id": "106",
+      "name": {
+        "zh": "夜姬",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/106/53400.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/106"
+    },
+    {
+      "id": "107",
+      "name": {
+        "zh": "星葵",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/107/53600.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/107"
+    },
+    {
+      "id": "101",
+      "name": {
+        "zh": "蘇離",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/101/20200822045725-2967.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/101"
+    },
+    {
+      "id": "102",
+      "name": {
+        "zh": "亞連",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/102/20200623035124-1030.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/102"
+    },
+    {
+      "id": "103",
+      "name": {
+        "zh": "索文",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/103/20200717111041-9137.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/103"
+    },
+    {
+      "id": "98",
+      "name": {
+        "zh": "颯枷",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/98/20200521095332-7433.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/98"
+    },
+    {
+      "id": "99",
+      "name": {
+        "zh": "拉維爾",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/99/20200412030514-4255.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/99"
+    },
+    {
+      "id": "100",
+      "name": {
+        "zh": "若伊",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/100/20200501042446-2722.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/100"
+    },
+    {
+      "id": "96",
+      "name": {
+        "zh": "阿塔",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/96/20200220104420-4010.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/96"
+    },
+    {
+      "id": "97",
+      "name": {
+        "zh": "潘因",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/97/20200314053217-4730.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/97"
+    },
+    {
+      "id": "94",
+      "name": {
+        "zh": "綺蘿",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/94/20200123034958-3995.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/94"
+    },
+    {
+      "id": "95",
+      "name": {
+        "zh": "狄拉克",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/95/20191212112606-9441.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/95"
+    },
+    {
+      "id": "93",
+      "name": {
+        "zh": "卡瑞茲",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/93/20191031073532-9754.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/93"
+    },
+    {
+      "id": "90",
+      "name": {
+        "zh": "希露卡",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/90/20190814120046-6229.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/90"
+    },
+    {
+      "id": "91",
+      "name": {
+        "zh": "蘭鐸",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/91/20191031070459-5940.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/91"
+    },
+    {
+      "id": "89",
+      "name": {
+        "zh": "依夏",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/89/20190906064339-7347.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/89"
+    },
+    {
+      "id": "88",
+      "name": {
+        "zh": "皮皮",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/88/20190708120427-5585.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/88"
+    },
+    {
+      "id": "87",
+      "name": {
+        "zh": "銀晝",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/87/20190613100725-3897.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/87"
+    },
+    {
+      "id": "86",
+      "name": {
+        "zh": "筱清",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/86/20190726051217-4444.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/86"
+    },
+    {
+      "id": "84",
+      "name": {
+        "zh": "埃羅",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/84/20190402105927-1205.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/84"
+    },
+    {
+      "id": "82",
+      "name": {
+        "zh": "亥犽",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/82/20190314103313-5814.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/82"
+    },
+    {
+      "id": "83",
+      "name": {
+        "zh": "卡芬妮",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/83/20190201061033-4786.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/83"
+    },
+    {
+      "id": "77",
+      "name": {
+        "zh": "緋淚",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/77/20190103101444-2604.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/77"
+    },
+    {
+      "id": "78",
+      "name": {
+        "zh": "弗洛倫",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/78/20190221061837-7570.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/78"
+    },
+    {
+      "id": "79",
+      "name": {
+        "zh": "奎倫",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/79/20181115114402-6850.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/79"
+    },
+    {
+      "id": "76",
+      "name": {
+        "zh": "瑞克",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/76/20180928082313-8373.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/76"
+    },
+    {
+      "id": "75",
+      "name": {
+        "zh": "蘇",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/75/20181022082307-5967.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/75"
+    },
+    {
+      "id": "74",
+      "name": {
+        "zh": "艾蜜莉",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/74/20180809022712-2887.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/74"
+    },
+    {
+      "id": "73",
+      "name": {
+        "zh": "維羅",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/73/20181010021111-9203.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/73"
+    },
+    {
+      "id": "72",
+      "name": {
+        "zh": "安奈特",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/72/20180830094302-1327.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/72"
+    },
+    {
+      "id": "70",
+      "name": {
+        "zh": "諾可西",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/70/20180720124810-1826.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/70"
+    },
+    {
+      "id": "69",
+      "name": {
+        "zh": "伯頓",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/69/20180629061622-2279.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/69"
+    },
+    {
+      "id": "67",
+      "name": {
+        "zh": "洛克",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/67/20180427081245-2176.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/67"
+    },
+    {
+      "id": "66",
+      "name": {
+        "zh": "艾瑞",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/66/20180518100131-8115.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/66"
+    },
+    {
+      "id": "64",
+      "name": {
+        "zh": "靈靈",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/64/20180316062404-5769.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/64"
+    },
+    {
+      "id": "63",
+      "name": {
+        "zh": "莉莉安",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/63/20180214010600-8211.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/63"
+    },
+    {
+      "id": "60",
+      "name": {
+        "zh": "圖倫",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/60/20171208062854-8295.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/60"
+    },
+    {
+      "id": "61",
+      "name": {
+        "zh": "琳蒂",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/61/20191208090425-1159.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/61"
+    },
+    {
+      "id": "62",
+      "name": {
+        "zh": "提米",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/62/20180105114410-5897.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/62"
+    },
+    {
+      "id": "59",
+      "name": {
+        "zh": "夜叉",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/59/20180118103037-5582.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/59"
+    },
+    {
+      "id": "57",
+      "name": {
+        "zh": "麥克思",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/57/20180201065920-7127.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/57"
+    },
+    {
+      "id": "58",
+      "name": {
+        "zh": "神力女超人",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/58/20171108065843-4849.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/58"
+    },
+    {
+      "id": "56",
+      "name": {
+        "zh": "摩恩",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/56/20170929114445-8875.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/56"
+    },
+    {
+      "id": "54",
+      "name": {
+        "zh": "龍馬",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/54/20170907112711-5290.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/54"
+    },
+    {
+      "id": "55",
+      "name": {
+        "zh": "艾翠絲",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/55/20170824054524-4518.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/55"
+    },
+    {
+      "id": "52",
+      "name": {
+        "zh": "贊尼爾",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/52/20171011014120-8523.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/52"
+    },
+    {
+      "id": "53",
+      "name": {
+        "zh": "阿杜恩",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/53/20170811114847-1575.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/53"
+    },
+    {
+      "id": "51",
+      "name": {
+        "zh": "凱格路士",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/51/20170731063142-6276.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/51"
+    },
+    {
+      "id": "50",
+      "name": {
+        "zh": "超人",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/50/20171102010641-2750.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/50"
+    },
+    {
+      "id": "48",
+      "name": {
+        "zh": "伊耿士",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/48/20170606080014-6184.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/48"
+    },
+    {
+      "id": "49",
+      "name": {
+        "zh": "小丑",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/49/20170629044540-6590.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/49"
+    },
+    {
+      "id": "44",
+      "name": {
+        "zh": "祖卡",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/44/20190117020344-9419.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/44"
+    },
+    {
+      "id": "45",
+      "name": {
+        "zh": "莫拉",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/45/20170614051447-2556.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/45"
+    },
+    {
+      "id": "43",
+      "name": {
+        "zh": "拉茲",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/43/20170413051324-3078.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/43"
+    },
+    {
+      "id": "42",
+      "name": {
+        "zh": "司科德",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/42/20170413044738-2269.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/42"
+    },
+    {
+      "id": "41",
+      "name": {
+        "zh": "史蘭茲",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/41/20170407092544-3358.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/41"
+    },
+    {
+      "id": "40",
+      "name": {
+        "zh": "蝙蝠俠",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/40/20170401082230-6095.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/40"
+    },
+    {
+      "id": "39",
+      "name": {
+        "zh": "愛里",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/20170317022538-1411.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/39"
+    },
+    {
+      "id": "38",
+      "name": {
+        "zh": "科里納卡",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/38/20170224100429-3904.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/38"
+    },
+    {
+      "id": "37",
+      "name": {
+        "zh": "莫托斯",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/37/20170803110134-8740.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/37"
+    },
+    {
+      "id": "36",
+      "name": {
+        "zh": "海倫",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/36/20170105054334-6591.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/36"
+    },
+    {
+      "id": "35",
+      "name": {
+        "zh": "金納",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/35/20190426082017-9075.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/35"
+    },
+    {
+      "id": "33",
+      "name": {
+        "zh": "娜塔亞",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/20191208091830-9354.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/33"
+    },
+    {
+      "id": "34",
+      "name": {
+        "zh": "朗博",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/34/20161205050119-8087.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/34"
+    },
+    {
+      "id": "31",
+      "name": {
+        "zh": "菲尼克",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/31/20161121102830-3575.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/31"
+    },
+    {
+      "id": "32",
+      "name": {
+        "zh": "夸克",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/32/20161108120717-7922.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/32"
+    },
+    {
+      "id": "29",
+      "name": {
+        "zh": "普雷塔",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/29/20161006041855-5602.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/29"
+    },
+    {
+      "id": "30",
+      "name": {
+        "zh": "克萊斯",
+        "en": ""
+      },
+      "role": "aid",
+      "roleLabel": {
+        "zh": "輔助",
+        "en": "Support"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/30/20190117015747-4271.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/30"
+    },
+    {
+      "id": "23",
+      "name": {
+        "zh": "查戈納爾",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/23/20161012122640-2297.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/23"
+    },
+    {
+      "id": "26",
+      "name": {
+        "zh": "穆加爵",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/26/20190426082152-1469.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/26"
+    },
+    {
+      "id": "27",
+      "name": {
+        "zh": "馬洛斯",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/27/20190426082125-2068.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/27"
+    },
+    {
+      "id": "28",
+      "name": {
+        "zh": "塔拉",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/28/20161006041957-5098.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/28"
+    },
+    {
+      "id": "20",
+      "name": {
+        "zh": "克里希",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/20161006042623-5332.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/20"
+    },
+    {
+      "id": "21",
+      "name": {
+        "zh": "哥德爾",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/21/20161006042542-5248.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/21"
+    },
+    {
+      "id": "22",
+      "name": {
+        "zh": "卡莉",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/22/20161006042500-2206.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/22"
+    },
+    {
+      "id": "11",
+      "name": {
+        "zh": "趙雲",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/20190805021939-9293.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/11"
+    },
+    {
+      "id": "12",
+      "name": {
+        "zh": "凡恩",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/20161006043336-8456.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/12"
+    },
+    {
+      "id": "13",
+      "name": {
+        "zh": "薩尼",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/13/20161005081056-2941.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/13"
+    },
+    {
+      "id": "14",
+      "name": {
+        "zh": "盧蜜亞",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/14/20170125115033-3111.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/14"
+    },
+    {
+      "id": "15",
+      "name": {
+        "zh": "蘿兒",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/15/20170516114415-4905.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/15"
+    },
+    {
+      "id": "16",
+      "name": {
+        "zh": "納克羅斯",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/16/20210504051622-3299.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/16"
+    },
+    {
+      "id": "17",
+      "name": {
+        "zh": "貂蟬",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/17/20190805022354-2636.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/17"
+    },
+    {
+      "id": "18",
+      "name": {
+        "zh": "阿萊斯特",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/18/20190426082043-8447.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/18"
+    },
+    {
+      "id": "19",
+      "name": {
+        "zh": "悟空",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/19/20210510104801-1468.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/19"
+    },
+    {
+      "id": "1",
+      "name": {
+        "zh": "牛魔王",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/1/20190805022622-8979.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/1"
+    },
+    {
+      "id": "2",
+      "name": {
+        "zh": "瑟斐斯",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/20190805024725-7335.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/2"
+    },
+    {
+      "id": "3",
+      "name": {
+        "zh": "薇菈",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/3/20190426081635-6074.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/3"
+    },
+    {
+      "id": "4",
+      "name": {
+        "zh": "堇",
+        "en": ""
+      },
+      "role": "archer",
+      "roleLabel": {
+        "zh": "射手",
+        "en": "Marksman"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/20190805024953-3260.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/4"
+    },
+    {
+      "id": "6",
+      "name": {
+        "zh": "歐米茄",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/6/20210504010134-3314.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/6"
+    },
+    {
+      "id": "7",
+      "name": {
+        "zh": "刀鋒寶貝",
+        "en": ""
+      },
+      "role": "assassin",
+      "roleLabel": {
+        "zh": "刺客",
+        "en": "Assassin"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/20190426081710-1941.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/7"
+    },
+    {
+      "id": "8",
+      "name": {
+        "zh": "美娜",
+        "en": ""
+      },
+      "role": "tank",
+      "roleLabel": {
+        "zh": "坦克",
+        "en": "Tank"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/8/20161006043631-9045.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/8"
+    },
+    {
+      "id": "9",
+      "name": {
+        "zh": "阿茲卡",
+        "en": ""
+      },
+      "role": "master",
+      "roleLabel": {
+        "zh": "法師",
+        "en": "Mage"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/9/20190117015115-7373.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/9"
+    },
+    {
+      "id": "10",
+      "name": {
+        "zh": "呂布",
+        "en": ""
+      },
+      "role": "soldier",
+      "roleLabel": {
+        "zh": "戰士",
+        "en": "Warrior"
+      },
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/20190805021706-2731.jpg",
+      "pageUrl": "https://moba.garena.tw/game/hero/10"
+    }
+  ],
+  "modes": [
+    {
+      "id": "classic-5v5",
+      "name": {
+        "zh": "5V5經典競技",
+        "en": ""
+      },
+      "players": "5V5",
+      "excerpt": "通過對大量5V5經典競技對局資料的監控，我們發現雙方最高段位差距在兩個大段位（含）以上的比例其實是不足3%的，因此我們這兩個版本持續調整了5V5經典競技的配隊演算法，增加段位因素的占比，將5V5經典競技配隊雙方的最高段位差全部控制在兩個大段位以內，並且雙方的最高段位差在一個大段位以內的比例提升到90%。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2504",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "abyss-brawl",
+      "name": {
+        "zh": "混沌大亂鬥",
+        "en": ""
+      },
+      "players": "10v10",
+      "excerpt": "10v10模式 混沌大亂鬥背景故事 - 楔子 風暴峽谷之行，亥犽與瑟斐斯找到了沉睡中的埃羅。",
+      "sourceUrl": "https://moba.garena.tw/news/show/1768",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "trio",
+      "name": {
+        "zh": "三人對決",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "death-match",
+      "name": {
+        "zh": "死鬥競技場",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "mirror",
+      "name": {
+        "zh": "幻影激鬥",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "football",
+      "name": {
+        "zh": "足球總動員",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "hook-wars",
+      "name": {
+        "zh": "飛鉤奪寶戰",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "random-mid",
+      "name": {
+        "zh": "隨機單中",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "duel",
+      "name": {
+        "zh": "單人對戰",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "活動內容： 活動時間內，傳說對決遊戲內全遊戲對戰模式（5V5經典競技、混沌大亂鬥、三人對決、死鬥競技場、幻影激鬥、足球總動員、飛鉤奪寶戰、隨機單中、單人對戰）開放。",
+      "sourceUrl": "https://moba.garena.tw/news/show/2397",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "transform",
+      "name": {
+        "zh": "幻化之戰",
+        "en": ""
+      },
+      "players": "",
+      "excerpt": "2. 模式入口 入口一：在登入主介面將有快捷入口，點擊可進入配隊房間 入口二：即時對戰-娛樂模式-幻化之戰 3. 玩法說明 - 幻化充能：在遊戲內攻擊英雄、小兵、野怪、防禦塔，都可以獲得變身能量，充能滿時可以使用幻化技能，變身為強大的巨獸 - 幻化變身為凱撒：凱撒的身軀龐大，擅長控制 - 幻化變身為天空巨龍：天空巨龍行動敏捷，擅長輸出 - 更自由的英雄選…",
+      "sourceUrl": "https://moba.garena.tw/news/show/3148",
+      "sourceKind": "official-news"
+    },
+    {
+      "id": "duo-ride",
+      "name": {
+        "zh": "雙人飛車賽",
+        "en": ""
+      },
+      "players": "兩人一隊",
+      "excerpt": "2. 娛樂模式入口 挑戰者們也可以在「即時對戰」→「娛樂模式」→ 「雙人飛車賽」 二、模式玩法說明 1. 組隊規則 兩人一隊，與其他四隊比賽 2. 勝利條件 最先沿線路跑完兩圈即可獲勝（逆行無效），最終按照團隊總分排序計算名次及獎勵 團隊總分=個人分+隊友分+隊伍沖線分（最終兩人都完成比賽，可以獲得【隊伍沖線分】，如果比賽結束前自己或隊友未抵達終點，則無…",
+      "sourceUrl": "https://moba.garena.tw/news/show/2914",
+      "sourceKind": "official-news"
+    }
+  ]
+}

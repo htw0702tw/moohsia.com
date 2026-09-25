@@ -1,5 +1,6 @@
 import { SITE_URL } from "../shared/brand.js";
-import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getProfileFields, getRosterMembers } from "./content.js";
+import { setCatalog, setRoleFilter } from "./catalog-state.js";
+import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
 import { brandMark, renderPage } from "./pages.js";
@@ -11,6 +12,9 @@ const ROUTES = {
   "/": "home",
   "/about": "about",
   "/roster": "roster",
+  "/player": "player",
+  "/heroes": "heroes",
+  "/modes": "modes",
   "/news": "news",
   "/contact": "contact",
 };
@@ -288,6 +292,12 @@ function mountIntro() {
 }
 
 function onClick(event) {
+  const role = event.target.closest("[data-role-filter]");
+  if (role) {
+    setRoleFilter(role.getAttribute("data-role-filter"));
+    paint();
+    return;
+  }
   const lang = event.target.closest("[data-lang]");
   if (lang) {
     state.lang = state.lang === "en" ? "zh" : "en";
@@ -325,6 +335,7 @@ function contentFingerprint() {
     profileFields: getProfileFields(),
     rosterMembers: getRosterMembers(),
     newsPosts: getNewsPosts(),
+    player: getPlayer(),
     zh: getCopy("zh"),
     en: getCopy("en"),
   });
@@ -346,6 +357,18 @@ async function loadPublished() {
   }
 }
 
+async function loadCatalog() {
+  try {
+    const response = await fetch("/api/catalog");
+    if (!response.ok) return;
+    const data = await response.json();
+    if (!data || data.ok !== true) return;
+    setCatalog(data);
+  } catch {
+    /* catalog pages show the empty state */
+  }
+}
+
 async function boot() {
   state.lang = readLang();
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -360,7 +383,7 @@ async function boot() {
     if (window.innerWidth > 860 && state.menuOpen) closeMenu(false);
   });
   await Promise.race([
-    loadPublished(),
+    Promise.all([loadPublished(), loadCatalog()]),
     new Promise((resolve) => {
       window.setTimeout(resolve, 500);
     }),
