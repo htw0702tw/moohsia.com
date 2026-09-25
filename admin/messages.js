@@ -35,7 +35,7 @@ const MESSAGES = {
   aov_rate_limited: "AOVRanking 暫時拒絕查詢（請求太頻繁）。請稍後再試，不要連續重抓。",
   aov_cooldown: "剛剛才查過。請稍候再查，避免對 AOVRanking 造成負擔。",
   aov_empty: "這份頁面裡沒有讀到對局。請確認是歷史戰績頁的原始碼。",
-  aov_shell: "這份原始碼像是還沒載入對局的空殼。檢視原始碼常常抓不到列表。請等歷史戰績出現後把頁面另存成 .html，或複製已載入的內容，再按「用貼上的頁面匯入」。",
+  aov_shell: "這是還沒載入完成的空殼頁（檢視原始碼看不到對局）。請等畫面上出現戰績後，用 F12 → 元素 → 複製 html 的 outerHTML，或改上傳已載入完成的 .html 檔。",
   aov_blocked: "現在連不到 AOVRanking。請改貼歷史戰績頁的原始碼，再按「用貼上的頁面匯入」。",
   aov_invalid: "請填遊戲名稱，或填 UID 並選擇伺服器。",
 };

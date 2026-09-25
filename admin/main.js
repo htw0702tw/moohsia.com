@@ -543,7 +543,7 @@ function aovImportPanel() {
     <ol class="aov-steps hint">
       <li>打開歷史戰績頁</li>
       <li>通過安全驗證，等對局列表出現</li>
-      <li>把頁面另存成 .html / .txt 再選檔，或貼上已載入的內容。檢視原始碼常常只有空殼</li>
+      <li>等畫面上出現戰績後，用 F12 → 元素 → 複製 html 的 outerHTML 貼上，或上傳已載入完成的 .html。檢視原始碼看不到對局</li>
       <li>按「用貼上的頁面匯入」</li>
     </ol>
     <p class="hint">標題列有結果、KDA 與地圖。地圖「經典競技」和「競賽模式」會存成排位賽，「傳說之巔」存成巔峰對決。隊伍記分板要等每一場展開後才寫進頁面；展開後的藍方、紅方會整表帶入。沒展開就匯入時，結果會存成勝或敗，記分板只填自己的 KDA。若要完整隊伍，請先展開各場再另存。</p>
@@ -559,7 +559,7 @@ function aovImportPanel() {
     </div>
     <p class="hint">名稱查詢用遊戲名稱。UID 有填的時候，連結與查詢改走 UID，並帶上伺服器（2服純潔之翼會加上 dwLogicWorldId=1012）。遊戲名稱留白時，會用選手的遊戲 ID。</p>
     <div class="row-actions">${open}</div>
-    <label class="aov-paste-label">貼上歷史戰績頁的原始碼<textarea data-aov="html" data-aov-paste rows="16" ${CMS_TEXT}></textarea></label>
+    <label class="aov-paste-label">貼上已載入的歷史戰績頁<textarea data-aov="html" data-aov-paste rows="16" ${CMS_TEXT}></textarea></label>
     <p class="aov-saved" data-aov-saved>${esc(aovSavedText(form.html))}</p>
     <p class="hint">畫面重畫時這格會清空，避免整份原始碼被刷掉。字數還在就代表內容還在，直接按匯入即可。</p>
     <label>或選擇另存的網頁（.html / .txt）<input data-aov-file type="file" accept=".html,.htm,.txt,text/html,text/plain"></label>

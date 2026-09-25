@@ -8,6 +8,7 @@ import {
   fetchFightHistory,
   fightHistoryUrl,
   parseFightHistory,
+  pastedFightHistory,
 } from "../shared/aov-import.js";
 import worker from "../worker/index.js";
 import { createMemoryStore } from "../shared/cms-store.js";
@@ -633,6 +634,26 @@ test("pasted challenge page and view-source shell are distinct errors", async ()
   );
   assert.equal(fetched.ok, false);
   assert.equal(fetched.code, "aov_shell");
+
+  const viewSource = `<!DOCTYPE html><html><body>
+    <div id="aov-protected-query-root">正在載入歷史戰績…</div>
+    <div id="aov-protected-query-result" data-query-result=""></div>
+    <script src="/_aov/releases/fight-history.bundle.js"></script>
+    <div class="cf-turnstile"></div>
+  </body></html>`;
+  const protectedShell = pastedFightHistory(viewSource, { keyword: "htw0702aov" });
+  assert.equal(protectedShell.ok, false);
+  assert.equal(protectedShell.code, "aov_shell");
+  const loaded = pastedFightHistory(
+    `<div id="aov-protected-query-root"><div id="aov-protected-query-result" data-query-result="">
+      <div class="accordion-item player-match-item"><span class="badge">失敗</span><img alt="娜塔亞" />
+      KDA: 7 / 10 / 5 | 地圖: 經典競技 | 17分 30秒 對局時間: 2026-09-25 13:20:58 對局ID：1790313541-5675
+      </div></div></div>`,
+    { keyword: "htw0702aov" },
+  );
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.matches[0].result, "敗");
+  assert.equal(loaded.matches[0].kda, "7 / 10 / 5");
 });
 
 test("admin paste box does not write stored HTML back into the page", () => {

@@ -28,7 +28,8 @@ test("unknown codes and bare HTTP failures keep the machine detail visible", () 
   assert.equal(aovNeedsPaste("aov_blocked"), true);
   assert.equal(aovNeedsPaste(undefined), true);
   assert.equal(aovNeedsPaste("aov_invalid"), false);
-  assert.match(adminMessage("aov_shell", 422), /空殼/);
+  assert.match(adminMessage("aov_shell", 422), /空殼頁/);
+  assert.match(adminMessage("aov_shell", 422), /outerHTML/);
   assert.equal(adminMessage("aov_shell", 422).includes(GENERIC_FAILURE), false);
   assert.equal(aovNeedsPaste("aov_shell"), true);
 });

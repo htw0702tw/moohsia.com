@@ -691,17 +691,31 @@ export function parseFightHistory(html, options = {}) {
   };
 }
 
-function isAovShell(html) {
+function shellBlob(html) {
   const clean = withoutNoise(html);
-  const readable = decode(clean);
-  const blob = `${clean}\n${readable}`;
-  const chrome = /歷史戰績|FightHistory|accordion-item|class=(["'])[^"']*\baccordion\b/i.test(blob);
-  if (!chrome) return false;
-  return !/player-match-item|對局時間|對局\s*(?:ID|編號)|Match\s*ID/i.test(blob);
+  return `${clean}\n${decode(clean)}`;
+}
+
+function hasMatchRows(blob) {
+  return /player-match-item|對局時間|對局\s*(?:ID|編號)|Match\s*ID/i.test(blob);
+}
+
+function isProtectedQueryShell(html) {
+  const blob = shellBlob(html);
+  if (hasMatchRows(blob)) return false;
+  return /aov-protected-query|正在載入歷史戰績|data-query-result/i.test(blob);
+}
+
+function isAovShell(html) {
+  const blob = shellBlob(html);
+  if (hasMatchRows(blob)) return false;
+  if (isProtectedQueryShell(html)) return true;
+  return /歷史戰績|FightHistory|accordion-item|class=(["'])[^"']*\baccordion\b/i.test(blob);
 }
 
 /** Classify a user-supplied history page before it is stored. */
 export function pastedFightHistory(html, options = {}) {
+  if (isProtectedQueryShell(html)) return { ok: false, code: "aov_shell" };
   const page = aovPageStatus(200, html);
   if (page === "challenge") return { ok: false, code: "aov_challenge" };
   if (isAovShell(html)) return { ok: false, code: "aov_shell" };
@@ -974,6 +988,7 @@ export async function fetchFightHistory(env, query) {
       }
     }
     const html = response.status === 429 ? "" : await readHtml(response);
+    if (response.status !== 429 && isProtectedQueryShell(html)) return { ok: false, code: "aov_shell" };
     const status = aovPageStatus(response.status, html);
     if (status === "rate_limited") return { ok: false, code: "aov_rate_limited" };
     if (status === "challenge") return { ok: false, code: "aov_challenge" };
