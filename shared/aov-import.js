@@ -138,6 +138,42 @@ function columnKey(text) {
   return "";
 }
 
+function attrValue(tag, name) {
+  const found = new RegExp(`\\b${name}\\s*=\\s*(["'])([\\s\\S]*?)\\1`, "i").exec(tag);
+  return found ? decode(found[2]).trim() : "";
+}
+
+function isItemId(value) {
+  return /^裝備\s*\d+$/.test(String(value || "").trim());
+}
+
+function isStatIcon(value) {
+  return /^(輸出|承傷|經濟|補兵|控場|治療|塔傷)$/.test(String(value || "").trim());
+}
+
+function imageFacts(html) {
+  const alts = [];
+  const labels = [];
+  const re = /<img\b([^>]*)>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const alt = attrValue(match[1], "alt");
+    const title =
+      attrValue(match[1], "title") || attrValue(match[1], "aria-label") || attrValue(match[1], "data-bs-original-title");
+    if (alt) alts.push(alt);
+    const real = [title, alt].find((value) => value && !isItemId(value) && !isStatIcon(value));
+    const fallback = [title, alt].find((value) => value && !isStatIcon(value));
+    const label = real || fallback;
+    if (label) labels.push(label);
+  }
+  return { alts, labels };
+}
+
+function portraitName(cell) {
+  const labels = cell?.labels?.length ? cell.labels : cell?.alts || [];
+  return labels.find((label) => label && !isItemId(label) && !isStatIcon(label)) || "";
+}
+
 function parseTables(html) {
   const tables = [];
   const re = /<table\b[^>]*>([\s\S]*?)<\/table>/gi;
@@ -151,10 +187,8 @@ function parseTables(html) {
       const cellRe = /<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi;
       let cell;
       while ((cell = cellRe.exec(row[2]))) {
-        const alts = [...cell[1].matchAll(/<img\b[^>]*\balt=(["'])([\s\S]*?)\1/gi)]
-          .map((item) => decode(item[2]).trim())
-          .filter(Boolean);
-        cells.push({ text: stripTags(cell[1]), alts, mvp: /MVP/i.test(cell[1]) });
+        const images = imageFacts(cell[1]);
+        cells.push({ text: stripTags(cell[1]), alts: images.alts, labels: images.labels, mvp: /MVP/i.test(cell[1]) });
       }
       if (!cells.length) continue;
       cells.marked = /table-warning/.test(row[1]);
@@ -195,11 +229,14 @@ function numberFrom(text, { places = 0, signed = false } = {}) {
 
 function itemsFrom(cell) {
   if (!cell) return [];
-  if (cell.alts?.length) return cell.alts.slice(0, 6);
+  const labels = cell.labels?.length ? cell.labels : cell.alts || [];
+  const named = labels.filter((label) => label && !isItemId(label) && !isStatIcon(label));
+  const chosen = named.length ? named : labels.filter((label) => label && !isStatIcon(label));
+  if (chosen.length) return chosen.slice(0, 6);
   return String(cell.text || "")
     .split(/[、,，]/)
     .map((part) => part.trim())
-    .filter(Boolean)
+    .filter((part) => part && !isStatIcon(part))
     .slice(0, 6);
 }
 
@@ -303,7 +340,7 @@ function materialize(row) {
   const kda = kdaParts(cells.kda?.text || "");
   const medals = rowMedals(cells);
   const notes = notesFromCells(cells);
-  const heroAlt = cells.hero?.alts?.[0] || cells.ign?.alts?.[0] || "";
+  const heroAlt = portraitName(cells.hero) || portraitName(cells.ign);
   return {
     side: row.side === "red" ? "red" : "blue",
     hero: clip(row.hero || heroAlt || cells.hero?.text || "", 40),
@@ -373,7 +410,7 @@ function rowsFromHtml(html, side) {
       const cells = {};
       header.forEach((text, index) => assignHeaderCell(cells, text, raw[index]));
       const ign = ignFrom(cells.ign?.text || "");
-      const hero = cells.hero?.alts?.[0] || stripTags(cells.hero?.text || "") || cells.ign?.alts?.[0] || "";
+      const hero = portraitName(cells.hero) || stripTags(cells.hero?.text || "") || portraitName(cells.ign);
       const uid = uidFrom(cells.ign?.text || "");
       if (!ign && !hero) continue;
       const id = `${ign}|${hero}`;
@@ -392,31 +429,31 @@ function rowsFromHtml(html, side) {
   return order.map((id) => materialize(byKey.get(id)));
 }
 
-function findTeamLabel(chunk, name) {
-  const re = new RegExp(`<(?:h[1-6]|div|span|p|th)\\b[^>]*>\\s*${name}\\s*</`, "i");
-  const heading = re.exec(chunk);
-  if (heading) return { content: heading.index + heading[0].length, mark: heading.index };
-  const at = chunk.indexOf(name);
-  if (at < 0) return null;
-  return { content: at + name.length, mark: at };
+function teamSide(name) {
+  return name === "紅方" || name === "敵方隊伍" ? "red" : "blue";
 }
 
-function teamSlices(chunk) {
-  const labels = [
-    { name: "藍方", side: "blue" },
-    { name: "紅方", side: "red" },
-    { name: "我方隊伍", side: "blue" },
-    { name: "敵方隊伍", side: "red" },
-  ];
-  const found = labels.map((label) => ({ ...label, ...findTeamLabel(chunk, label.name) })).filter((label) => label.content != null);
-  const sided = found.some((label) => label.name === "藍方" || label.name === "紅方");
-  const marks = found
-    .filter((label) => (sided ? label.name === "藍方" || label.name === "紅方" : label.name === "我方隊伍" || label.name === "敵方隊伍"))
-    .sort((a, b) => a.mark - b.mark);
-  return marks.map((mark, index) => {
-    const end = marks[index + 1]?.mark ?? chunk.length;
-    return { side: mark.side, html: chunk.slice(mark.content, end) };
-  });
+/** Each scoreboard table takes the nearest preceding 藍方 / 紅方 heading, including `藍方 (勝利)`. */
+function tablesBySide(chunk) {
+  const headingRe = /<(?:h[1-6]|div|span|p|th)\b[^>]*>\s*(藍方|紅方|我方隊伍|敵方隊伍)/gi;
+  const headings = [];
+  let heading;
+  while ((heading = headingRe.exec(chunk))) headings.push({ index: heading.index, name: heading[1] });
+  const sided = headings.some((item) => item.name === "藍方" || item.name === "紅方");
+  const marks = headings.filter((item) =>
+    sided ? item.name === "藍方" || item.name === "紅方" : item.name === "我方隊伍" || item.name === "敵方隊伍",
+  );
+  const grouped = { blue: "", red: "" };
+  const tableRe = /<table\b[\s\S]*?<\/table>/gi;
+  let table;
+  let sidedTables = 0;
+  while ((table = tableRe.exec(chunk))) {
+    const prior = marks.filter((item) => item.index < table.index).pop();
+    if (!prior) continue;
+    sidedTables += 1;
+    grouped[teamSide(prior.name)] += table[0];
+  }
+  return sidedTables ? grouped : null;
 }
 
 function durationFrom(text) {
@@ -504,10 +541,16 @@ function stableId(parts) {
   return `aov${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
+function sameIgn(ign, keyword) {
+  const left = String(ign || "").trim().toLowerCase();
+  const right = String(keyword || "").trim().toLowerCase();
+  return Boolean(left && right && left === right);
+}
+
 function pickOwner(rows, keyword, headerHero) {
   const name = clip(keyword, 100);
   if (name && !/^\d+$/.test(name)) {
-    const byName = rows.find((row) => row.ign === name);
+    const byName = rows.find((row) => sameIgn(row.ign, name));
     if (byName) return byName;
   }
   if (name && /^\d+$/.test(name)) {
@@ -569,18 +612,9 @@ function parseChunk(chunk, keyword, index) {
   const alts = headerAlts(head);
   const hero = alts[alts.length - 1] || "";
   if (!kda.kills && !playedAt && !external && !hero) return null;
-  const sections = teamSlices(chunk);
-  let blue = [];
-  let red = [];
-  if (sections.length) {
-    for (const section of sections) {
-      const rows = rowsFromHtml(section.html, section.side);
-      if (section.side === "red") red = red.concat(rows);
-      else blue = blue.concat(rows);
-    }
-  } else {
-    blue = rowsFromHtml(chunk, "blue");
-  }
+  const sections = tablesBySide(chunk);
+  const blue = sections ? rowsFromHtml(sections.blue, "blue") : rowsFromHtml(chunk, "blue");
+  const red = sections ? rowsFromHtml(sections.red, "red") : [];
   const board = [...blue, ...red].slice(0, 10);
   let boardPartial = false;
   let owner = pickOwner(board, keyword, hero);

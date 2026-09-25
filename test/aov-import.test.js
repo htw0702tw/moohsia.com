@@ -674,6 +674,58 @@ test("expanded accordion tables fill both teams and the owner row", () => {
   assert.equal(stored.uid, "3678194289083498");
 });
 
+test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item titles beat id alts", () => {
+  const html = `<div class="accordion-item player-match-item">
+    <button class="accordion-button"><span class="badge bg-danger">失敗</span>
+      <img alt="娜塔亞" />
+      <span>KDA: 7 / 10 / 5 | 地圖: 經典競技 | 17分 30秒</span>
+      <small>對局時間：2026-09-25 13:20:58</small>
+    </button>
+    <div class="accordion-body">
+      <p>對局ID：1790313541-5675</p>
+      <h5 class="text-primary">藍方 (勝利)</h5>
+      <table>
+        <tr><th>玩家名稱</th><th>K / D / A</th><th>裝備</th></tr>
+        <tr>
+          <td><img alt="弗洛倫" /><strong>藍方一</strong></td>
+          <td>4 / 5 / 13</td>
+          <td><img alt="裝備 1422" title="破甲弓" /></td>
+        </tr>
+      </table>
+      <h5 class="text-danger">紅方 (失敗)</h5>
+      <table>
+        <tr><th>玩家名稱</th><th>K / D / A</th><th>裝備</th></tr>
+        <tr class="table-warning">
+          <td><img alt="娜塔亞" /><strong>htw0702aov</strong><small>Lv.15</small></td>
+          <td>7 / 10 / 5</td>
+          <td><img src="/image/item/1423.png" alt="裝備 1423" title="噬神之書" /><img alt="抵抗之靴" /></td>
+        </tr>
+      </table>
+    </div>
+  </div>`;
+  const parsed = parseFightHistory(html, { keyword: "htw0702aov" });
+  const match = parsed.matches[0];
+  assert.equal(match.result, "敗");
+  assert.equal(match.kda, "7 / 10 / 5");
+  assert.equal(match.ownerSide, "red");
+  assert.equal(match.winner, "blue");
+  assert.equal(match.board.length, 2);
+  assert.equal(match.board.filter((row) => row.side === "blue").length, 1);
+  assert.equal(match.board.filter((row) => row.side === "red").length, 1);
+  assert.equal(match.board[0].side, "blue");
+  assert.equal(match.board[0].hero, "弗洛倫");
+  assert.equal(match.board[0].items[0], "破甲弓");
+  const owner = match.board.find((row) => row.owner);
+  assert.equal(owner.side, "red");
+  assert.equal(owner.hero, "娜塔亞");
+  assert.equal(owner.ign, "htw0702aov");
+  assert.equal(owner.kills, "7");
+  assert.equal(owner.deaths, "10");
+  assert.equal(owner.assists, "5");
+  assert.deepEqual(owner.items.slice(0, 2), ["噬神之書", "抵抗之靴"]);
+  assert.equal(owner.level, "15");
+});
+
 test("pasted challenge page and view-source shell are distinct errors", async () => {
   const shell = `<!DOCTYPE html><html><head><title>歷史戰績 - AOVRanking</title></head><body><div class="accordion" id="history"></div><p>FightHistory</p></body></html>`;
   const { env, cookie, csrf } = await adminSession();
