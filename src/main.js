@@ -1,5 +1,7 @@
 import { SITE_URL } from "../shared/brand.js";
-import { setCatalog, setRoleFilter } from "./catalog-state.js";
+import { applyDraft } from "./apply-state.js";
+import { setActivityFilter, setCatalog, setRoleFilter } from "./catalog-state.js";
+import { setPlayerMatch, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
@@ -15,7 +17,9 @@ const ROUTES = {
   "/player": "player",
   "/heroes": "heroes",
   "/modes": "modes",
+  "/activities": "activities",
   "/news": "news",
+  "/apply": "apply",
   "/contact": "contact",
 };
 
@@ -101,7 +105,7 @@ function shell() {
         ${brandMark()}
         <span>
           <strong>暮霞｜MOS</strong>
-          <em>AOV</em>
+          <em>MOOHSIA</em>
         </span>
       </a>
       <nav class="nav-links" aria-label="Primary">${links}</nav>
@@ -298,6 +302,36 @@ function onClick(event) {
     paint();
     return;
   }
+  const section = event.target.closest("[data-profile-section]");
+  if (section) {
+    setPlayerSection(section.getAttribute("data-profile-section"));
+    paint();
+    return;
+  }
+  const season = event.target.closest("[data-season]");
+  if (season) {
+    setPlayerSeason(Number(season.getAttribute("data-season")));
+    paint();
+    return;
+  }
+  const match = event.target.closest("[data-match]");
+  if (match && match.tagName === "BUTTON") {
+    setPlayerMatch(match.getAttribute("data-match"));
+    paint();
+    return;
+  }
+  const matchTab = event.target.closest("[data-match-tab]");
+  if (matchTab) {
+    setPlayerTab(matchTab.getAttribute("data-match-tab"));
+    paint();
+    return;
+  }
+  const activity = event.target.closest("[data-activity-filter]");
+  if (activity) {
+    setActivityFilter(activity.getAttribute("data-activity-filter"));
+    paint();
+    return;
+  }
   const lang = event.target.closest("[data-lang]");
   if (lang) {
     state.lang = state.lang === "en" ? "zh" : "en";
@@ -319,6 +353,56 @@ function onClick(event) {
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
   event.preventDefault();
   navigate(href);
+}
+
+function readApply(form) {
+  const data = new FormData(form);
+  applyDraft.rank = String(data.get("rank") || "");
+  applyDraft.uid = String(data.get("uid") || "");
+  applyDraft.nickname = String(data.get("nickname") || "");
+  applyDraft.email = String(data.get("email") || "");
+  applyDraft.gender = String(data.get("gender") || "");
+  applyDraft.ageBand = String(data.get("ageBand") || "");
+  applyDraft.motivation = String(data.get("motivation") || "");
+  applyDraft.positions = data.getAll("positions").map(String);
+  applyDraft.weekday = String(data.get("weekday") || "");
+  applyDraft.holiday = String(data.get("holiday") || "");
+  applyDraft.practice = String(data.get("practice") || "");
+  applyDraft.conduct = data.get("conduct") === "on";
+  return {
+    ...applyDraft,
+    company: String(data.get("company") || ""),
+    lang: state.lang,
+    conduct: applyDraft.conduct,
+  };
+}
+
+async function onSubmit(event) {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement) || form.id !== "apply-form") return;
+  event.preventDefault();
+  const payload = readApply(form);
+  applyDraft.error = "";
+  applyDraft.status = "";
+  try {
+    const response = await fetch("/api/apply", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok !== true || data.stored === false && response.status !== 201) {
+      applyDraft.error = copy().apply.fail;
+      paint();
+      return;
+    }
+    applyDraft.status = "sent";
+    applyDraft.error = "";
+    paint();
+  } catch {
+    applyDraft.error = copy().apply.fail;
+    paint();
+  }
 }
 
 function onKeydown(event) {
@@ -375,6 +459,7 @@ async function boot() {
   if (reduce || introSeen()) document.body.classList.add("is-ready");
   document.addEventListener("click", onClick);
   document.addEventListener("keydown", onKeydown);
+  document.addEventListener("submit", onSubmit);
   window.addEventListener("popstate", () => {
     closeMenu(false);
     paint();

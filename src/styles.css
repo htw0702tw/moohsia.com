@@ -957,7 +957,9 @@ body.intro-on { overflow: hidden; }
 @media (max-width: 980px) {
   .metrics-grid, .slots { grid-template-columns: repeat(2, 1fr); }
   .slots { grid-auto-flow: unset; }
-  .split-board, .about-layout, .finale-grid, .footer-grid, .player-layout { grid-template-columns: 1fr; }
+  .split-board, .about-layout, .finale-grid, .footer-grid, .player-layout, .profile-shell, .battle-grid, .chart-grid { grid-template-columns: 1fr; }
+  .profile-nav { position: static; grid-template-columns: repeat(2, 1fr); }
+  .medal-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-grid { grid-template-columns: 1fr; }
   .hero-crest {
     position: absolute;
@@ -1076,6 +1078,64 @@ body.intro-on { overflow: hidden; }
   font-size: clamp(1.8rem, 4vw, 2.8rem);
 }
 .player-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.profile-shell { display: grid; grid-template-columns: 180px 1fr; gap: 1.2rem; align-items: start; }
+.profile-nav { display: grid; gap: 0.35rem; position: sticky; top: calc(var(--nav-h) + 1rem); }
+.profile-nav button, .apply-form button.btn { text-align: left; }
+.profile-nav button {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+.profile-nav button.is-on { border-color: var(--ember); color: var(--ember); }
+.player-facts { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; color: var(--muted); }
+.player-facts b { color: var(--ember); font-weight: 600; }
+.battle-grid, .chart-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; margin-top: 1rem; }
+.radar-chart, .donut { width: min(100%, 280px); height: auto; }
+.battle-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+.battle-trio article, .medal, .win-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.8rem;
+  background: rgba(18, 8, 24, 0.72);
+}
+.battle-trio b, .medal b, .reputation-score { font-family: var(--font-display); font-size: 1.8rem; }
+.medal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; margin-top: 0.8rem; }
+.medal span, .medal small { display: block; color: var(--dim); font-size: 0.78rem; }
+.medal.is-locked { opacity: 0.55; }
+.bar-chart { display: grid; gap: 0.45rem; }
+.bar-row { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 0.45rem; align-items: center; }
+.bar-row i { display: block; height: 8px; border-radius: 99px; background: linear-gradient(90deg, var(--ember), var(--mag)); }
+.scoreboard { display: grid; gap: 0.6rem; margin-top: 0.8rem; }
+.scoreboard header, .score-side li { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+.scoreboard header strong { font-family: var(--font-display); letter-spacing: 0.08em; }
+.score-side { list-style: none; margin: 0; padding: 0.4rem; display: grid; gap: 0.35rem; border-radius: 16px; }
+.score-blue { background: rgba(61, 126, 255, 0.16); }
+.score-red { background: rgba(255, 59, 134, 0.16); }
+.score-side li { padding: 0.45rem 0.55rem; border-radius: 10px; }
+.score-side li.is-owner { outline: 1px solid var(--ember); }
+.score-side small { color: var(--dim); }
+.reputation-score { font-size: 4rem; margin: 0; }
+.exp-bar { height: 10px; border-radius: 99px; background: rgba(247,241,234,0.12); overflow: hidden; }
+.exp-bar i { display: block; height: 100%; background: var(--ember); }
+.highlight img, .highlight video { width: min(100%, 720px); border-radius: 16px; }
+.apply-form, .apply-layout { display: grid; gap: 0.8rem; }
+.apply-form label, .apply-form fieldset { display: grid; gap: 0.3rem; }
+.apply-form input, .apply-form select, .apply-form textarea {
+  width: 100%;
+  background: #09060c;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+}
+.position-grid { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.form-error { color: #ffb4c8; min-height: 1.2em; }
+.hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+.nav-links { flex-wrap: wrap; justify-content: center; }
+.nav { height: auto; }
 .catalog-mast .hud-readout { margin-top: 0.8rem; }
 
 @media (max-width: 1280px) {

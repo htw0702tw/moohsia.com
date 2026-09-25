@@ -20,7 +20,7 @@ async function walk(dir) {
 
 test("public copy keeps a single contact and no Discord invite code", async () => {
   const files = await walk(ROOT);
-  const required = ["不開放招募", "成員資訊即將公開", "Info@moohsia.com"];
+  const required = ["官網申請", "Discord 不開放加入", "成員資訊即將公開", "Info@moohsia.com", "MOOHSIA"];
   const blob = [];
   for (const file of files) {
     const text = await readFile(file, "utf8");
@@ -37,6 +37,8 @@ test("public copy keeps a single contact and no Discord invite code", async () =
   for (const phrase of required) {
     assert.equal(all.includes(phrase), true, phrase);
   }
+  assert.equal(all.includes("不開放招募"), false);
+  assert.equal(all.toLowerCase().includes("recruitment is closed"), false);
 });
 
 test("public pages do not advertise a verification route", async () => {

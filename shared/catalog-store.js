@@ -13,12 +13,19 @@ function usable(payload) {
   return Boolean(payload && Array.isArray(payload.heroes) && payload.heroes.length >= 40 && Array.isArray(payload.modes));
 }
 
+function withActivities(payload) {
+  return {
+    ...payload,
+    activities: Array.isArray(payload.activities) ? payload.activities : [],
+  };
+}
+
 /** Public catalog. Live D1/KV wins; the committed snapshot is the fallback. */
 export async function loadCatalog(env) {
   try {
     if (env?.CMS_KV && typeof env.CMS_KV.get === "function") {
       const cached = await env.CMS_KV.get(KV_KEY, "json");
-      if (usable(cached)) return { ...cached, source: "stored" };
+      if (usable(cached)) return { ...withActivities(cached), source: "stored" };
     }
   } catch (error) {
     logFailure("catalog_kv_failed", error);
@@ -31,13 +38,13 @@ export async function loadCatalog(env) {
         .first();
       if (row?.payload_json) {
         const parsed = JSON.parse(row.payload_json);
-        if (usable(parsed)) return { ...parsed, source: "stored" };
+        if (usable(parsed)) return { ...withActivities(parsed), source: "stored" };
       }
     }
   } catch (error) {
     logFailure("catalog_d1_failed", error);
   }
-  return { ...bundledCatalog(), source: "snapshot" };
+  return { ...withActivities(bundledCatalog()), source: "snapshot" };
 }
 
 export async function storeCatalog(env, payload) {

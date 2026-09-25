@@ -1,17 +1,20 @@
 import { getDefaultDocument } from "../src/content.js";
+import { applicationsFromEnv, approveApplication, presentApplication, rejectApplication } from "./applications.js";
 import { refreshCatalog } from "./catalog-store.js";
 import { storeFromEnv } from "./cms-store.js";
-import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { logFailure } from "./log.js";
+import { storeHighlight } from "./media.js";
+import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { verifyPassword } from "./password.js";
 import { clearLoginFailures, clientIp, loginBlocked, recordLoginFailure } from "./rate-limit.js";
 import {
   SESSION_COOKIE,
-  SESSION_TTL_SECONDS,
+  SESSION_IDLE_SECONDS,
   issueSession,
   readCookie,
   readSession,
   sessionCookie,
+  sessionNow,
   timingSafeText,
 } from "./session.js";
 import { ContentRejected, sanitizeDocument } from "./site-document.js";
@@ -20,7 +23,7 @@ import { ContentRejected, sanitizeDocument } from "./site-document.js";
 export const ADMIN_USERNAME = "htw0702";
 
 const LOGIN_MAX = 8 * 1024;
-const DOC_MAX = 480 * 1024;
+const DOC_MAX = 900 * 1024;
 
 function json(status, body, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -110,7 +113,21 @@ async function readJson(request, max) {
 
 async function currentSession(request, env) {
   if (!adminReady(env)) return null;
-  return readSession(env.ADMIN_SESSION_SECRET, readCookie(request, SESSION_COOKIE));
+  return readSession(env.ADMIN_SESSION_SECRET, readCookie(request, SESSION_COOKIE), sessionNow(env));
+}
+
+async function slideCookie(request, env, session) {
+  const token = await issueSession(
+    env.ADMIN_SESSION_SECRET,
+    { username: session.username, csrf: session.csrf },
+    sessionNow(env),
+  );
+  return sessionCookie(request, token, SESSION_IDLE_SECONDS);
+}
+
+async function ok(request, env, session, body, status = 200) {
+  const headers = session ? { "set-cookie": await slideCookie(request, env, session) } : {};
+  return json(status, body, headers);
 }
 
 function csrfToken() {
@@ -177,8 +194,8 @@ async function login(request, env) {
   }
   await clearLoginFailures(env, ip);
   const csrf = csrfToken();
-  const token = await issueSession(env.ADMIN_SESSION_SECRET, { username: ADMIN_USERNAME, csrf });
-  return json(200, { ok: true, csrf }, { "set-cookie": sessionCookie(request, token, SESSION_TTL_SECONDS) });
+  const token = await issueSession(env.ADMIN_SESSION_SECRET, { username: ADMIN_USERNAME, csrf }, sessionNow(env));
+  return json(200, { ok: true, csrf }, { "set-cookie": sessionCookie(request, token, SESSION_IDLE_SECONDS) });
 }
 
 async function logout(request, env) {
@@ -193,7 +210,7 @@ async function sessionInfo(request, env) {
   if (!adminReady(env)) return json(503, { ok: false, code: "admin_not_configured" });
   const session = await currentSession(request, env);
   if (!session) return json(401, { ok: false, code: "unauthorized" });
-  return json(200, { ok: true, csrf: session.csrf });
+  return ok(request, env, session, { ok: true, csrf: session.csrf });
 }
 
 async function readContent(request, env) {
@@ -202,7 +219,7 @@ async function readContent(request, env) {
   const opened = await openStore(env);
   if (opened.error) return opened.error;
   try {
-    return json(200, editorPayload(opened.row, env));
+    return ok(request, env, session, editorPayload(opened.row, env));
   } catch (error) {
     if (error instanceof ContentRejected) return json(400, { ok: false, code: error.code });
     return json(500, { ok: false, code: "invalid_content" });
@@ -221,14 +238,14 @@ async function writeContent(request, env, mode) {
     const now = new Date().toISOString();
     if (mode === "discard") {
       const row = await opened.store.discard(now);
-      return json(200, editorPayload(row, env));
+      return ok(request, env, session, editorPayload(row, env));
     }
     const parsed = await readJson(request, DOC_MAX);
     if (parsed.error) return parsed.error;
     const doc = sanitizeDocument(parsed.data);
     const jsonText = JSON.stringify(doc);
     const row = mode === "publish" ? await opened.store.publish(jsonText, now) : await opened.store.saveDraft(jsonText, now);
-    return json(200, editorPayload(row, env));
+    return ok(request, env, session, editorPayload(row, env));
   } catch (error) {
     if (error instanceof ContentRejected) return json(400, { ok: false, code: error.code });
     logFailure("cms_write_failed", error);
@@ -284,6 +301,22 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return catalogRefresh(request, env);
   }
+  if (path === "/api/admin/applications") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    if (request.method === "HEAD") return new Response(null, { status: 200, headers: { "cache-control": "no-store" } });
+    return listApplications(request, env);
+  }
+  const review = /^\/api\/admin\/applications\/([A-Za-z0-9-]{8,80})\/(approve|reject)$/.exec(path);
+  if (review) {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return reviewApplication(request, env, review[1], review[2]);
+  }
+  if (path === "/api/admin/media") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return uploadMedia(request, env);
+  }
   return json(404, { ok: false, code: "not_found" });
 }
 
@@ -298,7 +331,7 @@ async function notionSync(request, env) {
     return json(status, { ok: false, code: result.code });
   }
   if (!result.row) return json(503, { ok: false, code: "storage_unavailable" });
-  return json(200, { ...editorPayload(result.row, env), notionSync: result.counts || {} });
+  return ok(request, env, session, { ...editorPayload(result.row, env), notionSync: result.counts || {} });
 }
 
 async function catalogRefresh(request, env) {
@@ -308,5 +341,57 @@ async function catalogRefresh(request, env) {
   if (denied) return denied;
   const result = await refreshCatalog(env);
   if (!result.ok) return json(502, { ok: false, code: result.code || "catalog_refresh_failed" });
-  return json(200, result);
+  return ok(request, env, session, result);
+}
+
+async function listApplications(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const store = applicationsFromEnv(env);
+  if (!store) return json(503, { ok: false, code: "storage_unconfigured" });
+  try {
+    const rows = await store.list();
+    return ok(request, env, session, { ok: true, applications: rows.map(presentApplication) });
+  } catch (error) {
+    logFailure("application_list_failed", error);
+    return json(503, { ok: false, code: "storage_unavailable" });
+  }
+}
+
+async function reviewApplication(request, env, id, action) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  const parsed = await readJson(request, LOGIN_MAX);
+  if (parsed.error) return parsed.error;
+  const result = action === "approve" ? await approveApplication(env, id, parsed.data) : await rejectApplication(env, id, parsed.data);
+  if (!result.ok) {
+    const status = result.code === "not_found" ? 404 : result.code === "mail_not_configured" || result.code === "storage_unconfigured" ? 503 : result.code === "mail_failed" ? 502 : 400;
+    return json(status, { ok: false, code: result.code });
+  }
+  const body = JSON.stringify(result);
+  if (/discord\.gg\/|discord\.com\/invite\//i.test(body)) return json(500, { ok: false, code: "invalid_content" });
+  return ok(request, env, session, result);
+}
+
+async function uploadMedia(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  const declared = Number(request.headers.get("content-length") || 0);
+  if (Number.isFinite(declared) && declared > 33 * 1024 * 1024) return json(413, { ok: false, code: "media_too_large" });
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json(400, { ok: false, code: "media_invalid" });
+  }
+  const result = await storeHighlight(env, form.get("file"));
+  if (!result.ok) {
+    const status = result.code === "media_too_large" ? 413 : result.code === "media_unconfigured" ? 503 : 400;
+    return json(status, { ok: false, code: result.code });
+  }
+  return ok(request, env, session, result);
 }

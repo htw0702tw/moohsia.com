@@ -7,10 +7,9 @@
     "enabled": true,
     "head_sampling_rate": 1
   },
-  // Placeholder only. Empty means the public Discord gate stays "coming soon".
-  // When a real invite exists, remove this var and run:
-  //   npx wrangler secret put DISCORD_INVITE_URL
-  // The site never prints the URL. See README.
+  // Empty. Invites are pasted one at a time in the admin approve form
+  // and emailed to that applicant. Do not put an invite URL here or in git.
+  // This flag only answers inviteConfigured. The site never prints the URL.
   "vars": {
     "DISCORD_INVITE_URL": "",
     "ADMIN_USERNAME": "htw0702"
@@ -35,6 +34,14 @@
     {
       "binding": "CMS_KV",
       "id": "8a4e759892304f2882e47407ec3f0562"
+    }
+  ],
+  // Highlight uploads. Create the bucket once, then leave this binding in place:
+  //   npx wrangler r2 bucket create moohsia-media
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "moohsia-media"
     }
   ],
   // Daily 18:15 UTC (02:15 Taipei). Pulls Notion into the CMS draft and

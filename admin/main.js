@@ -1,4 +1,16 @@
 import "./admin.css";
+import {
+  emptyBoardPlayer,
+  emptyHeroCard,
+  emptyHighlight,
+  emptyHonor,
+  emptyMatch,
+  emptyPlayer,
+  emptyPrivilege,
+  emptyReputation,
+  emptySeason,
+  emptyTitle,
+} from "../shared/player.js";
 
 const NAV = [
   ["dashboard", "/dashboard", "總覽"],
@@ -6,6 +18,7 @@ const NAV = [
   ["about", "/edit/about", "戰隊"],
   ["roster", "/edit/roster", "成員"],
   ["player", "/edit/player", "選手數據"],
+  ["applications", "/applications", "加入申請"],
   ["news", "/edit/news", "動態"],
   ["contact", "/edit/contact", "聯絡"],
   ["chrome", "/edit/chrome", "導覽與頁尾"],
@@ -168,6 +181,8 @@ const state = {
   error: "",
   samples: {},
   notion: null,
+  applications: [],
+  applicationsAt: 0,
 };
 
 const MESSAGES = {
@@ -184,6 +199,14 @@ const MESSAGES = {
   notion_not_configured: "尚未設定 Notion 權杖或資料庫。草稿沒有改動。",
   notion_sync_failed: "Notion 沒有同步成功。草稿沒有改動。",
   catalog_refresh_failed: "官方英雄目錄沒有更新。",
+  invite_required: "核准時要貼上一次性 Discord 邀請。",
+  invite_reused: "這個邀請已經用過。",
+  mail_not_configured: "尚未設定寄信密鑰，申請已留在資料庫，但信沒有送出。",
+  mail_failed: "信沒有送出。狀態沒有改。",
+  already_reviewed: "這筆申請已經審過。",
+  media_type: "只接受圖片或 mp4／webm。",
+  media_too_large: "檔案太大。圖片 8MB，影片 32MB。",
+  media_unconfigured: "還沒有綁定 R2。",
 };
 
 function esc(value) {
@@ -220,6 +243,7 @@ async function api(path, options = {}) {
   if (state.csrf && options.method && options.method !== "GET") headers.set("x-csrf-token", state.csrf);
   const response = await fetch(path, { ...options, headers, credentials: "same-origin" });
   const data = await response.json().catch(() => ({}));
+  if (state.authed && response.status === 401 && path !== "/api/admin/login") dropSession();
   return { http: response.status, ...data };
 }
 
@@ -438,55 +462,154 @@ function notionLine() {
   const notion = state.notion;
   if (!notion) return "尚未讀到 Notion 狀態。";
   if (!notion.configured) return "Notion 尚未設定。管理頁仍可直接編輯並發布。";
-  const ready = ["roster", "news", "copy", "profile", "player", "matches"].filter((key) => notion[key]);
+  const ready = ["roster", "news", "copy", "profile", "player", "matches", "seasons", "honors", "titles", "heroes"].filter((key) => notion[key]);
   return `已接上：${ready.join("、") || "無"}。同步只改草稿，公開頁要再按發布。`;
 }
 
+function fieldInput(attrs, value) {
+  return `<input ${attrs} value="${esc(value ?? "")}" ${CMS_TEXT}>`;
+}
+
 function playerEditor() {
-  const player = state.draft.player || {
-    publish: false,
-    handle: "",
-    name: { zh: "", en: "" },
-    role: { zh: "", en: "" },
-    lane: { zh: "", en: "" },
-    rank: { zh: "", en: "" },
-    season: { zh: "", en: "" },
-    server: { zh: "", en: "" },
-    title: { zh: "", en: "" },
-    bio: { zh: "", en: "" },
-    signatureHeroes: { zh: "", en: "" },
-    stats: { played: "", wins: "", winRate: "", kda: "", mvp: "" },
-    matches: [],
+  const base = emptyPlayer();
+  const player = state.draft.player || base;
+  player.stats = { ...base.stats, ...(player.stats || {}) };
+  player.reputation = {
+    ...base.reputation,
+    ...(player.reputation || {}),
+    note: { ...base.reputation.note, ...(player.reputation?.note || {}) },
+    privileges: (player.reputation?.privileges || []).map((item) => ({
+      ...emptyPrivilege(),
+      ...item,
+      name: { zh: "", en: "", ...(item?.name || {}) },
+      note: { zh: "", en: "", ...(item?.note || {}) },
+    })),
   };
+  player.matches = (player.matches || []).map((match) => ({
+    ...emptyMatch(),
+    ...match,
+    note: { zh: "", en: "", ...(match?.note || {}) },
+    highlight: {
+      ...emptyHighlight(),
+      ...(match?.highlight || {}),
+      caption: { zh: "", en: "", ...(match?.highlight?.caption || {}) },
+    },
+    board: Array.isArray(match?.board) ? match.board : [],
+  }));
+  player.seasons = (player.seasons || []).map((season) => ({
+    ...emptySeason(),
+    ...season,
+    radar: { ...emptySeason().radar, ...(season?.radar || {}) },
+    medals: { ...emptySeason().medals, ...(season?.medals || {}) },
+  }));
+  player.heroPool = (player.heroPool || []).map((card) => ({
+    ...emptyHeroCard(),
+    ...card,
+    note: { zh: "", en: "", ...(card?.note || {}) },
+  }));
+  player.championships = (player.championships || []).map((item) => ({
+    ...emptyHonor(),
+    ...item,
+    note: { zh: "", en: "", ...(item?.note || {}) },
+  }));
+  player.honorTitles = (player.honorTitles || []).map((item) => ({
+    ...emptyTitle(),
+    ...item,
+    note: { zh: "", en: "", ...(item?.note || {}) },
+  }));
+  state.draft.player = player;
   const pair = (label, field) => `<div class="pair">
-    <label>${label} 繁中<input data-player="${field}" data-lang="zh" value="${esc(player[field]?.zh)}" ${CMS_TEXT}></label>
-    <label>${label} EN<input data-player="${field}" data-lang="en" value="${esc(player[field]?.en)}" ${CMS_TEXT}></label>
+    <label>${label} 繁中${fieldInput(`data-player="${field}" data-lang="zh"`, player[field]?.zh)}</label>
+    <label>${label} EN${fieldInput(`data-player="${field}" data-lang="en"`, player[field]?.en)}</label>
   </div>`;
-  const matches = (player.matches || [])
-    .map((match, index) => {
-      return `<article class="repeat">
-        <header><b>對局 ${index + 1}</b><button class="ghost" type="button" data-action="match-remove" data-index="${index}">刪除</button></header>
-        <div class="pair">
-          <label>名稱<input data-match="${index}" data-field="label" value="${esc(match.label)}" ${CMS_TEXT}></label>
-          <label>日期<input data-match="${index}" data-field="date" type="date" value="${esc(match.date)}" ${CMS_TEXT}></label>
-          <label>模式<input data-match="${index}" data-field="mode" value="${esc(match.mode)}" ${CMS_TEXT}></label>
-          <label>英雄<input data-match="${index}" data-field="hero" value="${esc(match.hero)}" ${CMS_TEXT}></label>
-          <label>結果<input data-match="${index}" data-field="result" value="${esc(match.result)}" ${CMS_TEXT}></label>
-          <label>KDA<input data-match="${index}" data-field="kda" value="${esc(match.kda)}" ${CMS_TEXT}></label>
-        </div>
-        <label>註記 繁中<input data-match="${index}" data-field="note" data-lang="zh" value="${esc(match.note?.zh)}" ${CMS_TEXT}></label>
-        <label>註記 EN<input data-match="${index}" data-field="note" data-lang="en" value="${esc(match.note?.en)}" ${CMS_TEXT}></label>
-        <label class="check"><input type="checkbox" data-match="${index}" data-field="publish"${match.publish ? " checked" : ""}>這場對局公開</label>
-      </article>`;
-    })
-    .join("");
-  const stat = (label, key) =>
-    `<label>${label}<input data-player-stat="${key}" value="${esc(player.stats?.[key])}" ${CMS_TEXT}></label>`;
+  const stat = (label, key) => `<label>${label}${fieldInput(`data-player-stat="${key}"`, player.stats[key])}</label>`;
+  const seasons = player.seasons.map((season, index) => {
+    const radar = ["output", "kda", "farm", "teamfight", "survival"].map((key) => `<label>${key}${fieldInput(`data-season="${index}" data-radar="${key}"`, season.radar?.[key])}</label>`).join("");
+    const medals = ["godlike", "penta", "quadra", "triple", "supreme", "gold", "silver", "loseMvp"]
+      .map((key) => `<label>${key}${fieldInput(`data-season="${index}" data-medal="${key}"`, season.medals?.[key])}</label>`).join("");
+    return `<article class="repeat"><header><b>賽季 ${index + 1}</b><button class="ghost" type="button" data-action="season-remove" data-index="${index}">刪除</button></header>
+      <div class="pair"><label>名稱${fieldInput(`data-season="${index}" data-field="label"`, season.label)}</label><label>模式${fieldInput(`data-season="${index}" data-field="mode"`, season.mode)}</label>
+      <label>場次${fieldInput(`data-season="${index}" data-field="played"`, season.played)}</label><label>勝場${fieldInput(`data-season="${index}" data-field="wins"`, season.wins)}</label>
+      <label>勝率${fieldInput(`data-season="${index}" data-field="winRate"`, season.winRate)}</label><label>MVP${fieldInput(`data-season="${index}" data-field="mvp"`, season.mvp)}</label></div>
+      <p class="hint">雷達 0–100：輸出、KDA、發育、團戰、生存。留白就不會畫。</p>
+      <div class="pair">${radar}</div>
+      <p class="hint">勳章：超神、五殺、四殺、三殺、頂級、金牌、銀牌、敗方MVP。沒有就留白，不要填 0，除非遊戲裡就是 0。</p>
+      <div class="pair">${medals}</div></article>`;
+  }).join("");
+  const reputation = player.reputation;
+  const perks = (reputation.privileges || []).map((item, index) => `<article class="repeat"><header><b>特權 ${index + 1}</b><button class="ghost" type="button" data-action="perk-remove" data-index="${index}">刪除</button></header>
+    <div class="pair"><label>等級${fieldInput(`data-perk="${index}" data-field="level"`, item.level)}</label>
+    <label class="check"><input type="checkbox" data-perk="${index}" data-field="unlocked"${item.unlocked ? " checked" : ""}>已解鎖</label></div>
+    <label>名稱 繁中${fieldInput(`data-perk="${index}" data-lang="zh" data-part="name"`, item.name?.zh)}</label>
+    <label>說明 繁中${fieldInput(`data-perk="${index}" data-lang="zh" data-part="note"`, item.note?.zh)}</label></article>`).join("");
+  const heroes = player.heroPool.map((card, index) => `<article class="repeat"><header><b>英雄 ${index + 1}</b><button class="ghost" type="button" data-action="hero-remove" data-index="${index}">刪除</button></header>
+    <div class="pair"><label>英雄${fieldInput(`data-hero-card="${index}" data-field="hero"`, card.hero)}</label><label>場次${fieldInput(`data-hero-card="${index}" data-field="matches"`, card.matches)}</label><label>勝率${fieldInput(`data-hero-card="${index}" data-field="winRate"`, card.winRate)}</label></div>
+    <label>註記${fieldInput(`data-hero-card="${index}" data-lang="zh" data-field="note"`, card.note?.zh)}</label></article>`).join("");
+  const honors = player.championships.map((item, index) => `<article class="repeat"><header><b>榮譽 ${index + 1}</b><button class="ghost" type="button" data-action="honor-remove" data-index="${index}">刪除</button></header>
+    <div class="pair"><label>名稱${fieldInput(`data-honor="${index}" data-field="title"`, item.title)}</label><label>賽季${fieldInput(`data-honor="${index}" data-field="season"`, item.season)}</label></div>
+    <label>註記${fieldInput(`data-honor="${index}" data-lang="zh" data-field="note"`, item.note?.zh)}</label></article>`).join("");
+  const titles = player.honorTitles.map((item, index) => `<article class="repeat"><header><b>頭銜 ${index + 1}</b><button class="ghost" type="button" data-action="title-remove" data-index="${index}">刪除</button></header>
+    <label>名稱${fieldInput(`data-title-row="${index}" data-field="name"`, item.name)}</label>
+    <label>註記${fieldInput(`data-title-row="${index}" data-lang="zh" data-field="note"`, item.note?.zh)}</label></article>`).join("");
+  const matches = player.matches.map((match, index) => {
+    const board = (match.board || []).map((row, rowIndex) => `<div class="pair">
+      <label>方${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="side"`, row.side)}</label>
+      <label>英雄${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="hero"`, row.hero)}</label>
+      <label>IGN${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="ign"`, row.ign)}</label>
+      <label>路線${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="lane"`, row.lane)}</label>
+      <label>徽章${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="badge"`, row.badge)}</label>
+      <label>K${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="kills"`, row.kills)}</label>
+      <label>D${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="deaths"`, row.deaths)}</label>
+      <label>A${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="assists"`, row.assists)}</label>
+      <label>經濟${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="gold"`, row.gold)}</label>
+      <label>評分${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="score"`, row.score)}</label>
+      <label>輸出${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="heroDamage"`, row.heroDamage)}</label>
+      <label>輸出%${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="heroDamagePct"`, row.heroDamagePct)}</label>
+      <label>承傷${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="taken"`, row.taken)}</label>
+      <label>承傷%${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="takenPct"`, row.takenPct)}</label>
+      <label>參團${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="teamfightCount"`, row.teamfightCount)}</label>
+      <label>參團率${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="teamfightRate"`, row.teamfightRate)}</label>
+      <label>轉化比${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="damageRatio"`, row.damageRatio)}</label>
+      <label>每次承傷${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="takenPer"`, row.takenPer)}</label>
+      <label>GPM${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="gpm"`, row.gpm)}</label>
+      <label>裝備${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="items"`, (row.items || []).join("、"))}</label>
+      <label class="check"><input type="checkbox" data-board="${index}" data-row="${rowIndex}" data-field="mvp"${row.mvp ? " checked" : ""}>MVP</label>
+      <label class="check"><input type="checkbox" data-board="${index}" data-row="${rowIndex}" data-field="owner"${row.owner ? " checked" : ""}>自己</label>
+    </div>`).join("");
+    return `<article class="repeat"><header><b>對局 ${index + 1}</b><button class="ghost" type="button" data-action="match-remove" data-index="${index}">刪除</button></header>
+      <div class="pair">
+        <label>名稱${fieldInput(`data-match="${index}" data-field="label"`, match.label)}</label>
+        <label>日期${fieldInput(`data-match="${index}" data-field="date" type="date"`, match.date)}</label>
+        <label>時間${fieldInput(`data-match="${index}" data-field="playedAt"`, match.playedAt)}</label>
+        <label>時長${fieldInput(`data-match="${index}" data-field="duration"`, match.duration)}</label>
+        <label>模式${fieldInput(`data-match="${index}" data-field="mode"`, match.mode)}</label>
+        <label>英雄${fieldInput(`data-match="${index}" data-field="hero"`, match.hero)}</label>
+        <label>結果${fieldInput(`data-match="${index}" data-field="result"`, match.result)}</label>
+        <label>K${fieldInput(`data-match="${index}" data-field="kills"`, match.kills)}</label>
+        <label>D${fieldInput(`data-match="${index}" data-field="deaths"`, match.deaths)}</label>
+        <label>A${fieldInput(`data-match="${index}" data-field="assists"`, match.assists)}</label>
+        <label>經濟${fieldInput(`data-match="${index}" data-field="gold"`, match.gold)}</label>
+        <label>藍方分${fieldInput(`data-match="${index}" data-field="blueScore"`, match.blueScore)}</label>
+        <label>紅方分${fieldInput(`data-match="${index}" data-field="redScore"`, match.redScore)}</label>
+        <label>勝方 blue/red${fieldInput(`data-match="${index}" data-field="winner"`, match.winner)}</label>
+        <label>自己方${fieldInput(`data-match="${index}" data-field="ownerSide"`, match.ownerSide)}</label>
+      </div>
+      <label>註記 繁中${fieldInput(`data-match="${index}" data-field="note" data-lang="zh"`, match.note?.zh)}</label>
+      <label>精彩對局說明${fieldInput(`data-match="${index}" data-field="highlight" data-lang="zh"`, match.highlight?.caption?.zh)}</label>
+      <label>上傳截圖或影片<input data-highlight-file="${index}" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"></label>
+      <button class="btn" type="button" data-action="highlight-upload" data-index="${index}">上傳精彩對局</button>
+      <p class="hint">${match.highlight?.key ? "已有媒體，儲存草稿後才會跟著這場對局。" : "尚未上傳。"}</p>
+      <label class="check"><input type="checkbox" data-match="${index}" data-field="publish"${match.publish ? " checked" : ""}>這場對局公開</label>
+      <h3>記分板</h3>
+      ${board}
+      <button class="btn" type="button" data-action="board-add" data-index="${index}">新增一列</button>
+    </article>`;
+  }).join("");
   return `<section class="stack">
     <h1>選手數據</h1>
-    <p class="hint">這是個人戰績，不是戰隊名單。預設不公開。勾選公開並且按「發布到網站」之後，選手頁才會顯示。空白欄位會顯示待公布，不會自動補段位、頭銜或場次。遊戲 ID 不能剛好是 moohsia。</p>
+    <p class="hint">對齊遊戲內的對戰資料、信譽積分與歷史戰績。沒有官方個人 API，請自己填或上傳截圖。留白就是尚未填寫，不要估段位。公開勾選加上「發布到網站」之後才會出現。遊戲 ID 不能剛好是 moohsia。</p>
     <label class="check"><input type="checkbox" data-player="publish"${player.publish ? " checked" : ""}>公開這份個人數據</label>
-    <label>遊戲 ID<input data-player="handle" value="${esc(player.handle)}" ${CMS_TEXT}></label>
+    <div class="pair"><label>遊戲 ID${fieldInput(`data-player="handle"`, player.handle)}</label><label>UID${fieldInput(`data-player="uid"`, player.uid)}</label></div>
     ${pair("顯示名稱", "name")}
     ${pair("位置", "role")}
     ${pair("路線", "lane")}
@@ -496,19 +619,57 @@ function playerEditor() {
     ${pair("頭銜", "title")}
     ${pair("常用英雄", "signatureHeroes")}
     <label>簡介 繁中<textarea data-player="bio" data-lang="zh" rows="4" ${CMS_TEXT}>${esc(player.bio?.zh)}</textarea></label>
-    <label>簡介 EN<textarea data-player="bio" data-lang="en" rows="4" ${CMS_TEXT}>${esc(player.bio?.en)}</textarea></label>
     <h2>數字</h2>
-    <p class="hint">留白代表尚未填寫。請只填你要公開的數字，不要估。</p>
-    <div class="pair">
-      ${stat("場次", "played")}
-      ${stat("勝場", "wins")}
-      ${stat("勝率", "winRate")}
-      ${stat("KDA", "kda")}
-      ${stat("MVP", "mvp")}
-    </div>
-    <h2>對局</h2>
+    <div class="pair">${stat("場次", "played")}${stat("勝場", "wins")}${stat("勝率", "winRate")}${stat("KDA", "kda")}${stat("MVP", "mvp")}${stat("K", "kills")}${stat("D", "deaths")}${stat("A", "assists")}${stat("經濟", "gold")}${stat("輸出", "damage")}</div>
+    <h2>對戰資料</h2>
+    <div class="repeats">${seasons}</div>
+    <button class="btn" type="button" data-action="season-add">新增賽季</button>
+    <h2>信譽積分</h2>
+    <div class="pair">${["score", "level", "exp", "expMax"].map((key) => `<label>${key}${fieldInput(`data-reputation="${key}"`, reputation[key])}</label>`).join("")}</div>
+    <label>說明 繁中${fieldInput(`data-reputation="note" data-lang="zh"`, reputation.note?.zh)}</label>
+    <div class="repeats">${perks}</div>
+    <button class="btn" type="button" data-action="perk-add">新增特權說明</button>
+    <h2>常用英雄</h2><div class="repeats">${heroes}</div><button class="btn" type="button" data-action="hero-add">新增英雄</button>
+    <h2>冠軍賽榮譽</h2><div class="repeats">${honors}</div><button class="btn" type="button" data-action="honor-add">新增榮譽</button>
+    <h2>榮譽頭銜</h2><div class="repeats">${titles}</div><button class="btn" type="button" data-action="title-add">新增頭銜</button>
+    <h2>歷史戰績</h2>
     <div class="repeats">${matches}</div>
     <button class="btn" type="button" data-action="match-add">新增對局</button>
+  </section>`;
+}
+
+function applicationsView() {
+  const rows = state.applications || [];
+  const cards = rows
+    .map((row) => {
+      const app = row.application || {};
+      const positions = Array.isArray(app.positions) ? app.positions.join("、") : "";
+      const pending = row.status === "pending";
+      return `<article class="repeat" data-app="${esc(row.id)}">
+        <header><b>${esc(app.nickname || row.uid || "申請")}</b><span>${esc(row.status || "")}</span></header>
+        <p>UID ${esc(row.uid)} · ${esc(row.email)} · ${esc(row.createdAt || "")}</p>
+        <p>${esc([app.rank, positions, app.gender, app.ageBand].filter(Boolean).join(" · "))}</p>
+        <p>${esc([app.weekday, app.holiday, app.practice].filter(Boolean).join(" · "))}</p>
+        <p>${esc(app.motivation || "")}</p>
+        ${row.inviteSent ? "<p>已寄出邀請</p>" : ""}
+        ${
+          pending
+            ? `<label>Discord 邀請網址<input data-invite autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+          <label>備註<input data-app-note autocomplete="off" spellcheck="false"></label>
+          <div class="row-actions">
+            <button class="primary" type="button" data-action="app-approve" data-id="${esc(row.id)}">核准並寄出</button>
+            <label class="check"><input type="checkbox" data-notify>拒絕時寄信</label>
+            <button class="btn" type="button" data-action="app-reject" data-id="${esc(row.id)}">拒絕</button>
+          </div>`
+            : `<p>${esc(row.note || "")}</p>`
+        }
+      </article>`;
+    })
+    .join("");
+  return `<section class="stack">
+    <h1>加入申請</h1>
+    <p class="hint">核准時貼上一次性 Discord 邀請。網址只會出現在寄給申請人的信裡，不會留在這個頁面，也不會寫進資料庫。沒有邀請池，系統不會自己產生邀請。</p>
+    ${cards || `<p class="hint">目前沒有申請。</p>`}
   </section>`;
 }
 
@@ -525,12 +686,12 @@ function dashboard() {
     <div class="links">${NAV.filter((item) => item[0] !== "dashboard")
       .map((item) => `<a href="${item[1]}" data-nav>${esc(item[2])}</a>`)
       .join("")}</div>
-    <p class="hint">招募文案可以改字，但這裡沒有試訓報名表。賽程區塊是占位文字，確認之前保持尚未公布即可。</p>
+    <p class="hint">加入申請在側欄。核准時貼一次性邀請，由信件寄出，頁面不留網址。賽程區塊是占位文字，確認之前保持尚未公布即可。</p>
     <h2>Notion</h2>
     <p class="hint">${esc(notionLine())} 只有 Publish 勾選的列會進草稿。新聞未勾選會留成草稿，公開頁看不到。</p>
     <div class="row-actions">
       <button class="btn" type="button" data-action="notion-sync">從 Notion 同步草稿</button>
-      <button class="btn" type="button" data-action="catalog-refresh">更新官方英雄目錄</button>
+      <button class="btn" type="button" data-action="catalog-refresh">更新官方目錄與活動</button>
     </div>
   </section>`;
 }
@@ -542,10 +703,11 @@ function pageBody() {
   if (id === "about") return `${profileEditor()}${copyBlocks("about")}`;
   if (id === "roster") return rosterEditor();
   if (id === "player") return playerEditor();
+  if (id === "applications") return applicationsView();
   if (id === "news") return newsEditor();
   if (id === "contact") return contactEditor();
   if (id === "home") {
-    return `<section class="stack"><h1>首頁</h1><p class="hint">標籤、狀態列、賽程占位都在這頁。招募維持關閉，只改顯示文字。</p>${copyBlocks("home")}</section>`;
+    return `<section class="stack"><h1>首頁</h1><p class="hint">標籤、狀態列、賽程占位都在這頁。加入改成官網申請，公開頁不放 Discord 邀請。</p>${copyBlocks("home")}</section>`;
   }
   return `<section class="stack"><h1>${esc(NAV.find((item) => item[0] === id)?.[2] || "編輯")}</h1>${copyBlocks(id)}</section>`;
 }
@@ -602,6 +764,7 @@ function render() {
   }
   if (currentPath() === "/" || currentPath() === "/login") history.replaceState({}, "", "/dashboard");
   app.innerHTML = shell();
+  if (sectionId() === "applications") void ensureApplications();
 }
 
 function markDirty(text) {
@@ -653,28 +816,104 @@ function onInput(event) {
     markDirty("有未儲存的修改");
     return;
   }
+  if (target.dataset.invite != null || target.dataset.appNote != null || target.dataset.notify != null) return;
   const player = state.draft.player;
   if (!player) return;
+  player.stats = player.stats || {};
+  player.reputation = player.reputation || emptyReputation();
+  player.reputation.note = player.reputation.note || { zh: "", en: "" };
+  player.reputation.privileges = player.reputation.privileges || [];
+  player.seasons = player.seasons || [];
+  player.matches = player.matches || [];
+  player.heroPool = player.heroPool || [];
+  player.championships = player.championships || [];
+  player.honorTitles = player.honorTitles || [];
   if (target.dataset.playerStat) {
     player.stats[target.dataset.playerStat] = target.value;
     markDirty("有未儲存的修改");
     return;
   }
   if (target.dataset.player) {
-    if (target.dataset.player === "publish") player.publish = target instanceof HTMLInputElement && target.checked;
-    else if (target.dataset.player === "handle") player.handle = target.value;
-    else if (target.dataset.lang) player[target.dataset.player][target.dataset.lang] = target.value;
+    const key = target.dataset.player;
+    if (key === "publish") player.publish = target instanceof HTMLInputElement && target.checked;
+    else if (key === "handle" || key === "uid") player[key] = target.value;
+    else if (target.dataset.lang) player[key][target.dataset.lang] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.season != null) {
+    const season = player.seasons[Number(target.dataset.season)];
+    if (!season) return;
+    if (target.dataset.radar) season.radar[target.dataset.radar] = target.value;
+    else if (target.dataset.medal) season.medals[target.dataset.medal] = target.value;
+    else if (target.dataset.field) season[target.dataset.field] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.reputation) {
+    if (target.dataset.reputation === "note" && target.dataset.lang) player.reputation.note[target.dataset.lang] = target.value;
+    else player.reputation[target.dataset.reputation] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.perk != null) {
+    const item = player.reputation.privileges[Number(target.dataset.perk)];
+    if (!item) return;
+    if (target.dataset.field === "unlocked") item.unlocked = target instanceof HTMLInputElement && target.checked;
+    else if (target.dataset.field === "level") item.level = target.value;
+    else if (target.dataset.lang && target.dataset.part) item[target.dataset.part][target.dataset.lang] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (writeNamed(player.heroPool, target.dataset.heroCard, target)) return;
+  if (writeNamed(player.championships, target.dataset.honor, target)) return;
+  if (writeNamed(player.honorTitles, target.dataset.titleRow, target)) return;
+  if (target.dataset.board != null) {
+    const match = player.matches[Number(target.dataset.board)];
+    const row = match?.board?.[Number(target.dataset.row)];
+    if (!row) return;
+    const field = target.dataset.field;
+    if (field === "mvp" || field === "owner") row[field] = target instanceof HTMLInputElement && target.checked;
+    else if (field === "items") row.items = String(target.value).split(/[、,，]/).map((part) => part.trim()).filter(Boolean).slice(0, 6);
+    else if (field === "side") row.side = sideValue(target.value);
+    else row[field] = target.value;
     markDirty("有未儲存的修改");
     return;
   }
   if (target.dataset.match != null) {
     const match = player.matches[Number(target.dataset.match)];
     if (!match) return;
-    if (target.dataset.field === "publish") match.publish = target instanceof HTMLInputElement && target.checked;
-    else if (target.dataset.field === "note" && target.dataset.lang) match.note[target.dataset.lang] = target.value;
-    else match[target.dataset.field] = target.value;
+    const field = target.dataset.field;
+    if (field === "publish") match.publish = target instanceof HTMLInputElement && target.checked;
+    else if ((field === "note" || field === "highlight") && target.dataset.lang) {
+      if (field === "highlight") {
+        match.highlight = match.highlight || emptyHighlight();
+        match.highlight.caption[target.dataset.lang] = target.value;
+      } else match.note[target.dataset.lang] = target.value;
+    } else if (field === "winner" || field === "ownerSide") match[field] = sideValue(target.value);
+    else match[field] = target.value;
     markDirty("有未儲存的修改");
   }
+}
+
+function sideValue(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (text === "red" || text === "紅" || text === "紅方") return "red";
+  if (text === "blue" || text === "藍" || text === "藍方") return "blue";
+  return String(value || "").trim();
+}
+
+function writeNamed(list, index, target) {
+  if (index == null) return false;
+  const item = list[Number(index)];
+  if (!item) return true;
+  const field = target.dataset.field;
+  if (target.dataset.lang && field) {
+    item[field] = item[field] || { zh: "", en: "" };
+    item[field][target.dataset.lang] = target.value;
+  } else if (field) item[field] = target.value;
+  markDirty("有未儲存的修改");
+  return true;
 }
 
 async function persist(mode) {
@@ -711,13 +950,26 @@ async function discardDraft() {
 }
 
 async function logout() {
-  await api("/api/admin/logout", { method: "POST", body: "{}" });
+  clearIdle();
+  const was = state.authed;
+  state.authed = false;
+  if (was) await api("/api/admin/logout", { method: "POST", body: "{}" });
+  state.csrf = "";
+  state.draft = null;
+  state.status = "";
+  state.applications = [];
+  history.replaceState({}, "", "/login");
+  render();
+}
+
+function dropSession() {
+  clearIdle();
   state.authed = false;
   state.csrf = "";
   state.draft = null;
   state.status = "";
+  state.applications = [];
   history.replaceState({}, "", "/login");
-  render();
 }
 
 function mutateList(path, index) {
@@ -817,17 +1069,9 @@ function onClick(event) {
     return;
   }
   if (action === "match-add") {
-    state.draft.player.matches.push({
-      id: newId(),
-      label: "",
-      date: "",
-      mode: "",
-      hero: "",
-      result: "",
-      kda: "",
-      note: { zh: "", en: "" },
-      publish: false,
-    });
+    const match = emptyMatch();
+    match.id = newId();
+    state.draft.player.matches.push(match);
     markDirty("有未儲存的修改");
     render();
     return;
@@ -836,6 +1080,100 @@ function onClick(event) {
     state.draft.player.matches.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
     markDirty("有未儲存的修改");
     render();
+    return;
+  }
+  if (action === "season-add") {
+    const season = emptySeason();
+    season.id = newId();
+    state.draft.player.seasons.push(season);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "season-remove") {
+    state.draft.player.seasons.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "perk-add") {
+    state.draft.player.reputation = state.draft.player.reputation || emptyReputation();
+    state.draft.player.reputation.privileges.push(emptyPrivilege());
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "perk-remove") {
+    state.draft.player.reputation.privileges.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "hero-add") {
+    const card = emptyHeroCard();
+    card.id = newId();
+    state.draft.player.heroPool.push(card);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "hero-remove") {
+    state.draft.player.heroPool.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "honor-add") {
+    const row = emptyHonor();
+    row.id = newId();
+    state.draft.player.championships.push(row);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "honor-remove") {
+    state.draft.player.championships.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "title-add") {
+    const row = emptyTitle();
+    row.id = newId();
+    state.draft.player.honorTitles.push(row);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "title-remove") {
+    state.draft.player.honorTitles.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "board-add") {
+    const match = state.draft.player.matches[Number(event.target.closest("[data-index]").dataset.index)];
+    if (!match) return;
+    match.board = match.board || [];
+    match.board.push(emptyBoardPlayer());
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "highlight-upload") {
+    void uploadHighlight(Number(event.target.closest("[data-index]").dataset.index));
+    return;
+  }
+  if (action === "app-approve" || action === "app-reject") {
+    const button = event.target.closest("[data-id]");
+    const card = button?.closest("[data-app]");
+    const invite = card?.querySelector("[data-invite]");
+    const inviteUrl = invite instanceof HTMLInputElement ? invite.value : "";
+    if (invite instanceof HTMLInputElement) invite.value = "";
+    const noteNode = card?.querySelector("[data-app-note]");
+    const note = noteNode instanceof HTMLInputElement ? noteNode.value : "";
+    const notify = card?.querySelector("[data-notify]") instanceof HTMLInputElement && card.querySelector("[data-notify]").checked;
+    void reviewApplication(button?.dataset.id, action === "app-approve" ? "approve" : "reject", { inviteUrl, note, notify });
     return;
   }
   if (action === "notion-sync") {
@@ -888,6 +1226,7 @@ async function onSubmit(event) {
   }
   applyPayload(content);
   state.status = "已登入";
+  armIdle();
   history.replaceState({}, "", "/dashboard");
   render();
 }
@@ -917,10 +1256,130 @@ function takeLogin(form) {
   return { username, password };
 }
 
+const IDLE_MS = 15 * 60 * 1000;
+let idleTimer = 0;
+let lastPing = 0;
+let applicationsLoading = false;
+
+function clearIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = 0;
+}
+
+function armIdle() {
+  clearTimeout(idleTimer);
+  if (!state.authed) return;
+  idleTimer = setTimeout(() => {
+    void logout();
+  }, IDLE_MS);
+}
+
+async function pingSession() {
+  if (!state.authed) return;
+  const now = Date.now();
+  if (now - lastPing < 60_000) return;
+  lastPing = now;
+  const session = await api("/api/admin/session");
+  if (session.ok && session.csrf) state.csrf = session.csrf;
+}
+
+function noteActivity() {
+  if (!state.authed) return;
+  armIdle();
+  void pingSession();
+}
+
+async function ensureApplications() {
+  if (!state.authed || applicationsLoading) return;
+  if (state.applicationsAt && Date.now() - state.applicationsAt < 1500) return;
+  applicationsLoading = true;
+  const data = await api("/api/admin/applications");
+  applicationsLoading = false;
+  if (!state.authed) return;
+  state.applicationsAt = Date.now();
+  if (!data.ok) {
+    state.error = message(data.code);
+    state.applications = [];
+  } else {
+    state.applications = data.applications || [];
+    state.error = "";
+  }
+  render();
+}
+
+async function reviewApplication(id, action, fields) {
+  if (!id) return;
+  state.error = "";
+  state.status = action === "approve" ? "寄送中" : "更新中";
+  const body = action === "approve" ? { inviteUrl: fields.inviteUrl, note: fields.note } : { note: fields.note, notify: fields.notify };
+  const data = await api(`/api/admin/applications/${encodeURIComponent(id)}/${action}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  fields.inviteUrl = "";
+  if (!state.authed) {
+    render();
+    return;
+  }
+  if (!data.ok) {
+    state.error = message(data.code);
+    state.status = "";
+    render();
+    return;
+  }
+  state.status = action === "approve" ? "已寄出邀請" : "已更新";
+  state.applicationsAt = 0;
+  await ensureApplications();
+}
+
+async function uploadHighlight(index) {
+  const input = document.querySelector(`[data-highlight-file="${index}"]`);
+  const file = input instanceof HTMLInputElement ? input.files?.[0] : null;
+  if (!file) {
+    state.error = "請先選擇截圖或影片。";
+    const node = document.querySelector("[data-error]");
+    if (node) node.textContent = state.error;
+    return;
+  }
+  const form = new FormData();
+  form.set("file", file);
+  const headers = new Headers();
+  if (state.csrf) headers.set("x-csrf-token", state.csrf);
+  const response = await fetch("/api/admin/media", { method: "POST", headers, body: form, credentials: "same-origin" });
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    dropSession();
+    render();
+    return;
+  }
+  if (!data.ok) {
+    state.error = message(data.code || "media_type");
+    state.status = "";
+    render();
+    return;
+  }
+  const match = state.draft?.player?.matches?.[index];
+  if (!match) return;
+  const caption = match.highlight?.caption || { zh: "", en: "" };
+  match.highlight = { caption, key: data.key, mime: data.mime, kind: data.kind };
+  markDirty("精彩對局已上傳，記得儲存草稿");
+  render();
+}
+
 async function boot() {
-  document.addEventListener("click", onClick);
-  document.addEventListener("input", onInput);
-  document.addEventListener("change", onInput);
+  document.addEventListener("click", (event) => {
+    noteActivity();
+    onClick(event);
+  });
+  document.addEventListener("input", (event) => {
+    noteActivity();
+    onInput(event);
+  });
+  document.addEventListener("change", (event) => {
+    noteActivity();
+    onInput(event);
+  });
+  document.addEventListener("keydown", () => noteActivity());
   document.addEventListener("focusin", unlockField);
   document.addEventListener("submit", onSubmit, true);
   window.addEventListener("popstate", () => render());
@@ -931,6 +1390,7 @@ async function boot() {
     const content = await api("/api/admin/content");
     if (content.ok) applyPayload(content);
     else state.error = message(content.code);
+    armIdle();
   }
   render();
 }

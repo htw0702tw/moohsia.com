@@ -4,7 +4,7 @@ import { refreshCatalog } from "../shared/catalog-store.js";
 import { isAdminHost } from "../shared/hosts.js";
 import { logFailure } from "../shared/log.js";
 import { syncNotionDraft } from "../shared/notion-sync.js";
-import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
+import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/session.js";
 
 /**
  * Marketing site for moohsia.com (暮霞｜MOS) plus the private admin host.
@@ -27,6 +27,14 @@ import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
  * @property {string} [NOTION_PROFILE_DB]
  * @property {string} [NOTION_PLAYER_DB]
  * @property {string} [NOTION_MATCH_DB]
+ * @property {string} [NOTION_SEASON_DB]
+ * @property {string} [NOTION_HONOR_DB]
+ * @property {string} [NOTION_TITLE_DB]
+ * @property {string} [NOTION_HERO_DB]
+ * @property {string} [RESEND_API_KEY]
+ * @property {string} [MAIL_FROM]
+ * @property {string} [APPLICATIONS_TO]
+ * @property {R2Bucket} [MEDIA]
  */
 
 const PUBLIC_FALLBACK = "/index.html";
@@ -62,7 +70,7 @@ function redirect(pathname) {
 async function adminSession(request, env) {
   const secret = env?.ADMIN_SESSION_SECRET;
   if (typeof secret !== "string" || secret.length < 16) return null;
-  return readSession(secret, readCookie(request, SESSION_COOKIE));
+  return readSession(secret, readCookie(request, SESSION_COOKIE), sessionNow(env));
 }
 
 async function serveAsset(request, env, fallbackPath) {

@@ -1,11 +1,16 @@
 {
   "source": "official-snapshot",
-  "fetchedAt": "2026-09-25T04:13:35.259Z",
+  "fetchedAt": "2026-09-25T05:28:42.377Z",
   "attribution": {
     "heroes": "https://moba.garena.tw/game/heroes/",
     "images": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/",
     "publisher": "Garena Online",
-    "note": "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names are copied from public Garena news pages and are not a live queue."
+    "activities": [
+      "https://moba.garena.tw/news/Activity",
+      "https://moba.garena.tw/news/",
+      "https://moba.garena.tw/news/Esports"
+    ],
+    "note": "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API."
   },
   "roles": [
     {
@@ -1744,6 +1749,195 @@
       "excerpt": "2. 娛樂模式入口 挑戰者們也可以在「即時對戰」→「娛樂模式」→ 「雙人飛車賽」 二、模式玩法說明 1. 組隊規則 兩人一隊，與其他四隊比賽 2. 勝利條件 最先沿線路跑完兩圈即可獲勝（逆行無效），最終按照團隊總分排序計算名次及獎勵 團隊總分=個人分+隊友分+隊伍沖線分（最終兩人都完成比賽，可以獲得【隊伍沖線分】，如果比賽結束前自己或隊友未抵達終點，則無…",
       "sourceUrl": "https://moba.garena.tw/news/show/2914",
       "sourceKind": "official-news"
+    }
+  ],
+  "activities": [
+    {
+      "id": "5678",
+      "title": "傳說對決 × Red Bull 十週年聯名罐登場—購買就有機會帶走稀世等級造型！",
+      "dateLabel": "",
+      "date": "",
+      "kind": "activity",
+      "excerpt": "傳說對決 X Red Bull 十週年聯名罐，8/5 通路全新上市！ 活動說明： 2026/08/05（三）起可在全台指定通路購買傳說對決 X Red Bull 十週年聯名罐，透過不同通路在不同時間可獲得不同虛寶禮包內容，有機會獲得：緋淚 櫻吹雪、拉維爾 S-Dreamer、莉莉安 鏡花水月、颯枷 S-Dreamer、刀鋒寶貝 搖滾狂飆、電鳴狼拳 筱清等任一",
+      "image": "https://kgtw.cdn.garenanow.com/mgames/kgtw/events/will/red%20bull%20confirm1.png",
+      "sourceUrl": "https://moba.garena.tw/news/show/5678",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "5714",
+      "title": "《Garena 傳說對決》X 錢櫃主題聯名活動 打卡解鎖限定虛寶卡，抽 WaVe 女團指定造型！",
+      "dateLabel": "09/18",
+      "date": "2026-09-18",
+      "kind": "activity",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5714",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "5712",
+      "title": "儲值蒐集許願石兌換造型",
+      "dateLabel": "09/15",
+      "date": "2026-09-15",
+      "kind": "activity",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5712",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "5713",
+      "title": "《Garena 傳說對決》X 7-ELEVEN 十週年聯名登場！滿額就抽稀世造型及專屬表情",
+      "dateLabel": "09/15",
+      "date": "2026-09-15",
+      "kind": "activity",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5713",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "5711",
+      "title": "召喚之塔登場 | 星際議會 帥氣重返！",
+      "dateLabel": "09/15",
+      "date": "2026-09-15",
+      "kind": "activity",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5711",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "5709",
+      "title": "浴火重生戰意再燃│ 狂鐵不死傭兵席捲戰場！",
+      "dateLabel": "09/11",
+      "date": "2026-09-11",
+      "kind": "activity",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5709",
+      "listUrl": "https://moba.garena.tw/news/Activity"
+    },
+    {
+      "id": "4298",
+      "title": "網路交易安全宣導",
+      "dateLabel": "",
+      "date": "",
+      "kind": "announcement",
+      "excerpt": "各位挑戰者大家好 網路交易與交友存在高風險，為保障大家的財務與個人安全，特此呼籲： (1)千萬不要將照片、密碼、個人資料等私人訊息提供給陌生人。 (2)來自陌生人的訊息請務必提高警覺，請勿輕信交友、代儲、代抽資訊、帳號買賣、帳號索取、帳號共用、免費點數贈禮、買賣交換或不當交友邀請等訊息。 (3)不要輕易相信來路不明的訊息或點擊不明連結。 若您發現任何違規或可",
+      "image": "https://dlgarenanow-a.akamaihd.net/mgames/kgtw/moba/moba/%E5%85%AC%E7%89%88%E5%85%AC%E5%91%8A%E5%9C%96/378x198_4.jpg",
+      "sourceUrl": "https://moba.garena.tw/news/show/4298",
+      "listUrl": "https://moba.garena.tw/news/"
+    },
+    {
+      "id": "5716",
+      "title": "09 / 23 （三）傳說對決「十週年裂隙穿梭版本」更新公告",
+      "dateLabel": "09/24",
+      "date": "2026-09-24",
+      "kind": "announcement",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5716",
+      "listUrl": "https://moba.garena.tw/news/"
+    },
+    {
+      "id": "5720",
+      "title": "幸運啟程即將結束│ 聖典貢獻值折扣",
+      "dateLabel": "09/24",
+      "date": "2026-09-24",
+      "kind": "announcement",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5720",
+      "listUrl": "https://moba.garena.tw/news/"
+    },
+    {
+      "id": "5719",
+      "title": "十週年裂隙穿梭版本｜平衡性調整",
+      "dateLabel": "09/21",
+      "date": "2026-09-21",
+      "kind": "announcement",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5719",
+      "listUrl": "https://moba.garena.tw/news/"
+    },
+    {
+      "id": "5717",
+      "title": "綻放！深沼的力量｜歌芙拉 深沼女巫限時登場！",
+      "dateLabel": "09/18",
+      "date": "2026-09-18",
+      "kind": "announcement",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5717",
+      "listUrl": "https://moba.garena.tw/news/"
+    },
+    {
+      "id": "5692",
+      "title": "Garena 傳說對決 GCS 職業聯賽選手懲處公告",
+      "dateLabel": "",
+      "date": "",
+      "kind": "esports",
+      "excerpt": "Garena 傳說對決 GCS 職業聯賽選手懲處公告 關於 GCS 職業聯賽選手王子修「FW NaiLiu」先前於個人實況之言行涉及法規爭議一事，經法院判決確定觸犯「公然侮辱罪」。依據《GCS 職業聯賽規章》第 9.3.4 條「民事／刑事罪責／非法行為」之相關規範，GCS 職業聯賽官方團隊綜合考量本案違規事實、司法判決結果及違規情節，將依規章對該名選手進行以",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5692",
+      "listUrl": "https://moba.garena.tw/news/Esports"
+    },
+    {
+      "id": "5502",
+      "title": "《Garena傳說對決》GCS 職業聯賽春季賽 2月27日熱血登場！",
+      "dateLabel": "02/25",
+      "date": "2026-02-25",
+      "kind": "esports",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5502",
+      "listUrl": "https://moba.garena.tw/news/Esports"
+    },
+    {
+      "id": "5408",
+      "title": "泰國RPL戰隊 FULL SENSE 擊敗閃電狼 勇奪傳說對決AIC 2025國際錦標賽冠軍",
+      "dateLabel": "12/11",
+      "date": "2025-12-11",
+      "kind": "esports",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5408",
+      "listUrl": "https://moba.garena.tw/news/Esports"
+    },
+    {
+      "id": "5382",
+      "title": "AIC 2025 國際錦標賽 11 月 17 日開戰 總決賽將移師越南河內！",
+      "dateLabel": "11/13",
+      "date": "2025-11-13",
+      "kind": "esports",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5382",
+      "listUrl": "https://moba.garena.tw/news/Esports"
+    },
+    {
+      "id": "5377",
+      "title": "閃電狼劍指年度大滿貫 奪2025 GCS夏季賽冠軍 締造聯賽三連霸歷史佳績",
+      "dateLabel": "11/04",
+      "date": "2026-11-04",
+      "kind": "esports",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5377",
+      "listUrl": "https://moba.garena.tw/news/Esports"
+    },
+    {
+      "id": "5367",
+      "title": "《Garena 傳說對決》GCS 2025 夏季準決暨冠軍賽 11月2日決戰和平籃球館！",
+      "dateLabel": "10/29",
+      "date": "2026-10-29",
+      "kind": "esports",
+      "excerpt": "",
+      "image": "",
+      "sourceUrl": "https://moba.garena.tw/news/show/5367",
+      "listUrl": "https://moba.garena.tw/news/Esports"
     }
   ]
 }
