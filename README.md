@@ -359,7 +359,7 @@ export const newsPosts = [
 
 申請人在 `/apply` 填：歷史排位賽最高戰績（最低黃金）、全數字 UID、暱稱、聯絡信箱、性別、年齡層（18 歲起）、為什麼希望加入、剛好兩個位子、平日與假日遊玩時間、可配合練習的具體時段（例如 `20:00～22:00`），並勾選尊重、友善、包容、禁止金錢往來、跟隨官方規範。
 
-`POST /api/apply` 會寫進 D1 `applications`。同一個 UID 已有待審申請時回 409。蜜罐欄位直接丟棄。同一 IP 15 分鐘最多 5 筆。
+`POST /api/apply` 會寫進 D1 `applications`。同一個 UID 已有待審申請時回 409。蜜罐欄位直接丟棄。同一 IP 15 分鐘最多 5 筆。失敗時回應帶 `code` 與 `field`（例如 `positions_invalid`、`practice_time_invalid`、`rank_below_gold`）。申請頁會把已知的 code 翻成繁中或英文說明；沒有 code 時才顯示「這次沒有送出。」位子數量與練習時段會先在瀏覽器裡用跟伺服器相同的規則擋下來。信沒寄出時申請仍留下，`mailed` 為 false，頁面仍顯示已收到，並補一句通知信可能晚到。
 
 寄信用 Resend。密鑰不要進 git：
 
@@ -436,5 +436,5 @@ npm run deploy
 ## 技術
 
 - Vite 靜態頁，前端路由。
-- Cloudflare Worker `moohsia-com` 提供 `/api/*`，其餘由靜態資產處理；找不到的路徑回 `index.html`。
+- Cloudflare Worker `moohsia-com` 提供 `/api/*`。重新整理或直接打開 `/apply`、`/player`、`/activities` 這類沒有副檔名的網址時，Worker 回傳公開頁殼，瀏覽器網址留在原頁。Assets 對這些路徑會 307 到 `/`，那個重新導向只在 Worker 裡面跟著走，不會交給瀏覽器。有副檔名但找不到的檔案維持 404。
 - 設定檔是 [`wrangler.jsonc`](wrangler.jsonc)，`compatibility_date` 為 `2026-09-24`。

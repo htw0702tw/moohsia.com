@@ -1,4 +1,5 @@
 import { SITE_URL } from "../shared/brand.js";
+import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
 import { setActivityFilter, setCatalog, setRoleFilter } from "./catalog-state.js";
 import { setPlayerMatch, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
@@ -377,13 +378,33 @@ function readApply(form) {
   };
 }
 
+function showApplyError(code, field) {
+  applyDraft.status = "";
+  applyDraft.mailDelayed = false;
+  applyDraft.errorCode = typeof code === "string" ? code : "";
+  applyDraft.field = typeof field === "string" ? field : "";
+  paint();
+  const message = document.querySelector("[data-apply-error]");
+  if (message instanceof HTMLElement) {
+    message.focus({ preventScroll: true });
+    message.scrollIntoView({ block: "nearest" });
+  }
+}
+
 async function onSubmit(event) {
   const form = event.target;
   if (!(form instanceof HTMLFormElement) || form.id !== "apply-form") return;
   event.preventDefault();
   const payload = readApply(form);
-  applyDraft.error = "";
+  applyDraft.errorCode = null;
+  applyDraft.field = "";
   applyDraft.status = "";
+  applyDraft.mailDelayed = false;
+  const preview = previewApplication(payload);
+  if (!preview.ok) {
+    showApplyError(preview.code, preview.field);
+    return;
+  }
   try {
     const response = await fetch("/api/apply", {
       method: "POST",
@@ -391,17 +412,17 @@ async function onSubmit(event) {
       body: JSON.stringify(payload),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok !== true || data.stored === false && response.status !== 201) {
-      applyDraft.error = copy().apply.fail;
-      paint();
+    if (!response.ok || data.ok !== true || (data.stored === false && response.status !== 201)) {
+      showApplyError(data.code, data.field);
       return;
     }
     applyDraft.status = "sent";
-    applyDraft.error = "";
+    applyDraft.errorCode = null;
+    applyDraft.field = "";
+    applyDraft.mailDelayed = data.mailed === false;
     paint();
   } catch {
-    applyDraft.error = copy().apply.fail;
-    paint();
+    showApplyError("", "");
   }
 }
 
