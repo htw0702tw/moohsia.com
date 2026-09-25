@@ -643,6 +643,8 @@ test("expanded accordion tables fill both teams and the owner row", () => {
   assert.equal(owner.minions, "30");
   assert.equal(owner.control, "8.382");
   assert.equal(owner.healing, "7964");
+  assert.notEqual(owner.healing, "30");
+  assert.notEqual(owner.minions, "7964");
   assert.equal(owner.tower, "2743");
   assert.equal(owner.lane, "中路");
   assert.equal(owner.rankDelta, "-100");
@@ -675,7 +677,7 @@ test("expanded accordion tables fill both teams and the owner row", () => {
   assert.equal(stored.uid, "3678194289083498");
 });
 
-test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item titles beat id alts", () => {
+test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item cells keep ids", () => {
   const html = `<div class="accordion-item player-match-item">
     <button class="accordion-button"><span class="badge bg-danger">失敗</span>
       <img alt="娜塔亞" />
@@ -715,7 +717,7 @@ test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item titles b
   assert.equal(match.board.filter((row) => row.side === "red").length, 1);
   assert.equal(match.board[0].side, "blue");
   assert.equal(match.board[0].hero, "弗洛倫");
-  assert.equal(match.board[0].items[0], "破甲弓");
+  assert.equal(match.board[0].items[0], "裝備 1422");
   const owner = match.board.find((row) => row.owner);
   assert.equal(owner.side, "red");
   assert.equal(owner.hero, "娜塔亞");
@@ -723,7 +725,7 @@ test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item titles b
   assert.equal(owner.kills, "7");
   assert.equal(owner.deaths, "10");
   assert.equal(owner.assists, "5");
-  assert.deepEqual(owner.items.slice(0, 2), ["噬神之書", "抵抗之靴"]);
+  assert.deepEqual(owner.items.slice(0, 2), ["裝備 1423", "抵抗之靴"]);
   assert.equal(owner.level, "15");
 });
 
@@ -783,6 +785,8 @@ test("expanded 藍方/紅方 tables keep sides, header result, and single-line c
   assert.equal(owner.minions, "30");
   assert.equal(owner.control, "8.382");
   assert.equal(owner.healing, "7964");
+  assert.notEqual(owner.healing, "30");
+  assert.notEqual(owner.minions, "7964");
   assert.equal(owner.tower, "2743");
   assert.equal(owner.lane, "中路");
   assert.equal(owner.reputation, "100");

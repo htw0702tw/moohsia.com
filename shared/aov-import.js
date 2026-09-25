@@ -80,6 +80,7 @@ export function aovPageStatus(status, html) {
 
 function columnKey(text) {
   const label = String(text || "").replace(/\s+/g, "");
+  if (label.includes("|") || (label.includes("補兵") && label.includes("治療")) || (label.includes("輸出") && label.includes("承傷"))) return "";
   const rules = [
     ["輸出占比", "heroDamagePct"],
     ["輸出%", "heroDamagePct"],
@@ -154,19 +155,24 @@ function isStatIcon(value) {
 function imageFacts(html) {
   const alts = [];
   const labels = [];
+  const gear = [];
   const re = /<img\b([^>]*)>/gi;
   let match;
   while ((match = re.exec(html))) {
     const alt = attrValue(match[1], "alt");
     const title =
       attrValue(match[1], "title") || attrValue(match[1], "aria-label") || attrValue(match[1], "data-bs-original-title");
+    const srcId = /\/item\/(\d+)\./.exec(attrValue(match[1], "src"))?.[1] || "";
+    const altId = /^裝備\s*(\d+)$/.exec(alt)?.[1] || "";
+    const id = srcId || altId;
     if (alt) alts.push(alt);
-    const real = [title, alt].find((value) => value && !isItemId(value) && !isStatIcon(value));
-    const fallback = [title, alt].find((value) => value && !isStatIcon(value));
-    const label = real || fallback;
+    const name = [title, alt].find((value) => value && !isItemId(value) && !isStatIcon(value));
+    if (id) gear.push(`裝備 ${id}`);
+    else if (name) gear.push(name);
+    const label = name || [title, alt].find((value) => value && !isStatIcon(value));
     if (label) labels.push(label);
   }
-  return { alts, labels };
+  return { alts, labels, gear };
 }
 
 function portraitName(cell) {
@@ -190,7 +196,13 @@ function parseTables(html) {
       let cell;
       while ((cell = cellRe.exec(row[2]))) {
         const images = imageFacts(cell[1]);
-        cells.push({ text: stripTags(cell[1]), alts: images.alts, labels: images.labels, mvp: /MVP/i.test(cell[1]) });
+        cells.push({
+          text: stripTags(cell[1]),
+          alts: images.alts,
+          labels: images.labels,
+          gear: images.gear,
+          mvp: /MVP/i.test(cell[1]),
+        });
       }
       if (!cells.length) continue;
       cells.marked = /table-warning/.test(row[1]);
@@ -231,10 +243,17 @@ function numberFrom(text, { places = 0, signed = false } = {}) {
 
 function itemsFrom(cell) {
   if (!cell) return [];
+  if (cell.gear?.length) return cell.gear.slice(0, 6);
   const labels = cell.labels?.length ? cell.labels : cell.alts || [];
+  const ids = labels
+    .map((label) => {
+      const id = /^裝備\s*(\d+)$/.exec(label)?.[1];
+      return id ? `裝備 ${id}` : "";
+    })
+    .filter(Boolean);
+  if (ids.length) return ids.slice(0, 6);
   const named = labels.filter((label) => label && !isItemId(label) && !isStatIcon(label));
-  const chosen = named.length ? named : labels.filter((label) => label && !isStatIcon(label));
-  if (chosen.length) return chosen.slice(0, 6);
+  if (named.length) return named.slice(0, 6);
   return String(cell.text || "")
     .split(/[、,，]/)
     .map((part) => part.trim())
@@ -398,6 +417,17 @@ function splitPipeValues(labels, text) {
   return lines;
 }
 
+function pipeKeys(parts) {
+  const norm = parts.map((part) => part.replace(/\s+/g, ""));
+  if (norm.length === 4 && norm[0].includes("補兵") && norm[1].includes("控場") && norm[2].includes("治療") && norm[3].includes("塔傷")) {
+    return ["minions", "control", "healing", "tower"];
+  }
+  if (norm.length === 3 && norm[0].includes("輸出") && norm[1].includes("承傷") && norm[2].includes("經濟")) {
+    return ["heroDamage", "taken", "gold"];
+  }
+  return parts.map((label) => columnKey(label));
+}
+
 function assignHeaderCell(cells, headerText, cell) {
   if (!cell) return;
   const parts = String(headerText || "")
@@ -406,8 +436,7 @@ function assignHeaderCell(cells, headerText, cell) {
     .filter(Boolean);
   if (parts.length > 1) {
     const values = splitPipeValues(parts, cell.text || "");
-    parts.forEach((label, index) => {
-      const key = columnKey(label);
+    pipeKeys(parts).forEach((key, index) => {
       if (!key || cells[key]) return;
       cells[key] = { text: values[index] || "", alts: [], mvp: false };
     });
