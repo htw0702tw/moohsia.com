@@ -1,6 +1,7 @@
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
 import { getPlayerView } from "./player-view.js";
+import { derivedKda, matchRecency } from "../shared/player.js";
 
 function bi(value) {
   if (!value || typeof value !== "object") return "";
@@ -170,7 +171,7 @@ function boardCells(row, tab, page) {
       .join(" · ");
   }
   if (tab === "output") return [row.heroDamage, row.damageRatio].filter(Boolean).join(" · ");
-  if (tab === "survival") return [row.taken, row.takenPer].filter(Boolean).join(" · ");
+  if (tab === "survival") return [row.taken, row.takenPer, row.healing].filter(Boolean).join(" · ");
   if (tab === "farm") return [row.gold, row.gpm].filter(Boolean).join(" · ");
   if (tab === "record") return [row.kills, row.deaths, row.assists, row.score].filter(Boolean).join(" / ");
   if (tab === "team") return [row.teamfightCount, row.teamfightRate && `${row.teamfightRate}%`, row.heroDamagePct && `${row.heroDamagePct}%`].filter(Boolean).join(" · ");
@@ -178,12 +179,23 @@ function boardCells(row, tab, page) {
   return [kda, row.gold, row.score].filter(Boolean).join(" · ");
 }
 
+function badgeLine(match, page) {
+  const labels = [];
+  if (match.mvp) labels.push("MVP");
+  for (const [key, label] of Object.entries(page.medals || {})) {
+    if (match.badges?.[key]) labels.push(label);
+  }
+  return labels.join(" · ");
+}
+
 function scoreboard(match, page, tab) {
   const blue = (match.board || []).filter((row) => row.side !== "red");
   const red = (match.board || []).filter((row) => row.side === "red");
   if (!blue.length && !red.length) {
     const kda = [match.kills, match.deaths, match.assists].filter((part) => part !== "").join(" / ");
-    const meta = [match.mode, match.hero, match.result, kda || match.kda, match.gold].filter(Boolean).join(" · ");
+    const meta = [match.mode, match.map, match.hero, match.skin, match.result, kda || match.kda, match.gold, match.damage, match.taken, match.healing, badgeLine(match, page)]
+      .filter(Boolean)
+      .join(" · ");
     return `<p class="section-note">${esc(meta || page.pending)}</p>`;
   }
   const side = (rows, tone) =>
@@ -202,21 +214,27 @@ function scoreboard(match, page, tab) {
   const title = [match.blueScore, match.result || (match.winner === match.ownerSide && match.winner ? "VICTORY" : ""), match.redScore]
     .filter(Boolean)
     .join(" ");
+  const subject = [match.hero, match.skin, badgeLine(match, page)].filter(Boolean).join(" · ");
+  const when = [match.duration, match.playedAt || match.date].filter(Boolean).join(" · ");
   return `<div class="scoreboard">
-    <header><span>${esc(match.duration || "")}</span><strong>${esc(title || match.label || page.pending)}</strong><span>${esc(match.playedAt || match.date || "")}</span></header>
+    <header><span>${esc(when)}</span><strong>${esc(title || match.label || page.pending)}</strong><span>${esc(subject)}</span></header>
     ${side(blue, "blue")}${side(red, "red")}
   </div>`;
 }
 
 function historyPanel(copy, player) {
   const page = copy.player;
-  const matches = player.matches || [];
+  const matches = (player.matches || [])
+    .map((match, index) => ({ match, index }))
+    .sort((a, b) => matchRecency(b.match) - matchRecency(a.match) || a.index - b.index)
+    .map((item) => item.match);
   if (!matches.length) return `<p class="section-note">${esc(page.matchesEmpty)}</p>`;
   const view = getPlayerView();
   const current = matches.find((match) => match.id === view.match) || matches[0];
   const list = matches
     .map((match) => {
-      const label = [match.date || match.playedAt, match.hero || match.label, match.result].filter(Boolean).join(" · ");
+      const kda = [match.kills, match.deaths, match.assists].filter((part) => part !== "").join("/");
+      const label = [match.date || match.playedAt, match.result, match.hero || match.label, kda].filter(Boolean).join(" · ");
       return `<button type="button" class="chip${match.id === current.id ? " is-on" : ""}" data-match="${esc(match.id)}">${esc(label || page.pending)}</button>`;
     })
     .join("");
@@ -253,6 +271,38 @@ function reputationPanel(copy, player) {
   </div>`;
 }
 
+const SKILL_LABEL = { 1: "1", 2: "2", 3: "3", 4: "大招" };
+const ARCANA_COLOR = { red: "紅", purple: "紫", green: "綠" };
+
+function buildsPanel(copy, player) {
+  const page = copy.player;
+  const builds = player.builds || [];
+  if (!builds.length) return `<p class="section-note">${esc(page.buildsEmpty)}</p>`;
+  return `<div class="mode-grid">${builds
+    .map((build) => {
+      const skills = (build.skillOrder || []).filter(Boolean).map((token) => SKILL_LABEL[token] || token).join(" → ");
+      const items = (build.items || []).filter(Boolean);
+      const arcana = (build.arcana || [])
+        .filter((row) => row.name || row.count)
+        .map((row) => [ARCANA_COLOR[row.color] || "", row.count ? `${row.count}×` : "", row.name].filter(Boolean).join(" "))
+        .join(" · ");
+      const gear = [items.join(" · "), build.boots, build.enchant].filter(Boolean).join(" · ");
+      const shot = build.shot?.url
+        ? `<figure class="highlight">${build.shot.kind === "video" ? `<video controls playsinline preload="metadata" src="${esc(build.shot.url)}"></video>` : `<img src="${esc(build.shot.url)}" alt="">`}<figcaption>${esc(bi(build.shot.caption) || page.items)}</figcaption></figure>`
+        : "";
+      return `<article class="mode-card glass frame build-card">
+        <h2>${esc(build.hero || page.pending)}</h2>
+        <p>${esc([bi(build.name), build.lane].filter(Boolean).join(" · "))}</p>
+        ${skills ? `<p><b>${esc(page.skillOrder)}</b> ${esc(skills)}</p>` : ""}
+        ${gear ? `<p><b>${esc(page.items)}</b> ${esc(gear)}</p>` : ""}
+        ${arcana ? `<p><b>${esc(page.arcana)}</b> ${esc(arcana)}</p>` : ""}
+        ${bi(build.note) ? `<p>${esc(bi(build.note))}</p>` : ""}
+        ${shot}
+      </article>`;
+    })
+    .join("")}</div>`;
+}
+
 function listPanel(items, renderItem, empty) {
   if (!items.length) return `<p class="section-note">${esc(empty)}</p>`;
   return `<div class="mode-grid">${items.map(renderItem).join("")}</div>`;
@@ -274,16 +324,21 @@ export function renderPlayerBody(copy, compact) {
     </div>`;
   }
   const view = getPlayerView();
-  const sections = ["battle", "history", "heroes", "reputation", "honors", "titles"];
+  const sections = ["battle", "history", "builds", "heroes", "reputation", "honors", "titles"];
   const nav = sections
     .map((id) => `<button type="button" class="${view.section === id ? "is-on" : ""}" data-profile-section="${id}">${esc(page.sections[id])}</button>`)
     .join("");
   let main = "";
   if (view.section === "history") main = historyPanel(copy, player);
+  else if (view.section === "builds") main = buildsPanel(copy, player);
   else if (view.section === "heroes") {
     main = listPanel(
       player.heroPool || [],
-      (card) => `<article class="mode-card glass frame"><h2>${esc(card.hero)}</h2><p>${esc([card.matches, card.winRate].filter(Boolean).join(" · "))}</p><p>${esc(bi(card.note))}</p></article>`,
+      (card) => {
+        const kda = [card.kills, card.deaths, card.assists].filter((part) => part !== "").join(" / ");
+        const ratio = card.kda || derivedKda(card.kills, card.deaths, card.assists);
+        return `<article class="mode-card glass frame"><h2>${esc(card.hero)}</h2><p>${esc([card.matches && `${card.matches}`, card.winRate && `${card.winRate}%`, kda && `K/D/A ${kda}`, ratio && `KDA ${ratio}`, card.mvp && `MVP ${card.mvp}`].filter(Boolean).join(" · "))}</p><p>${esc(bi(card.note))}</p></article>`;
+      },
       page.heroesEmpty,
     );
   } else if (view.section === "reputation") main = reputationPanel(copy, player);
@@ -304,15 +359,18 @@ export function renderPlayerBody(copy, compact) {
     [page.handleLabel, player.handle],
     [page.uidLabel, player.uid],
     [page.rankLabel, bi(player.rank)],
+    [page.peakLabel, bi(player.peakRank)],
     [page.seasonLabel, bi(player.season)],
+    [page.joinLabel, player.joinDate],
   ]
     .filter(([, value]) => value)
     .map(([label, value]) => `<span><b>${esc(label)}</b> ${esc(value)}</span>`)
     .join("");
+  const avatar = player.avatar?.url ? `<img class="player-avatar" src="${esc(player.avatar.url)}" alt="">` : "";
   return `<div class="profile-shell">
     <aside class="profile-nav">${nav}</aside>
     <div>
-      <p class="player-facts">${facts}</p>
+      <div class="player-identity">${avatar}<p class="player-facts">${facts}</p></div>
       ${main}
     </div>
   </div>`;

@@ -1090,7 +1090,10 @@ body.intro-on { overflow: hidden; }
   cursor: pointer;
 }
 .profile-nav button.is-on { border-color: var(--ember); color: var(--ember); }
+.player-identity { display: flex; gap: 1rem; align-items: center; }
+.player-avatar { width: 84px; height: 84px; object-fit: cover; border-radius: 18px; border: 1px solid var(--line); }
 .player-facts { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; color: var(--muted); }
+.build-card p { margin: 0.35rem 0; }
 .player-facts b { color: var(--ember); font-weight: 600; }
 .battle-grid, .chart-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; margin-top: 1rem; }
 .radar-chart, .donut { width: min(100%, 280px); height: auto; }

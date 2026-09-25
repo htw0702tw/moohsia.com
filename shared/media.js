@@ -92,14 +92,34 @@ export async function storeHighlight(env, file) {
   return { ok: true, key, mime: sniffed.mime, kind: sniffed.kind };
 }
 
+function keyFromPublicUrl(url) {
+  const found = /^\/api\/media\/([A-Za-z0-9_-]{8,64})$/.exec(url || "");
+  return found ? `hl/${found[1]}` : "";
+}
+
 export function highlightKeysFromPublic(player) {
   const keys = new Set();
+  const avatar = keyFromPublicUrl(player?.avatar?.url);
+  if (avatar) keys.add(avatar);
+  for (const build of player?.builds || []) {
+    const shot = keyFromPublicUrl(build?.shot?.url);
+    if (shot) keys.add(shot);
+  }
   for (const match of player?.matches || []) {
-    const url = match?.highlight?.url || "";
-    const found = /^\/api\/media\/([A-Za-z0-9_-]{8,64})$/.exec(url);
-    if (found) keys.add(`hl/${found[1]}`);
+    const highlight = keyFromPublicUrl(match?.highlight?.url);
+    if (highlight) keys.add(highlight);
   }
   return keys;
+}
+
+export async function readStoredMedia(env, id) {
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(id)) return null;
+  try {
+    return await readObject(env, `hl/${id}`);
+  } catch (error) {
+    logFailure("media_read_failed", error);
+    return null;
+  }
 }
 
 export async function readPublishedMedia(env, id, keys) {

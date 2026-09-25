@@ -49,6 +49,40 @@ export function emptyHighlight() {
   return { caption: { zh: "", en: "" }, key: "", mime: "", kind: "" };
 }
 
+export function emptyBadges() {
+  return {
+    godlike: false,
+    penta: false,
+    quadra: false,
+    triple: false,
+    supreme: false,
+    gold: false,
+    silver: false,
+    loseMvp: false,
+  };
+}
+
+export function emptyArcanaRow(color = "") {
+  return { color, name: "", count: "" };
+}
+
+export function emptyBuild() {
+  return {
+    id: "",
+    hero: "",
+    heroId: "",
+    name: { zh: "", en: "" },
+    lane: "",
+    skillOrder: ["", "", "", ""],
+    items: ["", "", "", "", "", ""],
+    boots: "",
+    enchant: "",
+    arcana: [emptyArcanaRow("red"), emptyArcanaRow("purple"), emptyArcanaRow("green")],
+    note: { zh: "", en: "" },
+    shot: emptyHighlight(),
+  };
+}
+
 export function emptyBoardPlayer() {
   return {
     side: "blue",
@@ -68,11 +102,13 @@ export function emptyBoardPlayer() {
     heroDamagePct: "",
     taken: "",
     takenPct: "",
+    healing: "",
     teamfightCount: "",
     teamfightRate: "",
     damageRatio: "",
     takenPer: "",
     gpm: "",
+    skin: "",
   };
 }
 
@@ -84,7 +120,9 @@ export function emptyMatch() {
     playedAt: "",
     duration: "",
     mode: "",
+    map: "",
     hero: "",
+    skin: "",
     result: "",
     kda: "",
     kills: "",
@@ -93,10 +131,13 @@ export function emptyMatch() {
     gold: "",
     damage: "",
     taken: "",
+    healing: "",
     blueScore: "",
     redScore: "",
     winner: "",
     ownerSide: "",
+    mvp: false,
+    badges: emptyBadges(),
     note: { zh: "", en: "" },
     publish: false,
     highlight: emptyHighlight(),
@@ -143,7 +184,18 @@ export function emptyReputation() {
 }
 
 export function emptyHeroCard() {
-  return { id: "", hero: "", matches: "", winRate: "", note: { zh: "", en: "" } };
+  return {
+    id: "",
+    hero: "",
+    heroId: "",
+    matches: "",
+    winRate: "",
+    kills: "",
+    deaths: "",
+    assists: "",
+    mvp: "",
+    note: { zh: "", en: "" },
+  };
 }
 
 export function emptyHonor() {
@@ -168,6 +220,9 @@ export function emptyPlayer() {
     title: { zh: "", en: "" },
     bio: { zh: "", en: "" },
     signatureHeroes: { zh: "", en: "" },
+    peakRank: { zh: "", en: "" },
+    joinDate: "",
+    avatar: emptyHighlight(),
     stats: {
       played: "",
       wins: "",
@@ -185,8 +240,56 @@ export function emptyPlayer() {
     heroPool: [],
     championships: [],
     honorTitles: [],
+    builds: [],
     matches: [],
   };
+}
+
+function flag(value) {
+  return value === true;
+}
+
+function dateOnly(value) {
+  const text = clip(value, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : "";
+}
+
+function heroId(value) {
+  const text = clip(value, 8);
+  return /^\d{1,6}$/.test(text) ? text : "";
+}
+
+function cleanSkillOrder(value) {
+  const raw = Array.isArray(value) ? value : String(value ?? "").split(/[^1-4]+/);
+  const order = [];
+  for (const item of raw) {
+    const token = String(item ?? "").trim();
+    if (token === "1" || token === "2" || token === "3" || token === "4") order.push(token);
+    if (order.length === 4) break;
+  }
+  while (order.length < 4) order.push("");
+  return order;
+}
+
+function cleanArcana(value) {
+  const rows = [];
+  const source = Array.isArray(value) ? value : [];
+  for (const item of source.slice(0, 6)) {
+    const row = item && typeof item === "object" ? item : {};
+    const color = row.color === "red" || row.color === "purple" || row.color === "green" ? row.color : "";
+    const name = clip(row.name, 40);
+    const count = whole(row.count, 2);
+    if (!name && !count) continue;
+    rows.push({ color, name, count });
+  }
+  return rows;
+}
+
+function cleanBadges(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const badges = emptyBadges();
+  for (const key of Object.keys(badges)) badges[key] = flag(source[key]);
+  return badges;
 }
 
 function cleanHighlight(value) {
@@ -229,6 +332,8 @@ function cleanBoardPlayer(value) {
     damageRatio: decimal(source.damageRatio, 3),
     takenPer: whole(source.takenPer, 9),
     gpm: whole(source.gpm, 6),
+    healing: whole(source.healing, 9),
+    skin: clip(source.skin, 40),
   };
 }
 
@@ -241,7 +346,9 @@ function boardFilled(row) {
       row.assists ||
       row.gold ||
       row.heroDamage ||
+      row.healing ||
       row.score ||
+      row.skin ||
       row.items.some(Boolean),
   );
 }
@@ -267,7 +374,9 @@ function cleanMatch(item) {
     playedAt,
     duration: /^\d{1,3}:\d{2}$/.test(clip(source.duration, 8)) ? clip(source.duration, 8) : "",
     mode: clip(source.mode, 80),
+    map: clip(source.map, 80),
     hero: clip(source.hero, 80),
+    skin: clip(source.skin, 80),
     result: clip(source.result, 40),
     kda: clip(source.kda, 40),
     kills: whole(source.kills),
@@ -276,10 +385,13 @@ function cleanMatch(item) {
     gold: whole(source.gold, 9),
     damage: whole(source.damage, 9),
     taken: whole(source.taken, 9),
+    healing: whole(source.healing, 9),
     blueScore: whole(source.blueScore, 4),
     redScore: whole(source.redScore, 4),
     winner,
     ownerSide,
+    mvp: flag(source.mvp),
+    badges: cleanBadges(source.badges),
     note: bilingual(source.note, 400),
     publish: source.publish === true,
     highlight: cleanHighlight(source.highlight),
@@ -302,6 +414,12 @@ function matchFilled(match) {
       match.assists ||
       match.gold ||
       match.damage ||
+      match.taken ||
+      match.healing ||
+      match.skin ||
+      match.map ||
+      match.mvp ||
+      Object.values(match.badges).some(Boolean) ||
       match.note.zh ||
       match.note.en ||
       match.highlight.key ||
@@ -383,10 +501,52 @@ function cleanHeroCard(item) {
   return {
     id: matchId(source.id || source.hero),
     hero: clip(source.hero, 40),
+    heroId: heroId(source.heroId),
     matches: whole(source.matches),
     winRate: decimal(source.winRate, 3),
+    kills: whole(source.kills, 9),
+    deaths: whole(source.deaths, 9),
+    assists: whole(source.assists, 9),
+    mvp: whole(source.mvp),
     note: bilingual(source.note, 160),
   };
+}
+
+function cleanBuild(item) {
+  const source = item && typeof item === "object" ? item : {};
+  const items = Array.isArray(source.items) ? source.items : [];
+  return {
+    id: matchId(source.id || source.hero || source.name?.zh),
+    hero: clip(source.hero, 40),
+    heroId: heroId(source.heroId),
+    name: bilingual(source.name, 80),
+    lane: clip(source.lane, 24),
+    skillOrder: cleanSkillOrder(source.skillOrder),
+    items: Array.from({ length: 6 }, (_, index) => clip(items[index], 40)),
+    boots: clip(source.boots, 40),
+    enchant: clip(source.enchant, 40),
+    arcana: cleanArcana(source.arcana),
+    note: bilingual(source.note, 400),
+    shot: cleanHighlight(source.shot),
+  };
+}
+
+function buildFilled(build) {
+  return Boolean(
+    build.hero ||
+      build.heroId ||
+      build.name.zh ||
+      build.name.en ||
+      build.lane ||
+      build.skillOrder.some(Boolean) ||
+      build.items.some(Boolean) ||
+      build.boots ||
+      build.enchant ||
+      build.arcana.length ||
+      build.note.zh ||
+      build.note.en ||
+      build.shot.key,
+  );
 }
 
 function cleanHonor(item) {
@@ -414,7 +574,7 @@ export function cleanPlayer(input) {
   const stats = source.stats && typeof source.stats === "object" ? source.stats : {};
   const matches = [];
   if (Array.isArray(source.matches)) {
-    for (const item of source.matches.slice(0, 40)) {
+    for (const item of source.matches.slice(0, 80)) {
       const match = cleanMatch(item);
       if (matchFilled(match)) matches.push(match);
     }
@@ -430,7 +590,7 @@ export function cleanPlayer(input) {
   if (Array.isArray(source.heroPool)) {
     for (const item of source.heroPool.slice(0, 16)) {
       const card = cleanHeroCard(item);
-      if (card.hero || card.note.zh || card.note.en) heroPool.push(card);
+      if (card.hero || card.matches || card.winRate || card.kills || card.deaths || card.assists || card.mvp || card.note.zh || card.note.en) heroPool.push(card);
     }
   }
   const championships = [];
@@ -438,6 +598,13 @@ export function cleanPlayer(input) {
     for (const item of source.championships.slice(0, 16)) {
       const row = cleanHonor(item);
       if (row.title || row.note.zh || row.note.en) championships.push(row);
+    }
+  }
+  const builds = [];
+  if (Array.isArray(source.builds)) {
+    for (const item of source.builds.slice(0, 24)) {
+      const build = cleanBuild(item);
+      if (buildFilled(build)) builds.push(build);
     }
   }
   const honorTitles = [];
@@ -461,6 +628,9 @@ export function cleanPlayer(input) {
     title: bilingual(source.title, 120),
     bio: bilingual(source.bio, 2000),
     signatureHeroes: bilingual(source.signatureHeroes, 200),
+    peakRank: bilingual(source.peakRank, 80),
+    joinDate: dateOnly(source.joinDate),
+    avatar: cleanHighlight(source.avatar),
     stats: {
       played: clip(stats.played, 32),
       wins: clip(stats.wins, 32),
@@ -478,8 +648,18 @@ export function cleanPlayer(input) {
     heroPool,
     championships,
     honorTitles,
+    builds,
     matches,
   };
+}
+
+/** Newest dated matches sort first. Undated rows stay after dated ones. */
+export function matchRecency(match) {
+  const raw = String(match?.playedAt || match?.date || "")
+    .trim()
+    .replace(" ", "T");
+  const time = Date.parse(raw);
+  return Number.isFinite(time) ? time : 0;
 }
 
 /** (K+A)/max(D,1), only when all three numbers were entered. */
@@ -525,9 +705,47 @@ function publicMatch(match) {
     redScore: match.redScore,
     winner: match.winner,
     ownerSide: match.ownerSide,
+    map: match.map,
+    skin: match.skin,
+    healing: match.healing,
+    mvp: match.mvp,
+    badges: match.badges,
     note: match.note,
     highlight: publicHighlight(match.highlight),
     board: match.board,
+  };
+}
+
+function publicBuild(build) {
+  return {
+    id: build.id,
+    hero: build.hero,
+    heroId: build.heroId,
+    name: build.name,
+    lane: build.lane,
+    skillOrder: build.skillOrder,
+    items: build.items,
+    boots: build.boots,
+    enchant: build.enchant,
+    arcana: build.arcana,
+    note: build.note,
+    shot: publicHighlight(build.shot),
+  };
+}
+
+function publicHero(card) {
+  return {
+    id: card.id,
+    hero: card.hero,
+    heroId: card.heroId,
+    matches: card.matches,
+    winRate: card.winRate,
+    kills: card.kills,
+    deaths: card.deaths,
+    assists: card.assists,
+    mvp: card.mvp,
+    note: card.note,
+    kda: derivedKda(card.kills, card.deaths, card.assists),
   };
 }
 
@@ -553,20 +771,28 @@ export function toPublicPlayer(player) {
     title: player.title,
     bio: player.bio,
     signatureHeroes: player.signatureHeroes,
+    peakRank: player.peakRank,
+    joinDate: player.joinDate,
+    avatar: publicHighlight(player.avatar),
     stats,
     seasons: player.seasons,
     reputation: player.reputation,
-    heroPool: player.heroPool,
+    heroPool: player.heroPool.map(publicHero),
     championships: player.championships,
     honorTitles: player.honorTitles,
+    builds: player.builds.map(publicBuild),
     matches: player.matches.filter((match) => match.publish).map(publicMatch),
   };
 }
 
 export function collectHighlightKeys(player) {
   const keys = new Set();
-  if (!player?.publish || !Array.isArray(player.matches)) return keys;
-  for (const match of player.matches) {
+  if (!player?.publish) return keys;
+  if (player.avatar?.key) keys.add(player.avatar.key);
+  for (const build of player.builds || []) {
+    if (build?.shot?.key) keys.add(build.shot.key);
+  }
+  for (const match of player.matches || []) {
     if (match?.publish && match.highlight?.key) keys.add(match.highlight.key);
   }
   return keys;
