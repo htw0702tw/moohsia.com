@@ -1,4 +1,5 @@
 import "./admin.css";
+import { applyAovImport } from "../shared/aov-import.js";
 import {
   emptyBoardPlayer,
   emptyHeroCard,
@@ -183,6 +184,8 @@ const state = {
   notion: null,
   applications: [],
   applicationsAt: 0,
+  aovForm: { keyword: "", uid: "", server: "1012", html: "" },
+  aovBusy: false,
 };
 
 const MESSAGES = {
@@ -207,6 +210,12 @@ const MESSAGES = {
   media_type: "只接受圖片或 mp4／webm。",
   media_too_large: "檔案太大。圖片 8MB，影片 32MB。",
   media_unconfigured: "還沒有綁定 R2。",
+  aov_challenge: "AOVRanking 要求人機驗證，這次沒有抓到戰績。請用瀏覽器打開查詢頁，通過驗證後複製網頁原始碼，貼到下面再匯入。",
+  aov_rate_limited: "AOVRanking 暫時拒絕查詢（請求太頻繁）。請稍後再試，不要連續重抓。",
+  aov_cooldown: "剛剛才查過。請稍候再查，避免對 AOVRanking 造成負擔。",
+  aov_empty: "這份頁面裡沒有讀到對局。請確認是歷史戰績頁的原始碼。",
+  aov_blocked: "現在連不到 AOVRanking。可以改貼網頁原始碼。",
+  aov_invalid: "請填遊戲名稱，或填 UID 並選擇伺服器。",
 };
 
 function esc(value) {
@@ -470,6 +479,12 @@ function fieldInput(attrs, value) {
   return `<input ${attrs} value="${esc(value ?? "")}" ${CMS_TEXT}>`;
 }
 
+function aovCooldownSeconds(syncedAt) {
+  const at = Date.parse(syncedAt || "");
+  if (!Number.isFinite(at)) return 0;
+  return Math.max(0, Math.ceil((60_000 - (Date.now() - at)) / 1000));
+}
+
 function playerEditor() {
   const base = emptyPlayer();
   const player = state.draft.player || base;
@@ -572,11 +587,23 @@ function playerEditor() {
       <label>轉化比${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="damageRatio"`, row.damageRatio)}</label>
       <label>每次承傷${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="takenPer"`, row.takenPer)}</label>
       <label>GPM${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="gpm"`, row.gpm)}</label>
+      <label>等級${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="level"`, row.level)}</label>
+      <label>補兵${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="minions"`, row.minions)}</label>
+      <label>控制${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="control"`, row.control)}</label>
+      <label>治療${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="healing"`, row.healing)}</label>
+      <label>對塔${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="tower"`, row.tower)}</label>
+      <label>積分${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="rankDelta"`, row.rankDelta)}</label>
+      <label>信譽${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="reputation"`, row.reputation)}</label>
+      <label>戰力${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="powerDelta"`, row.powerDelta)}</label>
       <label>裝備${fieldInput(`data-board="${index}" data-row="${rowIndex}" data-field="items"`, (row.items || []).join("、"))}</label>
       <label class="check"><input type="checkbox" data-board="${index}" data-row="${rowIndex}" data-field="mvp"${row.mvp ? " checked" : ""}>MVP</label>
       <label class="check"><input type="checkbox" data-board="${index}" data-row="${rowIndex}" data-field="owner"${row.owner ? " checked" : ""}>自己</label>
     </div>`).join("");
-    return `<article class="repeat"><header><b>對局 ${index + 1}</b><button class="ghost" type="button" data-action="match-remove" data-index="${index}">刪除</button></header>
+    const sourceLine = match.source === "aovweb" ? `<p class="hint">AOVRanking ${esc(match.externalMatchId || match.id)}</p>` : "";
+    const open = player.matches.length <= 3 ? " open" : "";
+    return `<article class="repeat"><header><b>對局 ${index + 1}</b><span>${esc([match.result, match.hero, match.kills && `${match.kills}/${match.deaths}/${match.assists}`, match.playedAt || match.date].filter(Boolean).join(" · "))}</span><button class="ghost" type="button" data-action="match-remove" data-index="${index}">刪除</button></header>
+      ${sourceLine}
+      <details${open}><summary>編輯這場</summary>
       <div class="pair">
         <label>名稱${fieldInput(`data-match="${index}" data-field="label"`, match.label)}</label>
         <label>日期${fieldInput(`data-match="${index}" data-field="date" type="date"`, match.date)}</label>
@@ -593,6 +620,14 @@ function playerEditor() {
         <label>紅方分${fieldInput(`data-match="${index}" data-field="redScore"`, match.redScore)}</label>
         <label>勝方 blue/red${fieldInput(`data-match="${index}" data-field="winner"`, match.winner)}</label>
         <label>自己方${fieldInput(`data-match="${index}" data-field="ownerSide"`, match.ownerSide)}</label>
+        <label>補兵${fieldInput(`data-match="${index}" data-field="minions"`, match.minions)}</label>
+        <label>控制${fieldInput(`data-match="${index}" data-field="control"`, match.control)}</label>
+        <label>治療${fieldInput(`data-match="${index}" data-field="healing"`, match.healing)}</label>
+        <label>對塔${fieldInput(`data-match="${index}" data-field="tower"`, match.tower)}</label>
+        <label>分路${fieldInput(`data-match="${index}" data-field="lane"`, match.lane)}</label>
+        <label>積分${fieldInput(`data-match="${index}" data-field="rankDelta"`, match.rankDelta)}</label>
+        <label>信譽${fieldInput(`data-match="${index}" data-field="reputation"`, match.reputation)}</label>
+        <label>戰力${fieldInput(`data-match="${index}" data-field="powerDelta"`, match.powerDelta)}</label>
       </div>
       <label>註記 繁中${fieldInput(`data-match="${index}" data-field="note" data-lang="zh"`, match.note?.zh)}</label>
       <label>精彩對局說明${fieldInput(`data-match="${index}" data-field="highlight" data-lang="zh"`, match.highlight?.caption?.zh)}</label>
@@ -603,11 +638,40 @@ function playerEditor() {
       <h3>記分板</h3>
       ${board}
       <button class="btn" type="button" data-action="board-add" data-index="${index}">新增一列</button>
+      </details>
     </article>`;
   }).join("");
+  const form = state.aovForm;
+  const cooldown = aovCooldownSeconds(player.aov?.syncedAt);
+  const lastSync = player.aov?.syncedAt
+    ? `上次匯入 ${esc(String(player.aov.syncedAt).replace("T", " ").replace(/\.\d+Z$/, "Z").slice(0, 19))}，${esc(player.aov.count || "0")} 場。`
+    : "尚未從 AOVRanking 匯入。";
+  const importPanel = `<section class="card">
+    <h2>從 AOVRanking 匯入</h2>
+    <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
+    <p class="hint">${lastSync}${cooldown ? ` 請再等 ${cooldown} 秒再向對方查詢。` : ""}</p>
+    <div class="pair">
+      <label>遊戲名稱<input data-aov="keyword" value="${esc(form.keyword)}" ${CMS_TEXT}></label>
+      <label>UID<input data-aov="uid" value="${esc(form.uid)}" inputmode="numeric" ${CMS_TEXT}></label>
+      <label>伺服器
+        <select data-aov="server" ${NO_SAVE}>
+          <option value="1012"${form.server === "1011" ? "" : " selected"}>2服 純潔之翼</option>
+          <option value="1011"${form.server === "1011" ? " selected" : ""}>1服 聖騎之王</option>
+        </select>
+      </label>
+    </div>
+    <div class="row-actions">
+      <button class="primary" type="button" data-action="aov-import"${cooldown ? " disabled" : ""}>從 AOVRanking 匯入</button>
+      <button class="btn" type="button" data-action="aov-publish"${cooldown ? " disabled" : ""}>匯入並發布</button>
+    </div>
+    <p class="hint">名稱查詢用遊戲名稱。UID 有填的時候改走 UID，並帶上上面的伺服器（2服是純潔之翼）。「匯入並發布」會公開這次匯入的對局並發布到網站。</p>
+    <label>如果出現驗證頁，貼上歷史戰績頁的原始碼<textarea data-aov="html" rows="5" ${CMS_TEXT}>${esc(form.html)}</textarea></label>
+    <p class="hint">在瀏覽器通過驗證後，檢視頁面原始碼，整頁複製貼上。遊戲名稱留白時，會用上面的遊戲 ID。</p>
+    <button class="btn" type="button" data-action="aov-paste">用貼上的頁面匯入</button>
+  </section>`;
   return `<section class="stack">
     <h1>選手數據</h1>
-    <p class="hint">對齊遊戲內的對戰資料、信譽積分與歷史戰績。沒有官方個人 API，請自己填或上傳截圖。留白就是尚未填寫，不要估段位。公開勾選加上「發布到網站」之後才會出現。遊戲 ID 不能剛好是 moohsia。</p>
+    <p class="hint">對齊遊戲內的對戰資料、信譽積分與歷史戰績。留白就是尚未填寫，不要估段位。公開勾選加上「發布到網站」之後才會出現。遊戲 ID 不能剛好是 moohsia。</p>
     <label class="check"><input type="checkbox" data-player="publish"${player.publish ? " checked" : ""}>公開這份個人數據</label>
     <div class="pair"><label>遊戲 ID${fieldInput(`data-player="handle"`, player.handle)}</label><label>UID${fieldInput(`data-player="uid"`, player.uid)}</label></div>
     ${pair("顯示名稱", "name")}
@@ -633,6 +697,7 @@ function playerEditor() {
     <h2>冠軍賽榮譽</h2><div class="repeats">${honors}</div><button class="btn" type="button" data-action="honor-add">新增榮譽</button>
     <h2>榮譽頭銜</h2><div class="repeats">${titles}</div><button class="btn" type="button" data-action="title-add">新增頭銜</button>
     <h2>歷史戰績</h2>
+    ${importPanel}
     <div class="repeats">${matches}</div>
     <button class="btn" type="button" data-action="match-add">新增對局</button>
   </section>`;
@@ -777,6 +842,10 @@ function markDirty(text) {
 function onInput(event) {
   const target = event.target;
   if (!(target instanceof HTMLElement) || !state.draft) return;
+  if (target.dataset.aov) {
+    state.aovForm[target.dataset.aov] = target.value;
+    return;
+  }
   if (target.dataset.path && target.dataset.lang) {
     setPath(state.draft.copy[target.dataset.lang], target.dataset.path, target.value);
     markDirty("有未儲存的修改");
@@ -914,6 +983,63 @@ function writeNamed(list, index, target) {
   } else if (field) item[field] = target.value;
   markDirty("有未儲存的修改");
   return true;
+}
+
+async function importAov(action) {
+  if (state.aovBusy || !state.draft?.player) return;
+  const form = state.aovForm;
+  const pasted = action === "aov-paste";
+  const uid = String(form.uid || "").trim();
+  const name = String(form.keyword || "").trim() || state.draft.player.handle || "";
+  const keyword = uid || name;
+  const searchType = uid ? "UID" : "playerName";
+  if (!pasted && !keyword) {
+    state.error = message("aov_invalid");
+    render();
+    return;
+  }
+  if (pasted && String(form.html || "").trim().length < 40) {
+    state.error = message("aov_empty");
+    render();
+    return;
+  }
+  state.aovBusy = true;
+  state.error = "";
+  state.status = pasted ? "正在讀取貼上的頁面" : "正在向 AOVRanking 查詢";
+  render();
+  const data = await api("/api/admin/aov/import", {
+    method: "POST",
+    body: JSON.stringify({
+      searchType,
+      keyword,
+      server: form.server || "1012",
+      html: pasted ? form.html : "",
+    }),
+  });
+  state.aovBusy = false;
+  if (!state.authed) return;
+  if (!data.ok) {
+    state.error = message(data.code);
+    state.status = "";
+    render();
+    return;
+  }
+  const publish = action === "aov-publish";
+  state.draft.player = applyAovImport(state.draft.player, data, {
+    publish,
+    keyword,
+    searchType,
+    server: form.server || "1012",
+    syncedAt: data.syncedAt,
+  });
+  const count = data.count || data.matches?.length || 0;
+  if (publish) {
+    state.status = `已讀到 ${count} 場，正在發布`;
+    await persist("publish");
+    return;
+  }
+  markDirty(`已併入草稿 ${count} 場，尚未公開。確認後可按「匯入並發布」。`);
+  render();
 }
 
 async function persist(mode) {
@@ -1174,6 +1300,10 @@ function onClick(event) {
     const note = noteNode instanceof HTMLInputElement ? noteNode.value : "";
     const notify = card?.querySelector("[data-notify]") instanceof HTMLInputElement && card.querySelector("[data-notify]").checked;
     void reviewApplication(button?.dataset.id, action === "app-approve" ? "approve" : "reject", { inviteUrl, note, notify });
+    return;
+  }
+  if (action === "aov-import" || action === "aov-publish" || action === "aov-paste") {
+    void importAov(action);
     return;
   }
   if (action === "notion-sync") {

@@ -259,6 +259,11 @@ const zh = {
     gold: "經濟",
     damage: "輸出",
     mvp: "MVP",
+    minions: "補兵",
+    healing: "治療",
+    tower: "對塔",
+    control: "控制",
+    rankDelta: "積分",
     uidLabel: "UID",
     sections: {
       heroes: "常用英雄",
@@ -614,6 +619,11 @@ const en = {
     gold: "Gold",
     damage: "Damage",
     mvp: "MVP",
+    minions: "Minions",
+    healing: "Healing",
+    tower: "Tower",
+    control: "CC",
+    rankDelta: "Rank pts",
     uidLabel: "UID",
     sections: {
       heroes: "Signature heroes",

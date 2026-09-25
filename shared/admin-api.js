@@ -6,7 +6,8 @@ import { logFailure } from "./log.js";
 import { storeHighlight } from "./media.js";
 import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { verifyPassword } from "./password.js";
-import { clearLoginFailures, clientIp, loginBlocked, recordLoginFailure } from "./rate-limit.js";
+import { fetchFightHistory, parseFightHistory } from "./aov-import.js";
+import { clearLoginFailures, clientIp, loginBlocked, overLimit, recordLoginFailure } from "./rate-limit.js";
 import {
   SESSION_COOKIE,
   SESSION_IDLE_SECONDS,
@@ -317,7 +318,56 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return uploadMedia(request, env);
   }
+  if (path === "/api/admin/aov/import") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return importAov(request, env);
+  }
   return json(404, { ok: false, code: "not_found" });
+}
+
+async function importAov(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  const parsed = await readJson(request, 1_600_000);
+  if (parsed.error) return parsed.error;
+  const body = parsed.data && typeof parsed.data === "object" ? parsed.data : {};
+  const html = typeof body.html === "string" ? body.html : "";
+  const searchType = body.searchType === "UID" ? "UID" : "playerName";
+  const keyword = typeof body.keyword === "string" ? body.keyword.trim().slice(0, 100) : "";
+  const server = body.server === "1011" ? "1011" : "1012";
+  if (html.trim()) {
+    const result = parseFightHistory(html, { keyword });
+    if (!result.matches.length) return json(422, { ok: false, code: "aov_empty" });
+    return ok(request, env, session, {
+      ok: true,
+      fetched: false,
+      ...result,
+      keyword,
+      searchType,
+      server,
+      syncedAt: new Date().toISOString(),
+    });
+  }
+  if (!keyword || (searchType === "UID" && !/^\d{1,20}$/.test(keyword))) {
+    return json(400, { ok: false, code: "aov_invalid" });
+  }
+  if (await overLimit(env, "aovfetch", clientIp(request), 1, 20)) {
+    return json(429, { ok: false, code: "aov_cooldown" }, { "retry-after": "20" });
+  }
+  const fetched = await fetchFightHistory(env, { searchType, keyword, server });
+  if (!fetched.ok) {
+    const status = fetched.code === "aov_rate_limited" ? 429 : fetched.code === "aov_invalid" ? 400 : fetched.code === "aov_empty" ? 422 : 502;
+    return json(status, { ok: false, code: fetched.code });
+  }
+  return ok(request, env, session, {
+    ok: true,
+    ...fetched,
+    searchType,
+    server,
+    syncedAt: new Date().toISOString(),
+  });
 }
 
 async function notionSync(request, env) {
