@@ -1,12 +1,14 @@
 import { SITE_URL } from "../shared/brand.js";
 import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
-import { getCatalog, setActivityFilter, setCatalog, setItemFilter, setRoleFilter } from "./catalog-state.js";
-import { setPlayerMatch, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
+import { getCatalog, setActivityFilter, setCatalog, setItemCategory, setItemFilter, setRoleFilter } from "./catalog-state.js";
+import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
-import { brandMark, renderPage } from "./pages.js";
+import { playerMemberPath } from "../shared/match-present.js";
+import { renderHeroDetail, renderItemDetail, renderItems, renderModeDetail, renderSkins } from "./catalog-pages.js";
+import { brandMark, renderMember, renderPage } from "./pages.js";
 import "./styles.css";
 
 document.documentElement.classList.add("js");
@@ -17,6 +19,7 @@ const ROUTES = {
   "/roster": "roster",
   "/player": "player",
   "/heroes": "heroes",
+  "/skins": "skins",
   "/items": "items",
   "/modes": "modes",
   "/activities": "activities",
@@ -28,10 +31,16 @@ const ROUTES = {
 const searchState = { q: "", results: [], open: false, seq: 0 };
 
 function resolveRoute(path) {
-  if (ROUTES[path]) return { name: ROUTES[path], id: "" };
+  const roster = /^\/roster\/([A-Za-z0-9_-]{1,40})$/.exec(path);
+  if (roster) return { name: "member", id: "", key: roster[1] };
   const hero = /^\/heroes\/(\d{1,6})$/.exec(path);
-  if (hero) return { name: "hero", id: hero[1] };
-  return { name: "notFound", id: "" };
+  if (hero) return { name: "hero", id: hero[1], key: "" };
+  const item = /^\/items\/(\d{3,6})$/.exec(path);
+  if (item) return { name: "item", id: item[1], key: "" };
+  const mode = /^\/modes\/([a-z0-9-]{1,40})$/.exec(path);
+  if (mode) return { name: "mode", id: mode[1], key: "" };
+  if (ROUTES[path]) return { name: ROUTES[path], id: "", key: "" };
+  return { name: "notFound", id: "", key: "" };
 }
 
 const state = {
@@ -183,7 +192,8 @@ function setActive() {
   const path = currentPath();
   document.querySelectorAll("[data-nav]").forEach((link) => {
     const href = link.getAttribute("href");
-    if (href === path) link.setAttribute("aria-current", "page");
+    const on = href === path || (href && href !== "/" && (path === href || path.startsWith(`${href}/`)));
+    if (on) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
 }
@@ -192,14 +202,16 @@ function setMeta() {
   const text = copy();
   const path = currentPath();
   const route = resolveRoute(path);
-  const pageKey = route.name === "hero" ? "heroes" : route.name;
+  const pageKey = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
   const page = text[pageKey] || text.notFound;
-  const hero = route.name === "hero" ? getCatalog().heroes.find((entry) => entry.id === route.id) : null;
+  const hero = route.name === "hero" ? getCatalog().heroes.find((entry) => String(entry.id) === route.id) : null;
+  const item = route.name === "item" ? getCatalog().items.find((entry) => String(entry.id) === route.id) : null;
   const heroName = hero?.name?.zh || "";
-  const title = path === "/" ? text.meta.homeTitle : `${heroName || page.title} — ${text.meta.titleSuffix}`;
+  const itemName = item?.name?.zh || "";
+  const title = path === "/" ? text.meta.homeTitle : `${heroName || itemName || page.title} — ${text.meta.titleSuffix}`;
   document.title = title;
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
-  const description = path === "/" ? text.meta.homeDescription : hero?.blurb || page.lead || text.meta.homeDescription;
+  const description = path === "/" ? text.meta.homeDescription : hero?.blurb || item?.description || page.lead || text.meta.homeDescription;
   const meta = document.querySelector('meta[name="description"]');
   if (meta) meta.setAttribute("content", description);
   const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -253,20 +265,41 @@ function restoreMenu() {
   }
 }
 
+function renderRoute(route, text) {
+  if (route.name === "member") return renderMember(text, route.key);
+  if (route.name === "skins") return renderSkins(text);
+  if (route.name === "items") return renderItems(text);
+  if (route.name === "hero") return renderHeroDetail(text, route.id);
+  if (route.name === "item") return renderItemDetail(text, route.id);
+  if (route.name === "mode") return renderModeDetail(text, route.id);
+  return renderPage(route.name, text);
+}
+
 function paint() {
   if (!app) return;
-  const path = currentPath();
+  let path = currentPath();
+  if (path === "/player") {
+    const target = playerMemberPath(getRosterMembers(), getPlayer());
+    if (target) {
+      history.replaceState({}, "", `${target}${window.location.search}${window.location.hash}`);
+      path = target;
+    }
+  }
   const route = resolveRoute(path);
-  const name = route.name;
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
   app.innerHTML = shell();
   const main = document.getElementById("main");
-  if (main) main.innerHTML = renderPage(name, copy(), route);
+  if (main) main.innerHTML = renderRoute(route, copy());
   setActive();
   setMeta();
   mountMotion(main);
   mountChrome();
   restoreMenu();
+  const hash = window.location.hash;
+  if (hash) {
+    const anchor = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (anchor) anchor.scrollIntoView({ block: "start" });
+  }
 }
 
 function navigate(href, { push = true } = {}) {
@@ -344,9 +377,16 @@ function onClick(event) {
     paint();
     return;
   }
-  const itemFilter = event.target.closest("[data-item-filter]");
-  if (itemFilter) {
-    setItemFilter(itemFilter.getAttribute("data-item-filter"));
+  const itemCategory = event.target.closest("[data-item-category], [data-item-filter]");
+  if (itemCategory) {
+    setItemCategory(itemCategory.getAttribute("data-item-category") || itemCategory.getAttribute("data-item-filter"));
+    setItemFilter(itemCategory.getAttribute("data-item-filter") || itemCategory.getAttribute("data-item-category"));
+    paint();
+    return;
+  }
+  const queue = event.target.closest("[data-queue]");
+  if (queue) {
+    setPlayerQueue(queue.getAttribute("data-queue"));
     paint();
     return;
   }
@@ -585,12 +625,26 @@ async function boot() {
   window.addEventListener("resize", () => {
     if (window.innerWidth > 860 && state.menuOpen) closeMenu(false);
   });
-  await Promise.race([
-    Promise.all([loadPublished(), loadCatalog()]),
-    new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    }),
-  ]);
+  const pending = Promise.all([loadPublished(), loadCatalog()]);
+  if (import.meta.env.DEV) {
+    await pending;
+    if (new URLSearchParams(window.location.search).has("preview")) {
+      document.body.classList.add("is-ready");
+      const { applyPreview } = await import("../shared/preview-player.js");
+      applyPreview();
+      const target = playerMemberPath(getRosterMembers(), getPlayer());
+      if (target && (currentPath() === "/" || currentPath() === "/player")) {
+        history.replaceState({}, "", `${target}${window.location.search}`);
+      }
+    }
+  } else {
+    await Promise.race([
+      pending,
+      new Promise((resolve) => {
+        window.setTimeout(resolve, 500);
+      }),
+    ]);
+  }
   paint();
   painted = true;
   if (!document.body.classList.contains("is-ready")) {

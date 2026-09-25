@@ -58,3 +58,11 @@ export function getActivityFilter() {
 export function setActivityFilter(next) {
   activityKind = typeof next === "string" && next ? next : "all";
 }
+
+export function getItemCategory() {
+  return itemCategory;
+}
+
+export function setItemCategory(next) {
+  itemCategory = typeof next === "string" && next ? next : "all";
+}

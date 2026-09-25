@@ -118,8 +118,15 @@ export function emptyBoardPlayer() {
     gpm: "",
     level: "",
     minions: "",
+    lastHits: "",
+    jungleGold: "",
     control: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     rankDelta: "",
     reputation: "",
     powerDelta: "",
@@ -150,9 +157,18 @@ export function emptyMatch() {
     damage: "",
     taken: "",
     minions: "",
+    lastHits: "",
+    jungleGold: "",
+    damageRatio: "",
+    takenPer: "",
     control: "",
     healing: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     lane: "",
     reputation: "",
     rankDelta: "",
@@ -221,8 +237,13 @@ export function emptyHeroCard() {
     deaths: "",
     assists: "",
     mvp: "",
+    power: "",
     note: { zh: "", en: "" },
   };
+}
+
+export function emptySkin() {
+  return { id: "", hero: "", heroId: "", name: "" };
 }
 
 export function emptyHonor() {
@@ -268,6 +289,7 @@ export function emptyPlayer() {
     championships: [],
     honorTitles: [],
     builds: [],
+    skins: [],
     matches: [],
     aov: { syncedAt: "", count: "", keyword: "", server: "" },
   };
@@ -275,6 +297,28 @@ export function emptyPlayer() {
 
 function flag(value) {
   return value === true;
+}
+
+/**
+ * AOVRanking `補兵 | 控場 | 治療 | 塔傷` is the farm cell, four values in that order.
+ * 補兵 is 補刀數. 控場 is stored in seconds (6.534); the public page shows ×1000.
+ * 治療 is 治療量. 塔傷 is 對塔傷害. Empty lastHits falls back to minions.
+ */
+function separateInGameStats(source) {
+  const raw = source && typeof source === "object" ? source : {};
+  const hits = whole(raw.lastHits, 6) || whole(raw.minions, 6) || whole(raw.rankingFarm, 6);
+  return {
+    farmValidated: raw.farmValidated === true,
+    lastHits: hits,
+    minions: hits,
+    rankingFarm: whole(raw.rankingFarm, 6),
+    rankingControl: decimal(raw.rankingControl, 6, 3),
+    rankingHealing: whole(raw.rankingHealing, 9),
+    rankingTower: whole(raw.rankingTower, 9),
+    control: decimal(raw.control, 6, 3) || decimal(raw.rankingControl, 6, 3),
+    healing: whole(raw.healing, 9) || whole(raw.rankingHealing, 9),
+    tower: whole(raw.tower, 9) || whole(raw.rankingTower, 9),
+  };
 }
 
 function dateOnly(value) {
@@ -361,10 +405,8 @@ function cleanBoardPlayer(value) {
     takenPer: whole(source.takenPer, 9),
     gpm: whole(source.gpm, 6),
     level: whole(source.level, 3),
-    minions: whole(source.minions, 6),
-    control: decimal(source.control, 6, 3),
-    healing: whole(source.healing, 9),
-    tower: whole(source.tower, 9),
+    ...separateInGameStats(source),
+    jungleGold: whole(source.jungleGold, 9),
     rankDelta: signed(source.rankDelta),
     reputation: signed(source.reputation),
     powerDelta: signed(source.powerDelta),
@@ -382,6 +424,10 @@ function boardFilled(row) {
       row.gold ||
       row.heroDamage ||
       row.healing ||
+      row.minions ||
+      row.lastHits ||
+      row.rankingFarm ||
+      row.jungleGold ||
       row.score ||
       row.skin ||
       row.items.some(Boolean),
@@ -441,10 +487,10 @@ function cleanMatch(item) {
     gold: whole(source.gold, 9),
     damage: whole(source.damage, 9),
     taken: whole(source.taken, 9),
-    minions: whole(source.minions, 6),
-    control: decimal(source.control, 6, 3),
-    healing: whole(source.healing, 9),
-    tower: whole(source.tower, 9),
+    ...separateInGameStats(source),
+    jungleGold: whole(source.jungleGold, 9),
+    damageRatio: decimal(source.damageRatio, 4, 2),
+    takenPer: whole(source.takenPer, 9),
     lane: clip(source.lane, 24),
     reputation: signed(source.reputation),
     rankDelta: signed(source.rankDelta),
@@ -480,6 +526,9 @@ function matchFilled(match) {
       match.gold ||
       match.damage ||
       match.minions ||
+      match.lastHits ||
+      match.rankingFarm ||
+      match.jungleGold ||
       match.healing ||
       match.tower ||
       match.externalMatchId ||
@@ -576,7 +625,18 @@ function cleanHeroCard(item) {
     deaths: whole(source.deaths, 9),
     assists: whole(source.assists, 9),
     mvp: whole(source.mvp),
+    power: whole(source.power, 6),
     note: bilingual(source.note, 160),
+  };
+}
+
+function cleanSkin(item) {
+  const source = item && typeof item === "object" ? item : {};
+  return {
+    id: matchId(source.id || source.name || source.hero),
+    hero: clip(source.hero, 40),
+    heroId: heroId(source.heroId),
+    name: clip(source.name, 80),
   };
 }
 
@@ -658,7 +718,7 @@ export function cleanPlayer(input) {
   if (Array.isArray(source.heroPool)) {
     for (const item of source.heroPool.slice(0, 16)) {
       const card = cleanHeroCard(item);
-      if (card.hero || card.matches || card.winRate || card.kills || card.deaths || card.assists || card.mvp || card.note.zh || card.note.en) heroPool.push(card);
+      if (card.hero || card.matches || card.winRate || card.kills || card.deaths || card.assists || card.mvp || card.power || card.note.zh || card.note.en) heroPool.push(card);
     }
   }
   const championships = [];
@@ -673,6 +733,13 @@ export function cleanPlayer(input) {
     for (const item of source.builds.slice(0, 24)) {
       const build = cleanBuild(item);
       if (buildFilled(build)) builds.push(build);
+    }
+  }
+  const skins = [];
+  if (Array.isArray(source.skins)) {
+    for (const item of source.skins.slice(0, 24)) {
+      const skin = cleanSkin(item);
+      if (skin.hero || skin.name) skins.push(skin);
     }
   }
   const honorTitles = [];
@@ -717,6 +784,7 @@ export function cleanPlayer(input) {
     championships,
     honorTitles,
     builds,
+    skins,
     matches,
     aov: cleanAov(source.aov),
   };
@@ -752,6 +820,44 @@ function publicHighlight(highlight) {
   };
 }
 
+function publicBoardRow(row) {
+  return {
+    side: row.side,
+    hero: row.hero,
+    ign: row.ign,
+    lane: row.lane,
+    badge: row.badge,
+    kills: row.kills,
+    deaths: row.deaths,
+    assists: row.assists,
+    gold: row.gold,
+    score: row.score,
+    mvp: row.mvp,
+    owner: row.owner,
+    items: row.items,
+    heroDamage: row.heroDamage,
+    heroDamagePct: row.heroDamagePct,
+    taken: row.taken,
+    takenPct: row.takenPct,
+    healing: row.healing,
+    teamfightCount: row.teamfightCount,
+    teamfightRate: row.teamfightRate,
+    damageRatio: row.damageRatio,
+    takenPer: row.takenPer,
+    gpm: row.gpm,
+    level: row.level,
+    minions: row.lastHits,
+    lastHits: row.lastHits,
+    jungleGold: row.jungleGold,
+    control: row.control,
+    tower: row.tower,
+    rankDelta: row.rankDelta,
+    reputation: row.reputation,
+    powerDelta: row.powerDelta,
+    skin: row.skin,
+  };
+}
+
 function publicMatch(match) {
   const kda = match.kda || derivedKda(match.kills, match.deaths, match.assists);
   return {
@@ -770,7 +876,11 @@ function publicMatch(match) {
     gold: match.gold,
     damage: match.damage,
     taken: match.taken,
-    minions: match.minions,
+    minions: match.lastHits,
+    lastHits: match.lastHits,
+    jungleGold: match.jungleGold,
+    damageRatio: match.damageRatio,
+    takenPer: match.takenPer,
     control: match.control,
     healing: match.healing,
     tower: match.tower,
@@ -788,7 +898,7 @@ function publicMatch(match) {
     badges: match.badges,
     note: match.note,
     highlight: publicHighlight(match.highlight),
-    board: match.board,
+    board: (match.board || []).map(publicBoardRow),
   };
 }
 
@@ -820,6 +930,7 @@ function publicHero(card) {
     deaths: card.deaths,
     assists: card.assists,
     mvp: card.mvp,
+    power: card.power,
     note: card.note,
     kda: derivedKda(card.kills, card.deaths, card.assists),
   };
@@ -856,6 +967,7 @@ export function toPublicPlayer(player) {
     heroPool: player.heroPool.map(publicHero),
     championships: player.championships,
     honorTitles: player.honorTitles,
+    skins: player.skins,
     builds: player.builds.map(publicBuild),
     matches: player.matches.filter((match) => match.publish).map(publicMatch),
   };

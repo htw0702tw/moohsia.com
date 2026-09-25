@@ -1,8 +1,9 @@
 const state = {
-  section: "battle",
+  section: "heroes",
   season: 0,
   match: "",
-  tab: "board",
+  tab: "data",
+  queue: "classic",
 };
 
 export function getPlayerView() {
@@ -18,8 +19,17 @@ export function setPlayerSeason(index) {
 }
 
 export function setPlayerMatch(id) {
-  state.match = id || "";
-  state.tab = "board";
+  const next = id || "";
+  if (state.match === next) {
+    state.match = "";
+    return;
+  }
+  state.match = next;
+  state.tab = "data";
+}
+
+export function setPlayerQueue(queue) {
+  state.queue = queue === "magic" ? "magic" : "classic";
 }
 
 export function setPlayerTab(tab) {

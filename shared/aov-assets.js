@@ -8,8 +8,8 @@ export const SITE_SEARCH = [
     type: "page",
     id: "player",
     title: "選手數據",
-    text: "選手數據 player htw0702aov 歷史戰績 配裝 對戰資料",
-    href: "/player",
+    text: "選手數據 player htw0702aov 歷史戰績 配裝 對戰資料 成員",
+    href: "/roster",
     image: "",
   },
   {
@@ -18,6 +18,14 @@ export const SITE_SEARCH = [
     title: "英雄",
     text: "英雄 heroes 名單 造型 技能",
     href: "/heroes",
+    image: "",
+  },
+  {
+    type: "page",
+    id: "skins",
+    title: "造型",
+    text: "造型 skins 皮膚",
+    href: "/skins",
     image: "",
   },
   {

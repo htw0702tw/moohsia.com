@@ -1,6 +1,7 @@
 import { AGE_BANDS, GENDERS, POSITIONS, RANKS } from "../shared/apply.js";
 import { applyDraft, applyErrorText } from "./apply-state.js";
-import { getActivityFilter, getCatalog, getItemFilter, getRoleFilter } from "./catalog-state.js";
+import { getActivityFilter, getCatalog, getRoleFilter } from "./catalog-state.js";
+import { renderHeroDetail, renderItems } from "./catalog-pages.js";
 import {
   getContactEmail,
   getMailto,
@@ -12,6 +13,7 @@ import {
 } from "./content.js";
 import { esc } from "./html.js";
 import { renderPlayerBody } from "./player-page.js";
+import { findRosterMember, memberSlug, playerMemberPath } from "../shared/match-present.js";
 
 export function brandMark() {
   return `
@@ -112,7 +114,7 @@ function rosterCards(copy) {
       .map((member, index) => {
         const name = (member.name?.[lang] || member.name?.zh || "").trim();
         const role = (member.role?.[lang] || member.role?.zh || "").trim() || roster.rolePending;
-        return slotCard(index, name, role, roster.stampLive, false);
+        return slotCard(index, name, role, roster.stampLive, false, memberSlug(member) ? `/roster/${memberSlug(member)}` : "");
       })
       .join("");
   }
@@ -121,18 +123,18 @@ function rosterCards(copy) {
   ).join("");
 }
 
-function slotCard(index, name, meta, stamp, empty) {
-  return `
-    <article class="slot${empty ? " is-empty" : ""} reveal">
+function slotCard(index, name, meta, stamp, empty, href = "") {
+  const body = `
       <div class="slot-top">
         <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
         <p class="stamp">${esc(stamp)}</p>
       </div>
       <div class="silhouette" aria-hidden="true"><span></span></div>
       <h3>${esc(name)}</h3>
-      <p>${esc(meta)}</p>
-    </article>
-  `;
+      <p>${esc(meta)}</p>`;
+  const klass = `slot${empty ? " is-empty" : ""} reveal`;
+  if (href) return `<a class="${klass}" href="${esc(href)}" data-nav>${body}</a>`;
+  return `<article class="${klass}">${body}</article>`;
 }
 
 function newsBody(copy, compact) {
@@ -331,7 +333,7 @@ export function renderHome(copy) {
             <h2>${esc(home.playerTitle)}</h2>
             <p class="section-note">${esc(getPlayer() ? home.playerLead : home.playerEmpty)}</p>
           </div>
-          <a class="btn btn-ghost" href="/player" data-nav>${esc(home.playerCta)}</a>
+          <a class="btn btn-ghost" href="${esc(playerMemberPath(getRosterMembers(), getPlayer()) || "/roster")}" data-nav>${esc(home.playerCta)}</a>
         </div>
         ${renderPlayerBody(copy, true)}
       </section>
@@ -464,17 +466,6 @@ export function renderRoster(copy) {
         </div>
       </section>
       <section class="section wrap">
-        <div class="section-head section-head-row">
-          <div>
-            <p class="section-kicker">${esc(copy.player.kicker)}</p>
-            <h2>${esc(copy.player.title)}</h2>
-            <p class="section-note">${esc(getPlayer() ? copy.player.lead : copy.player.emptyBody)}</p>
-          </div>
-          <a class="btn btn-ghost" href="/player" data-nav>${esc(copy.home.playerCta)}</a>
-        </div>
-        ${renderPlayerBody(copy, true)}
-      </section>
-      <section class="section wrap">
         <div class="plate reveal">
           ${seal(copy.nav.recruitChip)}
           <div>
@@ -577,97 +568,33 @@ function heroCard(hero, copy) {
         <span class="hero-meta">
           <strong>${esc(name)}</strong>
           <em>${esc(role)}</em>
-          <small>${esc(copy.heroes.skins || "")}</small>
+          <small>${esc(copy.heroes.skins || copy.nav.skins)}</small>
         </span>
       </a>
     </article>`;
 }
 
-export function renderHeroDetail(copy, id) {
-  const page = copy.heroes;
-  const hero = getCatalog().heroes.find((item) => item.id === id);
-  if (!hero) return renderNotFound(copy);
-  const name = bi(hero.name) || hero.name?.zh || "";
-  const role = bi(hero.roleLabel) || "";
-  const skills = (hero.skills || [])
-    .map(
-      (skill) => `<article class="mode-card glass frame">
-        ${skill.image ? `<img class="skill-icon" src="${esc(skill.image)}" alt="" width="64" height="64" loading="lazy" referrerpolicy="no-referrer">` : ""}
-        <h2>${esc(skill.name)}</h2>
-        <p>${esc(skill.text)}</p>
-      </article>`,
-    )
-    .join("");
-  const skins = (hero.skins || [])
-    .map((skin) => {
-      const label = bi(skin.name) || (skin.kind === "default" ? page.defaultSkin : page.unnamedSkin);
-      return `<figure class="skin-card" id="skin-${esc(hero.id)}-${esc(skin.id)}">
-        <img src="${esc(skin.image || skin.thumb || "")}" alt="${esc(name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-        <figcaption>${esc(label)}</figcaption>
-      </figure>`;
-    })
-    .join("");
+export function renderMember(copy, key) {
+  const member = findRosterMember(getRosterMembers(), key);
+  const player = getPlayer();
+  if (!member) return renderNotFound(copy);
+  const name = bi(member.name) || copy.player.pending;
+  const role = member ? bi(member.role) : "";
   return `
-    <article class="page subpage">
-      <header class="mast catalog-mast wrap" data-hero>
-        <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><a href="/heroes" data-nav>${esc(page.title)}</a><span aria-hidden="true">/</span><span>${esc(name)}</span></p>
-        <p class="kicker">${esc(role)}</p>
+    <article class="page subpage member-page">
+      <header class="mast wrap">
+        <p class="crumbs"><a href="/roster" data-nav>${esc(copy.nav.roster)}</a><span aria-hidden="true">/</span><span>${esc(copy.player.title)}</span></p>
+        <p class="kicker">${esc(copy.player.title)}</p>
         <h1>${esc(name)}</h1>
-        ${hero.blurb ? `<p class="lead">${esc(hero.blurb)}</p>` : ""}
-        <p><a class="text-link" href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(page.open)}</a></p>
+        <p class="lead">${esc(player ? copy.player.lead : copy.player.emptyBody)}</p>
+        ${role ? `<p class="stamp">${esc(role)}</p>` : ""}
+        <p class="aov-jumps">
+          <a href="/skins" data-nav>${esc(copy.nav.skins)}</a>
+          <a href="/items" data-nav>${esc(copy.nav.items)}</a>
+          <a href="/modes" data-nav>${esc(copy.nav.modes)}</a>
+        </p>
       </header>
-      <section class="section wrap hero-detail">
-        <img class="hero-detail-portrait" src="${esc(hero.image || "")}" alt="" width="180" height="180" loading="lazy" referrerpolicy="no-referrer">
-        ${skins ? `<h2>${esc(page.skins)}</h2><div class="skin-grid">${skins}</div>` : ""}
-        ${skills ? `<h2>${esc(page.skills)}</h2><div class="mode-grid">${skills}</div>` : ""}
-        <p><a class="text-link" href="/heroes" data-nav>${esc(page.back)}</a></p>
-        <p class="section-note">${esc(page.source)}</p>
-      </section>
-    </article>`;
-}
-
-export function renderItems(copy) {
-  const page = copy.items;
-  const catalog = getCatalog();
-  const filter = getItemFilter();
-  const categories = [...new Set(catalog.items.map((item) => item.category).filter(Boolean))];
-  const items = catalog.items.filter((item) => filter === "all" || item.category === filter);
-  const chips = [`<button type="button" class="chip${filter === "all" ? " is-on" : ""}" data-item-filter="all">${esc(page.all)}</button>`]
-    .concat(
-      categories.map(
-        (category) =>
-          `<button type="button" class="chip${filter === category ? " is-on" : ""}" data-item-filter="${esc(category)}">${esc(category)}</button>`,
-      ),
-    )
-    .join("");
-  const body = items.length
-    ? `<div class="item-catalog">${items
-        .map(
-          (item) => `<article class="item-card reveal" id="item-${esc(item.id)}">
-            <img src="${esc(item.image || "")}" alt="" width="64" height="64" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-            <div>
-              <h2>${esc(bi(item.name) || item.name?.zh || "")}</h2>
-              ${item.category ? `<p class="stamp">${esc(item.category)}</p>` : ""}
-              ${item.description ? `<p>${esc(item.description)}</p>` : ""}
-            </div>
-          </article>`,
-        )
-        .join("")}</div>`
-    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
-  return `
-    <article class="page subpage">
-      <header class="mast catalog-mast wrap" data-hero>
-        <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><span>${esc(page.title)}</span></p>
-        <p class="kicker">${esc(page.kicker)}</p>
-        <h1>${esc(page.title)}</h1>
-        <p class="lead">${esc(page.lead)}</p>
-        <p class="hud-readout"><span>ITEMS // ${esc(String(catalog.items.length))}</span><span>${esc(page.count)}</span></p>
-        <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${chips}</div>
-      </header>
-      <section class="section wrap">
-        ${body}
-        <p class="section-note">${esc(page.source)}</p>
-      </section>
+      <section class="section wrap">${renderPlayerBody(copy, false)}</section>
     </article>`;
 }
 
@@ -719,7 +646,17 @@ export function renderHeroes(copy) {
 
 export function renderModes(copy) {
   const page = copy.modes;
-  const modes = getCatalog().modes;
+  const classic = getCatalog().modes.find((mode) => mode.id === "classic-5v5");
+  const modes = [
+    {
+      id: "ranked",
+      name: { zh: "排位賽", en: "Ranked" },
+      players: "5V5",
+      excerpt: page.rankedNote,
+      sourceUrl: classic?.sourceUrl || "",
+    },
+    ...getCatalog().modes,
+  ];
   const cards = modes.length
     ? `<div class="mode-grid">${modes
         .map((mode, index) => {
@@ -727,10 +664,10 @@ export function renderModes(copy) {
           return `
             <article class="mode-card glass tilt frame reveal" data-tilt>
               <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
-              <h2>${esc(bi(mode.name) || mode.name?.zh || "")}</h2>
+              <h2><a href="/modes/${esc(mode.id)}" data-nav>${esc(bi(mode.name) || mode.name?.zh || "")}</a></h2>
               ${players}
               ${mode.excerpt ? `<p>${esc(mode.excerpt)}</p>` : ""}
-              <a class="text-link" href="${esc(mode.sourceUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(copy.heroes.open)}</a>
+              <a class="text-link" href="/modes/${esc(mode.id)}" data-nav>${esc(page.detail || copy.heroes.open)}</a>
             </article>`;
         })
         .join("")}</div>`

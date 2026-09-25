@@ -84,6 +84,7 @@ function columnKey(text) {
   const rules = [
     ["輸出占比", "heroDamagePct"],
     ["輸出%", "heroDamagePct"],
+    ["傷害轉化比", "damageRatio"],
     ["輸出轉化", "damageRatio"],
     ["承傷占比", "takenPct"],
     ["承傷%", "takenPct"],
@@ -100,8 +101,9 @@ function columnKey(text) {
     ["勳章", "award"],
     ["榮譽", "award"],
     ["對塔傷害", "tower"],
-    ["塔傷", "tower"],
     ["對塔", "tower"],
+    ["塔傷", "tower"],
+    ["控制效果", "control"],
     ["控制時間", "control"],
     ["控場", "control"],
     ["控制", "control"],
@@ -112,9 +114,14 @@ function columnKey(text) {
     ["積分變化", "rankDelta"],
     ["積分", "rankDelta"],
     ["戰力變化詳情", "powerDetail"],
+    ["補刀數", "lastHits"],
+    ["補刀", "lastHits"],
     ["補兵", "minions"],
     ["分均經濟", "gpm"],
     ["GPM", "gpm"],
+    ["野怪經濟", "jungleGold"],
+    ["打野經濟", "jungleGold"],
+    ["總經濟", "gold"],
     ["經濟", "gold"],
     ["金幣", "gold"],
     ["出裝", "items"],
@@ -305,6 +312,10 @@ const MODE_RULES = [
   [/排位/, "排位賽"],
 ];
 
+export function normalizeQueueMode(raw) {
+  return catalogMode(raw).mode;
+}
+
 function catalogMode(raw) {
   const text = clip(raw, 80);
   if (!text) return { mode: "", raw: "" };
@@ -381,10 +392,17 @@ function materialize(row) {
     taken: numberFrom(cells.taken?.text),
     takenPct: numberFrom(cells.takenPct?.text, { places: 2 }) || pctOf(cells.taken?.text),
     level: numberFrom(cells.level?.text) || notes.level,
-    minions: numberFrom(cells.minions?.text),
+    minions: numberFrom(cells.minions?.text) || numberFrom(cells.lastHits?.text),
+    lastHits: numberFrom(cells.lastHits?.text) || numberFrom(cells.minions?.text),
+    jungleGold: numberFrom(cells.jungleGold?.text),
     control: numberFrom(cells.control?.text, { places: 3 }),
     healing: numberFrom(cells.healing?.text),
     tower: numberFrom(cells.tower?.text),
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     rankDelta: deltaFrom(cells.rankDelta?.text),
     reputation: numberFrom(cells.reputation?.text, { signed: true }) || notes.reputation,
     powerDelta: deltaFrom(cells.powerDelta?.text),
@@ -410,17 +428,40 @@ function splitPipeValues(labels, text) {
     const bits = [...flat.matchAll(/\d[\d,]*(?:\.\d+)?(?:\s*\([^)]*%\))?/g)].map((item) => item[0].trim());
     if (bits.length >= labels.length) return bits.slice(0, labels.length);
   }
-  if (/補兵/.test(joined) && /控場/.test(joined)) {
+  if ((/補兵|補刀/.test(joined)) && (/控場|控制/.test(joined)) && /治療/.test(joined)) {
     const match = /^(\d+)\s+(\d+(?:\.\d+)?)\s*秒?\s+(\d+)\s+(\d+)/.exec(flat);
     if (match && labels.length >= 4) return [match[1], match[2], match[3], match[4]];
+  }
+  if ((/經濟|金幣/.test(joined)) && /野怪/.test(joined) && /補/.test(joined)) {
+    const match = /(\d+)\s+(\d+)\s+(\d+)/.exec(flat);
+    if (match && labels.length >= 3) return [match[1], match[2], match[3]];
   }
   return lines;
 }
 
 function pipeKeys(parts) {
   const norm = parts.map((part) => part.replace(/\s+/g, ""));
-  if (norm.length === 4 && norm[0].includes("補兵") && norm[1].includes("控場") && norm[2].includes("治療") && norm[3].includes("塔傷")) {
+  if (
+    norm.length === 4 &&
+    norm[0].includes("補兵") &&
+    !norm[0].includes("補刀") &&
+    norm[1].includes("控場") &&
+    norm[2].includes("治療") &&
+    norm[3].includes("塔")
+  ) {
     return ["minions", "control", "healing", "tower"];
+  }
+  if (
+    norm.length === 4 &&
+    norm[0].includes("補刀") &&
+    norm[1].includes("控制") &&
+    norm[2].includes("治療") &&
+    norm[3].includes("塔")
+  ) {
+    return ["lastHits", "control", "healing", "tower"];
+  }
+  if (norm.length === 3 && norm[1].includes("野怪") && norm[2].includes("補") && (norm[0].includes("經濟") || norm[0].includes("金幣"))) {
+    return ["gold", "jungleGold", "lastHits"];
   }
   if (norm.length === 3 && norm[0].includes("輸出") && norm[1].includes("承傷") && norm[2].includes("經濟")) {
     return ["heroDamage", "taken", "gold"];
@@ -634,7 +675,12 @@ function copyOwner(match, owner) {
   match.gold = owner.gold || match.gold;
   match.damage = owner.heroDamage || match.damage;
   match.taken = owner.taken || match.taken;
-  match.minions = owner.minions || match.minions;
+  const farm = owner.lastHits || owner.minions || match.lastHits || match.minions;
+  match.minions = farm;
+  match.lastHits = farm;
+  match.jungleGold = owner.jungleGold || match.jungleGold;
+  match.damageRatio = owner.damageRatio || match.damageRatio;
+  match.takenPer = owner.takenPer || match.takenPer;
   match.control = owner.control || match.control;
   match.healing = owner.healing || match.healing;
   match.tower = owner.tower || match.tower;
@@ -705,9 +751,18 @@ function parseChunk(chunk, keyword, index) {
     damage: "",
     taken: "",
     minions: "",
+    lastHits: "",
+    jungleGold: "",
+    damageRatio: "",
+    takenPer: "",
     control: "",
     healing: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     lane: "",
     reputation: "",
     rankDelta: "",
