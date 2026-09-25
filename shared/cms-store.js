@@ -1,4 +1,58 @@
+import { logFailure } from "./log.js";
+
 const SITE_ID = "site";
+const PLAYER_ID = "owner";
+
+function playerJson(json) {
+  try {
+    const doc = JSON.parse(json);
+    return JSON.stringify(doc?.player ?? {});
+  } catch {
+    return "{}";
+  }
+}
+
+async function mirrorPlayer(db, json, now, mode) {
+  const payload = playerJson(json);
+  try {
+    if (mode === "publish") {
+      await db
+        .prepare(
+          `INSERT INTO player_records (id, draft_json, published_json, updated_at, published_at)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             draft_json = excluded.draft_json,
+             published_json = excluded.published_json,
+             updated_at = excluded.updated_at,
+             published_at = excluded.published_at`,
+        )
+        .bind(PLAYER_ID, payload, payload, now, now)
+        .run();
+      return;
+    }
+    if (mode === "discard") {
+      await db
+        .prepare(
+          `UPDATE player_records
+           SET draft_json = COALESCE(published_json, draft_json), updated_at = ?
+           WHERE id = ?`,
+        )
+        .bind(now, PLAYER_ID)
+        .run();
+      return;
+    }
+    await db
+      .prepare(
+        `INSERT INTO player_records (id, draft_json, published_json, updated_at, published_at)
+         VALUES (?, ?, NULL, ?, NULL)
+         ON CONFLICT(id) DO UPDATE SET draft_json = excluded.draft_json, updated_at = excluded.updated_at`,
+      )
+      .bind(PLAYER_ID, payload, now)
+      .run();
+  } catch (error) {
+    logFailure("player_mirror_failed", error);
+  }
+}
 
 export function createMemoryStore() {
   /** @type {{ draft_json: string, published_json: string | null, updated_at: string, published_at: string | null } | null} */
@@ -49,6 +103,7 @@ export function createD1Store(db) {
         )
         .bind(SITE_ID, json, json, now, now)
         .run();
+      await mirrorPlayer(db, json, now, "publish");
       return select();
     },
     async saveDraft(json, now) {
@@ -60,6 +115,7 @@ export function createD1Store(db) {
         )
         .bind(SITE_ID, json, now)
         .run();
+      await mirrorPlayer(db, json, now, "draft");
       return select();
     },
     async publish(json, now) {
@@ -75,6 +131,7 @@ export function createD1Store(db) {
         )
         .bind(SITE_ID, json, json, now, now)
         .run();
+      await mirrorPlayer(db, json, now, "publish");
       return select();
     },
     async discard(now) {
@@ -86,6 +143,7 @@ export function createD1Store(db) {
         )
         .bind(now, SITE_ID)
         .run();
+      await mirrorPlayer(db, "", now, "discard");
       return select();
     },
   };

@@ -13,3 +13,15 @@ DISCORD_INVITE_URL=
 ADMIN_USERNAME=htw0702
 ADMIN_PASSWORD_HASH=
 ADMIN_SESSION_SECRET=
+
+# Notion editorial sync. Leave blank until the owner creates the databases.
+# Secrets in production: NOTION_TOKEN, NOTION_WEBHOOK_SECRET, and the database IDs.
+# Do not commit a token. Sync writes the CMS draft; it does not publish the site.
+NOTION_TOKEN=
+NOTION_WEBHOOK_SECRET=
+NOTION_ROSTER_DB=
+NOTION_NEWS_DB=
+NOTION_COPY_DB=
+NOTION_PROFILE_DB=
+NOTION_PLAYER_DB=
+NOTION_MATCH_DB=
