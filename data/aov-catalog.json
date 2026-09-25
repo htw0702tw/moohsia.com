@@ -12,7 +12,10 @@
       "https://moba.garena.tw/news/",
       "https://moba.garena.tw/news/Esports"
     ],
-    "note": "Hero names, role tags, portraits, skill text, and skin art come from public Garena Traditional Chinese pages. Equipment names, icons, and descriptions come from the public equipment list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API. Skin art is shown when the hero page publishes it; the page often has no skin name."
+    "note": "Hero names, role tags, portraits, skill text, and skin art come from public Garena Traditional Chinese pages. Equipment names, icons, and descriptions come from the public equipment list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API. Skin art is shown when the hero page publishes it; the page often has no skin name. Arcana names, levels, tags, and effects come from the public katha list. Challenger skills come from the public skill page. Hero skill 4 is not arcana.",
+    "arcana": "https://moba.garena.tw/game/katha",
+    "userSkills": "https://moba.garena.tw/game/skill",
+    "glyphs": "https://moba.garena.tw/news/show/1854"
   },
   "roles": [
     {
@@ -11763,6 +11766,1127 @@
       "text": "聯絡 contact Info@moohsia.com",
       "href": "/contact",
       "image": ""
+    }
+  ],
+  "arcana": [
+    {
+      "id": "40129",
+      "name": "神劍",
+      "level": 1,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "物理攻擊+1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40129.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40123",
+      "name": "暴怒",
+      "level": 1,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+0.5%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40123.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40124",
+      "name": "賢者",
+      "level": 1,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+1.6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40124.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40128",
+      "name": "覺醒",
+      "level": 1,
+      "tags": [
+        "暴擊",
+        "攻速"
+      ],
+      "effect": "攻擊速度+0.5% 暴擊率+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40128.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40146",
+      "name": "巨人",
+      "level": 1,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+22.5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40146.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40148",
+      "name": "不朽",
+      "level": 1,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+18 每5秒回血+1.4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40148.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40150",
+      "name": "奪萃",
+      "level": 1,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "物理吸血+0.5%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40150.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40144",
+      "name": "禱告",
+      "level": 1,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "魔法吸血+0.5%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40144.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40173",
+      "name": "長城",
+      "level": 1,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦+2.7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40173.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40167",
+      "name": "權柄",
+      "level": 1,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "魔法防禦+2.7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40167.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40172",
+      "name": "龍爪",
+      "level": 1,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+0.3 物理穿透+1.9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40172.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40166",
+      "name": "玷污",
+      "level": 1,
+      "tags": [
+        "穿透",
+        "攻速"
+      ],
+      "effect": "攻擊速度+0.2% 魔法穿透+1.9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40166.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40130",
+      "name": "猛攻",
+      "level": 1,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+0.6 物理穿透+1.1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40130.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40131",
+      "name": "嗜血",
+      "level": 1,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+0.8 物理吸血+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40131.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40122",
+      "name": "暴走",
+      "level": 1,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+0.2% 暴擊效果+1.1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40122.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40127",
+      "name": "金身",
+      "level": 1,
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命"
+      ],
+      "effect": "攻擊速度+0.3% 最大生命+10.1 物理防禦+0.7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40127.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40125",
+      "name": "荒蕪",
+      "level": 1,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+1.3 魔法穿透+0.7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40125.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40126",
+      "name": "權杖",
+      "level": 1,
+      "tags": [
+        "攻速",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+1.3 攻擊速度+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40126.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40147",
+      "name": "王座",
+      "level": 1,
+      "tags": [
+        "暴擊",
+        "生命"
+      ],
+      "effect": "暴擊率+0.2% 最大生命+18",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40147.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40151",
+      "name": "繁榮",
+      "level": 1,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "物理吸血+0.3% 魔法防禦+1.2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40151.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40145",
+      "name": "血魔",
+      "level": 1,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+0.7 魔法吸血+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40145.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40149",
+      "name": "庇佑",
+      "level": 1,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+13.5 每5秒回血+1.6 跑速+0.1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40149.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40152",
+      "name": "刺殺",
+      "level": 1,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+0.5 跑速+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40152.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40153",
+      "name": "精靈",
+      "level": 1,
+      "tags": [
+        "攻速",
+        "功能"
+      ],
+      "effect": "攻擊速度+0.3% 跑速+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40153.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40174",
+      "name": "金剛",
+      "level": 1,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦+1.5 魔法防禦+1.5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40174.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40168",
+      "name": "英勇",
+      "level": 1,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+11.3 冷卻縮減+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40168.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40171",
+      "name": "聖光",
+      "level": 1,
+      "tags": [
+        "功能",
+        "防禦"
+      ],
+      "effect": "物理防禦+0.8 魔法防禦+0.8 冷卻縮減+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40171.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40169",
+      "name": "秘咒",
+      "level": 1,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+0.7 冷卻縮減+0.2%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40169.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40170",
+      "name": "純潔",
+      "level": 1,
+      "tags": [
+        "功能"
+      ],
+      "effect": "冷卻縮減+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40170.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40175",
+      "name": "魔心",
+      "level": 1,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "魔法吸血+0.2% 物理防禦+1.8",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40175.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40228",
+      "name": "覺醒",
+      "level": 2,
+      "tags": [
+        "暴擊",
+        "攻速"
+      ],
+      "effect": "攻擊速度+1% 暴擊率+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40228.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40229",
+      "name": "神劍",
+      "level": 2,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "物理攻擊+2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40229.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40231",
+      "name": "嗜血",
+      "level": 2,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+1.6 物理吸血+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40231.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40227",
+      "name": "金身",
+      "level": 2,
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命"
+      ],
+      "effect": "攻擊速度+0.6% 最大生命+21.1 物理防禦+1.4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40227.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40226",
+      "name": "權杖",
+      "level": 2,
+      "tags": [
+        "攻速",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+2.6 攻擊速度+0.4%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40226.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40225",
+      "name": "荒蕪",
+      "level": 2,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+2.6 魔法穿透+1.5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40225.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40223",
+      "name": "暴怒",
+      "level": 2,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40223.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40222",
+      "name": "暴走",
+      "level": 2,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+0.4% 暴擊效果+2.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40222.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40246",
+      "name": "巨人",
+      "level": 2,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+46.9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40246.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40252",
+      "name": "刺殺",
+      "level": 2,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+1 跑速+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40252.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40248",
+      "name": "不朽",
+      "level": 2,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+37.5 每5秒回血+2.8",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40248.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40245",
+      "name": "血魔",
+      "level": 2,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+1.5 魔法吸血+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40245.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40250",
+      "name": "奪萃",
+      "level": 2,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "物理吸血+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40250.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40247",
+      "name": "王座",
+      "level": 2,
+      "tags": [
+        "暴擊",
+        "生命"
+      ],
+      "effect": "暴擊率+0.3% 最大生命+37.5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40247.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40249",
+      "name": "庇佑",
+      "level": 2,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+28.1 每5秒回血+3.3 跑速+0.3%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40249.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40253",
+      "name": "精靈",
+      "level": 2,
+      "tags": [
+        "攻速",
+        "功能"
+      ],
+      "effect": "攻擊速度+0.6% 跑速+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40253.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40273",
+      "name": "長城",
+      "level": 2,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦+5.6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40273.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40267",
+      "name": "權柄",
+      "level": 2,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "魔法防禦+5.6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40267.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40268",
+      "name": "英勇",
+      "level": 2,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+23.4 冷卻縮減+0.4%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40268.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40274",
+      "name": "金剛",
+      "level": 2,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦+3.1 魔法防禦+3.1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40274.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40275",
+      "name": "魔心",
+      "level": 2,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "魔法吸血+0.4% 物理防禦+3.7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40275.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40266",
+      "name": "玷污",
+      "level": 2,
+      "tags": [
+        "穿透",
+        "攻速"
+      ],
+      "effect": "攻擊速度+0.4% 魔法穿透+4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40266.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40271",
+      "name": "聖光",
+      "level": 2,
+      "tags": [
+        "功能",
+        "防禦"
+      ],
+      "effect": "物理防禦+1.7 魔法防禦+1.7 冷卻縮減+0.4%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40271.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40272",
+      "name": "龍爪",
+      "level": 2,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+0.6 物理穿透+4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40272.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40224",
+      "name": "賢者",
+      "level": 2,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+3.3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40224.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40230",
+      "name": "猛攻",
+      "level": 2,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊+1.3 物理穿透+2.3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40230.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40244",
+      "name": "禱告",
+      "level": 2,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "魔法吸血+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40244.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40251",
+      "name": "繁榮",
+      "level": 2,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "物理吸血+0.6% 魔法防禦+2.6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40251.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40269",
+      "name": "秘咒",
+      "level": 2,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊+1.5 冷卻縮減+0.4%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40269.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40270",
+      "name": "純潔",
+      "level": 2,
+      "tags": [
+        "功能"
+      ],
+      "effect": "冷卻縮減+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40270.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40024",
+      "name": "賢者",
+      "level": 3,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "魔法攻擊力+5.3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40024.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40029",
+      "name": "神劍",
+      "level": 3,
+      "tags": [
+        "攻擊"
+      ],
+      "effect": "物理攻擊力+3.2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40029.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40030",
+      "name": "猛攻",
+      "level": 3,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊力+2 物理穿透+3.6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40030.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40031",
+      "name": "嗜血",
+      "level": 3,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "物理攻擊力+2.5 物理吸血+0.5%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40031.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40022",
+      "name": "暴走",
+      "level": 3,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+0.7% 暴擊效果+3.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40022.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40027",
+      "name": "金身",
+      "level": 3,
+      "tags": [
+        "攻速",
+        "防禦",
+        "生命"
+      ],
+      "effect": "攻速加成+1% 最大生命+33.7 物理防禦力+2.3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40027.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40025",
+      "name": "荒蕪",
+      "level": 3,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊力+4.2 魔法穿透+2.4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40025.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40026",
+      "name": "權杖",
+      "level": 3,
+      "tags": [
+        "攻速",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊力+4.2 攻速加成+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40026.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40023",
+      "name": "暴怒",
+      "level": 3,
+      "tags": [
+        "暴擊"
+      ],
+      "effect": "暴擊率+1.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40023.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40028",
+      "name": "覺醒",
+      "level": 3,
+      "tags": [
+        "暴擊",
+        "攻速"
+      ],
+      "effect": "攻速加成+1.6% 暴擊率+0.5%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40028.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40046",
+      "name": "巨人",
+      "level": 3,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+75",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40046.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40044",
+      "name": "禱告",
+      "level": 3,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "魔法吸血+1.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40044.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40050",
+      "name": "奪萃",
+      "level": 3,
+      "tags": [
+        "吸血"
+      ],
+      "effect": "物理吸血+1.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40050.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40047",
+      "name": "王座",
+      "level": 3,
+      "tags": [
+        "暴擊",
+        "生命"
+      ],
+      "effect": "暴擊率+0.5% 最大生命+60",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40047.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40048",
+      "name": "不朽",
+      "level": 3,
+      "tags": [
+        "生命"
+      ],
+      "effect": "最大生命+60 生命回復+4.5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40048.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40051",
+      "name": "繁榮",
+      "level": 3,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "物理吸血+1% 魔法防禦力+4.1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40051.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40045",
+      "name": "血魔",
+      "level": 3,
+      "tags": [
+        "吸血",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊力+2.4 魔法吸血+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40045.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40049",
+      "name": "庇佑",
+      "level": 3,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+45 生命回復+5.2 跑速+0.4%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40049.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40052",
+      "name": "刺殺",
+      "level": 3,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "物理攻擊力+1.6 跑速+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40052.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40053",
+      "name": "精靈",
+      "level": 3,
+      "tags": [
+        "攻速",
+        "功能"
+      ],
+      "effect": "攻速加成+1% 跑速+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40053.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40073",
+      "name": "長城",
+      "level": 3,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦力+9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40073.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40074",
+      "name": "金剛",
+      "level": 3,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "物理防禦力+5 魔法防禦力+5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40074.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40068",
+      "name": "英勇",
+      "level": 3,
+      "tags": [
+        "功能",
+        "生命"
+      ],
+      "effect": "最大生命+37.5 冷卻縮減+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40068.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40067",
+      "name": "權柄",
+      "level": 3,
+      "tags": [
+        "防禦"
+      ],
+      "effect": "魔法防禦力+9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40067.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40069",
+      "name": "秘咒",
+      "level": 3,
+      "tags": [
+        "功能",
+        "攻擊"
+      ],
+      "effect": "魔法攻擊力+2.4 冷卻縮減+0.7%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40069.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40072",
+      "name": "龍爪",
+      "level": 3,
+      "tags": [
+        "穿透",
+        "攻擊"
+      ],
+      "effect": "物理攻擊力+0.9 物理穿透+6.4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40072.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40066",
+      "name": "玷污",
+      "level": 3,
+      "tags": [
+        "穿透",
+        "攻速"
+      ],
+      "effect": "攻速加成+0.6% 魔法穿透+6.4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40066.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40070",
+      "name": "純潔",
+      "level": 3,
+      "tags": [
+        "功能"
+      ],
+      "effect": "冷卻縮減+1%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40070.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40075",
+      "name": "魔心",
+      "level": 3,
+      "tags": [
+        "吸血",
+        "防禦"
+      ],
+      "effect": "魔法吸血+0.7% 物理防禦力+5.9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40075.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    },
+    {
+      "id": "40071",
+      "name": "聖光",
+      "level": 3,
+      "tags": [
+        "功能",
+        "防禦"
+      ],
+      "effect": "物理防禦力+2.7 魔法防禦力+2.7 冷卻縮減+0.6%",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/Dynamic/Icon/40071.png",
+      "pageUrl": "https://moba.garena.tw/game/katha"
+    }
+  ],
+  "userSkills": [
+    {
+      "id": "80104",
+      "name": "制裁",
+      "text": "30秒CD： 對野怪或小兵造成真實傷害並眩暈1秒",
+      "image": "https://moba.garena.tw/static/web/img/page/80104.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-03",
+      "name": "斬殺",
+      "text": "90秒CD： 立即對身邊敵軍英雄造成其已損失生命值16%的真實傷害",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-03.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-04",
+      "name": "狂熱",
+      "text": "60秒CD： 增加攻擊速度60%，並增加物理攻擊力10%持續5秒",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-04.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-05",
+      "name": "疾走",
+      "text": "100秒CD： 解除減速效果，並獲得不斷衰減的70%（最低降至30%）跑速加成效果，持續10秒。",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-05.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-06",
+      "name": "治癒",
+      "text": "120秒CD： 回復自己與附近隊友15%生命，提高附近友軍移動速度15%持續2秒",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-06.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-07",
+      "name": "封鎖",
+      "text": "60秒CD： 沉默建築持續5秒",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-07.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-08",
+      "name": "暈眩",
+      "text": "90秒CD： 暈眩身邊所有敵人0.5秒，並且減少身邊敵人40%輸出，持續2秒。",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-08.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-09",
+      "name": "清醒",
+      "text": "120秒CD： 解除自身所有負面和控制效果並免疫控制持續1.5秒",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-09.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-11",
+      "name": "瞬移",
+      "text": "120秒CD： 向指定方向位移一段距離",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-11.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
+    },
+    {
+      "id": "skill_icon-02",
+      "name": "寒冰制裁",
+      "text": "30秒CD： 對野怪或小兵造成真實傷害並眩暈1秒，或對英雄造成真實傷害，並減速50%持續2秒",
+      "image": "https://moba.garena.tw/static/web/img/page/skill_icon-02.png",
+      "pageUrl": "https://moba.garena.tw/game/skill"
     }
   ]
 }

@@ -1,13 +1,33 @@
-import { getCatalog, getItemCategory, getRoleFilter } from "./catalog-state.js";
+import { ARCANA_TAGS, GLYPH_FACTIONS, GLYPH_SOURCE } from "../shared/arcana.js";
+import { HERO_SKILL_SLOTS, heroSkillSlots } from "../shared/hero-skills.js";
+import { frequentBuilds } from "../shared/match-present.js";
+import {
+  getArcanaLevel,
+  getArcanaQuery,
+  getArcanaTag,
+  getCatalog,
+  getItemCategory,
+  getRoleFilter,
+  getSkillQuery,
+  getSkillSlot,
+} from "./catalog-state.js";
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
-import { frequentBuilds } from "../shared/match-present.js";
-import { ultimateSkill } from "../shared/ultimates.js";
+
+function uiLang() {
+  return document.documentElement.lang === "en" ? "en" : "zh";
+}
 
 function bi(value) {
   if (!value || typeof value !== "object") return "";
-  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  const lang = uiLang();
   return String(value[lang] || value.zh || "").trim();
+}
+
+function tagLabel(tag) {
+  const known = ARCANA_TAGS.find((row) => row.id === tag);
+  if (!known) return tag;
+  return uiLang() === "en" ? known.en : known.zh;
 }
 
 function skinLabel(copy, skin, index) {
@@ -86,14 +106,13 @@ export function renderHeroDetail(copy, id) {
       </article>`;
     })
     .join("");
-  const ultimate = ultimateSkill(hero);
-  const skills = (hero.skills || [])
-    .map((skill) => {
-      const isUltimate = ultimate && skill === ultimate;
-      const badge = isUltimate ? `<span class="stamp">${esc(copy.ultimates?.title || "奧義")}</span>` : "";
-      return `<article class="aov-skill${isUltimate ? " is-ultimate" : ""}" ${isUltimate ? `id="ult-${esc(hero.id)}"` : ""}>
+  const skills = heroSkillSlots(hero)
+    .map((row) => {
+      const skill = row.skill || {};
+      const slot = uiLang() === "en" ? row.en : row.zh;
+      return `<article class="aov-skill" id="skill-${esc(hero.id)}-${row.index}">
         ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ""}
-        <div><h3>${esc(skill.name || "")} ${badge}</h3><p>${esc(skill.text || "")}</p></div>
+        <div><h3><span class="stamp">${esc(slot)}</span> ${esc(skill.name || "")}</h3><p>${esc(skill.text || "")}</p></div>
       </article>`;
     })
     .join("");
@@ -103,7 +122,7 @@ export function renderHeroDetail(copy, id) {
       <p class="kicker">${esc(role)}</p>
       <h1>${esc(name)}</h1>
       ${hero.blurb ? `<p class="lead">${esc(hero.blurb)}</p>` : ""}
-      <p class="hero-actions"><a class="btn btn-ghost" href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(page.open)}</a><a class="btn btn-ghost" href="/skins" data-nav>${esc(copy.nav.skins)}</a></p>
+      <p class="hero-actions"><a class="btn btn-ghost" href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(page.open)}</a><a class="btn btn-ghost" href="/skills" data-nav>${esc(copy.nav.heroSkills)}</a><a class="btn btn-ghost" href="/skins" data-nav>${esc(copy.nav.skins)}</a></p>
     </header>
     <section class="section wrap hero-detail">
       <img class="aov-hero-banner" src="${esc(hero.image || "")}" alt="" decoding="async" referrerpolicy="no-referrer">
@@ -173,20 +192,9 @@ export function renderItems(copy) {
   </article>`;
 }
 
-export function renderUltimates(copy) {
-  const page = copy.ultimates;
-  const catalog = getCatalog();
-  const filter = getRoleFilter();
-  const roles = catalog.roles || [];
-  const heroes = catalog.heroes.filter((hero) => filter === "all" || hero.role === filter);
-  const resolved = [];
-  const unresolved = [];
-  for (const hero of heroes) {
-    const skill = ultimateSkill(hero);
-    if (skill) resolved.push({ hero, skill });
-    else unresolved.push(hero);
-  }
-  const chips = [`<button type="button" class="chip${filter === "all" ? " is-on" : ""}" data-role-filter="all">${esc(copy.heroes.all)}</button>`]
+function roleChips(copy, filter) {
+  const roles = getCatalog().roles || [];
+  return [`<button type="button" class="chip${filter === "all" ? " is-on" : ""}" data-role-filter="all">${esc(copy.heroes.all)}</button>`]
     .concat(
       roles.map(
         (role) =>
@@ -194,26 +202,68 @@ export function renderUltimates(copy) {
       ),
     )
     .join("");
-  const cards = resolved.length
-    ? `<div class="ult-grid">${resolved
-        .map(({ hero, skill }) => {
-          const name = bi(hero.name) || hero.name?.zh || "";
-          const role = bi(hero.roleLabel) || "";
-          return `<a class="ult-card" id="ult-${esc(hero.id)}" href="/heroes/${esc(hero.id)}#ult-${esc(hero.id)}" data-nav>
-            ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span class="ult-fallback"></span>`}
-            <span>
-              <strong>${esc(skill.name || "")}</strong>
-              <em>${esc(name)}${role ? ` · ${esc(role)}` : ""}</em>
-              <small>${esc(skill.text || "")}</small>
-            </span>
-          </a>`;
+}
+
+function catalogQuery(id, label, value) {
+  return `<label class="catalog-q"><span class="sr-only">${esc(label)}</span><input id="${esc(id)}" type="search" data-catalog-q="${esc(id)}" value="${esc(value)}" placeholder="${esc(label)}" autocomplete="off" enterkeyhint="search"></label>`;
+}
+
+export function renderHeroSkills(copy) {
+  const page = copy.skills;
+  const filter = getRoleFilter();
+  const slot = getSkillSlot();
+  const query = getSkillQuery().trim().toLowerCase();
+  const heroes = getCatalog().heroes.filter((hero) => filter === "all" || hero.role === filter);
+  const slotChips = [`<button type="button" class="chip${slot === "all" ? " is-on" : ""}" data-skill-slot="all">${esc(page.all)}</button>`]
+    .concat(
+      HERO_SKILL_SLOTS.map((row) => {
+        const label = uiLang() === "en" ? row.en : row.zh;
+        return `<button type="button" class="chip${slot === row.id ? " is-on" : ""}" data-skill-slot="${esc(row.id)}">${esc(label)}</button>`;
+      }),
+    )
+    .join("");
+  let shown = 0;
+  const odd = [];
+  const cards = heroes
+    .map((hero) => {
+      const name = bi(hero.name) || hero.name?.zh || "";
+      const role = bi(hero.roleLabel) || "";
+      const rows = heroSkillSlots(hero).filter((row) => slot === "all" || row.id === slot);
+      if (!rows.length) return "";
+      if ((hero.skills || []).length !== 4) odd.push(hero);
+      const blob = [name, role, ...rows.map((row) => `${row.zh} ${row.en} ${row.skill?.name || ""} ${row.skill?.text || ""}`)]
+        .join(" ")
+        .toLowerCase();
+      const hidden = query && !blob.includes(query);
+      if (!hidden) shown += 1;
+      const skills = rows
+        .map((row) => {
+          const skill = row.skill || {};
+          const label = uiLang() === "en" ? row.en : row.zh;
+          return `<article class="aov-skill" id="skill-${esc(hero.id)}-${row.index}">
+            ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ""}
+            <div><h3><span class="stamp">${esc(label)}</span> ${esc(skill.name || "")}</h3><p>${esc(skill.text || "")}</p></div>
+          </article>`;
         })
-        .join("")}</div>`
+        .join("");
+      return `<article class="skill-hero reveal" id="hero-skills-${esc(hero.id)}" data-catalog-kind="skill-q" data-catalog-blob="${esc(blob)}"${hidden ? " hidden" : ""}>
+        <header>
+          <a href="/heroes/${esc(hero.id)}" data-nav>
+            ${hero.image ? `<img src="${esc(hero.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ""}
+            <span><strong>${esc(name)}</strong><em>${esc(role)}</em></span>
+          </a>
+        </header>
+        <div class="aov-skill-list">${skills}</div>
+      </article>`;
+    })
+    .join("");
+  const body = heroes.length
+    ? cards
     : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
-  const gaps = unresolved.length
-    ? `<section class="ult-gaps"><h2>${esc(page.unresolved)}</h2><ul>${unresolved
-        .map((hero) => `<li><a href="/heroes/${esc(hero.id)}" data-nav>${esc(bi(hero.name) || hero.name?.zh || hero.id)}</a></li>`)
-        .join("")}</ul></section>`
+  const gaps = odd.length
+    ? `<p class="section-note">${esc(page.unresolved)} ${odd
+        .map((hero) => `<a href="/heroes/${esc(hero.id)}" data-nav>${esc(bi(hero.name) || hero.name?.zh || hero.id)}</a>`)
+        .join("、")}</p>`
     : "";
   return `<article class="page subpage">
     <header class="mast catalog-mast wrap">
@@ -222,13 +272,133 @@ export function renderUltimates(copy) {
       <h1>${esc(page.title)}</h1>
       <p class="lead">${esc(page.lead)}</p>
       <p class="section-note">${esc(page.method)}</p>
-      <p class="hud-readout"><span>ULT // ${esc(String(resolved.length))}</span><span>${esc(page.count)}</span></p>
-      <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${chips}</div>
+      <p class="hud-readout"><span>HERO SKILL // <b data-catalog-count="skill-q">${esc(String(shown))}</b></span><span>${esc(page.count)}</span></p>
+      <div class="role-filters" role="toolbar" aria-label="${esc(copy.nav.heroes)}">${roleChips(copy, filter)}</div>
+      <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${slotChips}</div>
+      ${catalogQuery("skill-q", page.search, getSkillQuery())}
+    </header>
+    <section class="section wrap skill-index">
+      ${body}
+      <p class="aov-empty" data-catalog-empty="skill-q"${heroes.length && !shown ? "" : " hidden"}>${esc(page.noMatch)}</p>
+      ${gaps}
+      <p class="section-note">${esc(page.source)}</p>
+    </section>
+  </article>`;
+}
+
+export function renderUserSkills(copy) {
+  const page = copy.userSkills;
+  const rows = getCatalog().userSkills || [];
+  const cards = rows.length
+    ? `<div class="ult-grid">${rows
+        .map(
+          (skill) => `<article class="ult-card" id="user-${esc(skill.id)}">
+            ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span class="ult-fallback"></span>`}
+            <span>
+              <strong>${esc(skill.name || "")}</strong>
+              <em>${esc(page.official)}</em>
+              <small>${esc(skill.text || "")}</small>
+            </span>
+          </article>`,
+        )
+        .join("")}</div>`
+    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
+  return `<article class="page subpage">
+    <header class="mast catalog-mast wrap">
+      <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><span>${esc(page.title)}</span></p>
+      <p class="kicker">${esc(page.kicker)}</p>
+      <h1>${esc(page.title)}</h1>
+      <p class="lead">${esc(page.lead)}</p>
+      <p class="hud-readout"><span>USER // ${esc(String(rows.length))}</span><span>${esc(page.count)}</span></p>
     </header>
     <section class="section wrap">
       ${cards}
-      ${gaps}
-      <p class="section-note">${esc(page.source)}</p>
+      <p class="section-note">${esc(page.source)} <a href="https://moba.garena.tw/game/skill" target="_blank" rel="noopener noreferrer">${esc(page.official)}</a></p>
+    </section>
+  </article>`;
+}
+
+export function renderUltimates(copy) {
+  const page = copy.ultimates;
+  const level = getArcanaLevel();
+  const tag = getArcanaTag();
+  const query = getArcanaQuery().trim().toLowerCase();
+  const rows = (getCatalog().arcana || []).filter((row) => {
+    if (level !== "all" && String(row.level) !== level) return false;
+    if (tag !== "all" && !(row.tags || []).includes(tag)) return false;
+    return true;
+  });
+  const presentTags = new Set((getCatalog().arcana || []).flatMap((row) => row.tags || []));
+  const tags = ARCANA_TAGS.filter((row) => presentTags.has(row.id)).concat(
+    [...presentTags].filter((id) => !ARCANA_TAGS.some((row) => row.id === id)).map((id) => ({ id, zh: id, en: id })),
+  );
+  const levelChips = [`<button type="button" class="chip${level === "all" ? " is-on" : ""}" data-arcana-level="all">${esc(page.levelAll)}</button>`]
+    .concat(
+      ["1", "2", "3"].map((id) => {
+        const label = page.levels?.[id] || id;
+        return `<button type="button" class="chip${level === id ? " is-on" : ""}" data-arcana-level="${id}">${esc(label)}</button>`;
+      }),
+    )
+    .join("");
+  const tagChips = [`<button type="button" class="chip${tag === "all" ? " is-on" : ""}" data-arcana-tag="all">${esc(page.tagAll)}</button>`]
+    .concat(
+      tags.map((row) => {
+        const label = uiLang() === "en" ? row.en : row.zh;
+        return `<button type="button" class="chip${tag === row.id ? " is-on" : ""}" data-arcana-tag="${esc(row.id)}">${esc(label)}</button>`;
+      }),
+    )
+    .join("");
+  const allArcana = getCatalog().arcana || [];
+  let shown = 0;
+  const cards = allArcana.length
+    ? `<div class="arcana-grid">${rows
+        .map((row) => {
+          const blob = [row.name, ...(row.tags || []), row.effect, `${row.level}`].join(" ").toLowerCase();
+          const hidden = query && !blob.includes(query);
+          if (!hidden) shown += 1;
+          const tagsText = (row.tags || []).map((item) => tagLabel(item)).join(" · ");
+          const levelLabel = page.levels?.[String(row.level)] || String(row.level);
+          return `<article class="arcana-card reveal" id="katha-${esc(String(row.level))}-${esc(row.id)}" data-catalog-kind="arcana-q" data-catalog-blob="${esc(blob)}"${hidden ? " hidden" : ""}>
+            ${row.image ? `<img src="${esc(row.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span class="ult-fallback"></span>`}
+            <strong>${esc(row.name || "")}</strong>
+            <em>${esc(levelLabel)}${tagsText ? ` · ${esc(tagsText)}` : ""}</em>
+            <p>${esc(row.effect || "")}</p>
+          </article>`;
+        })
+        .join("")}</div>`
+    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
+  const factions = GLYPH_FACTIONS.map((row) => {
+    const name = bi(row.name);
+    const focus = bi(row.focus);
+    return `<article class="glyph-card">
+      <p class="stamp">${esc(page.glyphsPendingStamp)}</p>
+      <h3>${esc(name)}</h3>
+      <p>${esc(focus)}</p>
+      <p class="section-note">${esc(page.glyphsPending)}</p>
+    </article>`;
+  }).join("");
+  return `<article class="page subpage">
+    <header class="mast catalog-mast wrap">
+      <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><span>${esc(page.title)}</span></p>
+      <p class="kicker">${esc(page.kicker)}</p>
+      <h1>${esc(page.title)}</h1>
+      <p class="lead">${esc(page.lead)}</p>
+      <p class="section-note">${esc(page.method)}</p>
+      <p class="hud-readout"><span>ARCANA // <b data-catalog-count="arcana-q">${esc(String(shown))}</b></span><span>${esc(page.count)}</span></p>
+      <div class="role-filters" role="toolbar" aria-label="${esc(page.levelAll)}">${levelChips}</div>
+      <div class="role-filters" role="toolbar" aria-label="${esc(page.tagAll)}">${tagChips}</div>
+      ${catalogQuery("arcana-q", page.search, getArcanaQuery())}
+    </header>
+    <section class="section wrap">
+      ${cards}
+      <p class="aov-empty" data-catalog-empty="arcana-q"${allArcana.length && !shown ? "" : " hidden"}>${esc(page.noMatch)}</p>
+      <p class="section-note">${esc(page.source)} <a href="https://moba.garena.tw/game/katha" target="_blank" rel="noopener noreferrer">${esc(page.listLink)}</a></p>
+      <section class="glyph-board">
+        <h2>${esc(page.glyphsTitle)}</h2>
+        <p>${esc(page.glyphsLead)}</p>
+        <div class="glyph-grid">${factions}</div>
+        <p class="section-note"><a href="${esc(GLYPH_SOURCE)}" target="_blank" rel="noopener noreferrer">${esc(page.glyphsSource)}</a></p>
+      </section>
     </section>
   </article>`;
 }

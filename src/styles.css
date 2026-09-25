@@ -1438,7 +1438,54 @@ a.aov-item { text-decoration: none; }
 .aov-skill-list { display: grid; gap: 0.6rem; margin: 1rem 0; }
 .aov-skill { display: flex; gap: 0.7rem; align-items: flex-start; }
 .aov-skill img { width: 48px; height: 48px; border-radius: 10px; }
-.aov-skill.is-ultimate { border: 1px solid rgba(255, 176, 32, 0.55); border-radius: 14px; padding: 0.55rem; background: rgba(255, 176, 32, 0.06); }
+.aov-skill .stamp { margin-right: 0.35rem; }
+.skill-hero {
+  margin: 0 0 0.9rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 176, 32, 0.22);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 59, 134, 0.12), transparent 42%),
+    rgba(18, 8, 22, 0.72);
+}
+.skill-hero header a {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+.skill-hero header img { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; }
+.skill-hero header strong { display: block; }
+.skill-hero header em { color: var(--ember); font-style: normal; }
+.catalog-q { display: block; margin-top: 0.8rem; max-width: 22rem; }
+.catalog-q input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(7, 4, 13, 0.72);
+  color: var(--ink);
+  font: inherit;
+}
+.catalog-q input:focus { outline: 2px solid rgba(255, 176, 32, 0.55); outline-offset: 2px; }
+.arcana-grid, .glyph-grid { display: grid; gap: 0.75rem; }
+.arcana-grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.arcana-card, .glyph-card {
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 176, 32, 0.28);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 59, 134, 0.16), transparent 48%),
+    #120816;
+}
+.arcana-card img, .arcana-card .ult-fallback { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; background: #1a0c16; }
+.arcana-card strong, .glyph-card h3 { display: block; margin: 0.45rem 0 0.15rem; }
+.arcana-card em { color: var(--ember); font-style: normal; font-size: 0.82rem; }
+.arcana-card p, .glyph-card p { margin: 0.35rem 0 0; color: var(--muted); }
+.glyph-board { margin-top: 1.8rem; }
+.glyph-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 0.8rem; }
+.glyph-card { min-height: 100%; }
 .ult-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; }
 .ult-card {
   display: grid;

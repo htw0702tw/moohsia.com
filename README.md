@@ -47,7 +47,9 @@ npm start
 | `/teams/:slug` | 單一戰隊：加入條件與該隊成員，連到 `/roster/:name` |
 | `/roster` | 成員。每一列有戰隊。沒有名單時以待公布席位呈現，並附個人數據入口 |
 | `/roster/:name` | 玩家資料。點成員卡進入，側欄是常用英雄、歷史戰績、對戰資料。`/player` 會在瀏覽器改到這位成員，不另開選手頁 |
-| `/ultimates` | 奧義。取 Garena 英雄頁第 4 個技能（被動、一技、二技、奧義）。官方頁沒有單獨標記 |
+| `/skills` | 英雄技能。全部英雄的被動、一技能、二技能、三技能。不是奧義 |
+| `/user-skills` | 使用者技能。Garena 公開頁稱挑戰者技能，例如瞬移。不是英雄技能 |
+| `/ultimates` | 奧義（魔紋配裝）。資料來自 Garena 公開奧義列表。另列魔紋四個屬系；官方頁沒有逐條魔紋數值，所以不補效果 |
 | `/heroes` | 官方英雄名單（Garena 公開頁）。點進去看技能與造型圖 |
 | `/heroes/:id` | 單一英雄：技能與造型圖。搜尋也連到這裡 |
 | `/skins` | 官方造型圖，連到所屬英雄 |
@@ -290,13 +292,15 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 
 裝備來自 <https://moba.garena.tw/game/props>。每一件保留官方 id、名稱、說明，圖示用 `BattleEquip/{id}.png`。戰績裡的 `裝備 1423` 會對上這份表，例如顯示名稱與圖，而不是只留編號。目錄裡沒有的 id 仍用同一條官方圖示網址，不發明名稱。
 
-`GET /api/search?q=` 查英雄、造型、裝備與站內頁面。索引跟目錄一起存在快照、D1 與 KV。選手頁與成員頁可以只讀這些形狀，不必再抓 Garena：
+`GET /api/search?q=` 查英雄、英雄技能、使用者技能、奧義、造型、裝備與站內頁面。索引跟目錄一起存在快照、D1 與 KV。選手頁與成員頁可以只讀這些形狀，不必再抓 Garena：
 
 `GET /api/catalog` 的 `heroes[]`：`id`、`name.zh`、`name.en`、`role`、`roleLabel`、`image`（官方肖像）、`pageUrl`、`blurb`、`skills[]`（`name`、`text`、`image`）、`skins[]`（`id`、`name`、`image`、`thumb`、`kind` 為 `default` 或 `skin`）。造型掛在所屬英雄底下。官方頁常常沒有造型名稱，`name.zh` 會是空的。
 
 `items[]`：`id`、`name.zh`、`category`、`description`、`image`。圖示是 `https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/{id}.png`。戰績裝備格存成 `裝備 {id}`。`shared/aov-assets.js` 的 `resolveItem(token, items)` 回 `{ id, name, image, description, href }`，`resolveHero(name, heroes)` 回 `{ id, name, image, href }`。目錄裡沒有的 id 仍給官方圖示網址，名稱留空。
 
-`GET /api/search?q=` 回 `{ ok, query, results }`。每一筆是 `{ type, id, title, href, image }`，`type` 為 `hero`、`skin`、`item` 或 `page`。`href` 指到 `/heroes/{id}`、`/heroes/{id}#skin-{heroId}-{skinId}` 或 `/items#item-{id}`。
+`arcana[]` 來自 <https://moba.garena.tw/game/katha>：`id`、`name`、`level`（1–3）、`tags`、`effect`、`image`。這是奧義／魔紋配裝，不是英雄第四個技能。`userSkills[]` 來自 <https://moba.garena.tw/game/skill>（官方稱挑戰者技能）：`id`、`name`、`text`、`image`。魔紋四個屬系只在頁面上列名稱，官方遊戲頁沒有逐條數值，所以不寫進目錄。
+
+`GET /api/search?q=` 回 `{ ok, query, results }`。每一筆是 `{ type, id, title, href, image }`，`type` 為 `hero`、`skill`、`userSkill`、`arcana`、`skin`、`item` 或 `page`。`href` 指到 `/heroes/{id}`、`/skills#skill-{heroId}-{index}`、`/user-skills#user-{id}`、`/ultimates#katha-{level}-{id}`、`/heroes/{id}#skin-{heroId}-{skinId}` 或 `/items#item-{id}`。
 
 模式名稱只在官方公開頁裡真的出現該字串時才收錄，並附上原文摘錄與來源網址。目前來源包括：
 

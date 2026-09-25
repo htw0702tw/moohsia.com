@@ -227,7 +227,7 @@ test("admin editor exposes builds and separate KDA without raw JSON", () => {
   const builds = renderPlayerEditor(built.player, ui, { text: 'data-cms autocomplete="off"', choice: "" });
   assert.match(builds, /六件裝備/);
   assert.match(builds, /技能 1/);
-  assert.match(builds, /紅銘文/);
+  assert.match(builds, /紅奧義/);
   assert.match(builds, /勇/);
   assert.equal(built.player.matches[0].board[0].owner, true);
 });

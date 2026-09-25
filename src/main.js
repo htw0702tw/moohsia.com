@@ -1,13 +1,25 @@
 import { SITE_URL } from "../shared/brand.js";
 import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
-import { getCatalog, setActivityFilter, setCatalog, setItemCategory, setItemFilter, setRoleFilter } from "./catalog-state.js";
+import {
+  getCatalog,
+  setActivityFilter,
+  setArcanaLevel,
+  setArcanaQuery,
+  setArcanaTag,
+  setCatalog,
+  setItemCategory,
+  setItemFilter,
+  setRoleFilter,
+  setSkillQuery,
+  setSkillSlot,
+} from "./catalog-state.js";
 import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers, getTeams } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
 import { playerMemberPath } from "../shared/match-present.js";
-import { renderHeroDetail, renderItemDetail, renderItems, renderModeDetail, renderSkins, renderUltimates } from "./catalog-pages.js";
+import { renderHeroDetail, renderHeroSkills, renderItemDetail, renderItems, renderModeDetail, renderSkins, renderUltimates, renderUserSkills } from "./catalog-pages.js";
 import { brandMark, renderMember, renderPage, renderTeam } from "./pages.js";
 import { findTeam, teamAka, teamPrimary } from "../shared/teams.js";
 import "./styles.css";
@@ -22,6 +34,8 @@ const ROUTES = {
   "/ultimates": "ultimates",
   "/player": "player",
   "/heroes": "heroes",
+  "/skills": "skills",
+  "/user-skills": "userSkills",
   "/skins": "skins",
   "/items": "items",
   "/modes": "modes",
@@ -105,7 +119,7 @@ function copy() {
 
 function navLinks(text) {
   return NAV.map((item) => {
-    const code = item.href === "/" ? "HOME" : item.key.toUpperCase();
+    const code = item.code || (item.href === "/" ? "HOME" : item.key.toUpperCase());
     return `<a href="${item.href}" data-nav><span>${esc(text.nav[item.key])}</span><small>${esc(code)}</small></a>`;
   }).join("");
 }
@@ -276,6 +290,8 @@ function renderRoute(route, text) {
   if (route.name === "member") return renderMember(text, route.key);
   if (route.name === "team") return renderTeam(text, route.id);
   if (route.name === "ultimates") return renderUltimates(text);
+  if (route.name === "skills") return renderHeroSkills(text);
+  if (route.name === "userSkills") return renderUserSkills(text);
   if (route.name === "skins") return renderSkins(text);
   if (route.name === "items") return renderItems(text);
   if (route.name === "hero") return renderHeroDetail(text, route.id);
@@ -420,6 +436,24 @@ function onClick(event) {
   const matchTab = event.target.closest("[data-match-tab]");
   if (matchTab) {
     setPlayerTab(matchTab.getAttribute("data-match-tab"));
+    paint();
+    return;
+  }
+  const arcanaLevel = event.target.closest("[data-arcana-level]");
+  if (arcanaLevel) {
+    setArcanaLevel(arcanaLevel.getAttribute("data-arcana-level"));
+    paint();
+    return;
+  }
+  const arcanaTag = event.target.closest("[data-arcana-tag]");
+  if (arcanaTag) {
+    setArcanaTag(arcanaTag.getAttribute("data-arcana-tag"));
+    paint();
+    return;
+  }
+  const skillSlot = event.target.closest("[data-skill-slot]");
+  if (skillSlot) {
+    setSkillSlot(skillSlot.getAttribute("data-skill-slot"));
     paint();
     return;
   }
@@ -605,6 +639,23 @@ async function runSearch() {
   }
 }
 
+function applyCatalogQuery(kind) {
+  const input = document.querySelector(`[data-catalog-q="${kind}"]`);
+  const needle = String(input?.value || "").trim().toLowerCase();
+  const nodes = document.querySelectorAll(`[data-catalog-kind="${kind}"]`);
+  let shown = 0;
+  nodes.forEach((node) => {
+    const blob = String(node.getAttribute("data-catalog-blob") || "").toLowerCase();
+    const hide = Boolean(needle) && !blob.includes(needle);
+    node.hidden = hide;
+    if (!hide) shown += 1;
+  });
+  const empty = document.querySelector(`[data-catalog-empty="${kind}"]`);
+  if (empty && nodes.length) empty.hidden = shown !== 0;
+  const count = document.querySelector(`[data-catalog-count="${kind}"]`);
+  if (count) count.textContent = String(shown);
+}
+
 function paintSearchResults() {
   const box = document.querySelector("[data-search-results]");
   if (!box) return;
@@ -618,6 +669,14 @@ async function boot() {
   if (reduce || introSeen()) document.body.classList.add("is-ready");
   document.addEventListener("click", onClick);
   document.addEventListener("input", (event) => {
+    const catalogQ = event.target?.getAttribute?.("data-catalog-q");
+    if (catalogQ) {
+      const value = event.target.value;
+      if (catalogQ === "skill-q") setSkillQuery(value);
+      if (catalogQ === "arcana-q") setArcanaQuery(value);
+      applyCatalogQuery(catalogQ);
+      return;
+    }
     if (event.target?.id !== "site-q") return;
     searchState.q = event.target.value;
     window.clearTimeout(searchTimer);

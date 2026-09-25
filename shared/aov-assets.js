@@ -1,6 +1,6 @@
 /** Official Garena CDN helpers and the public search index. No login, no private API. */
 
-import { ultimateSkill } from "./ultimates.js";
+import { heroSkillSlots } from "./hero-skills.js";
 
 export const ITEM_ICON_BASE =
   "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/";
@@ -80,9 +80,25 @@ export const SITE_SEARCH = [
   },
   {
     type: "page",
+    id: "skills",
+    title: "英雄技能",
+    text: "英雄技能 被動 一技能 二技能 三技能 skills",
+    href: "/skills",
+    image: "",
+  },
+  {
+    type: "page",
+    id: "user-skills",
+    title: "使用者技能",
+    text: "使用者技能 挑戰者技能 瞬移 user skills",
+    href: "/user-skills",
+    image: "",
+  },
+  {
+    type: "page",
     id: "ultimates",
     title: "奧義",
-    text: "奧義 ultimates 大招 技能",
+    text: "奧義 魔紋 arcana katha 配裝 符文",
     href: "/ultimates",
     image: "",
   },
@@ -175,15 +191,16 @@ export function buildSearchIndex(catalog) {
       href: `/heroes/${hero.id}`,
       image: hero.image || "",
     });
-    const ultimate = ultimateSkill(hero);
-    if (ultimate?.name) {
+    for (const row of heroSkillSlots(hero)) {
+      const skillName = String(row.skill?.name || "").trim();
+      if (!skillName) continue;
       entries.push({
-        type: "ultimate",
-        id: `ult-${hero.id}`,
-        title: ultimate.name,
-        text: clip(`${name} 奧義 ${ultimate.name} ${ultimate.text || ""}`, 220),
-        href: `/ultimates#ult-${hero.id}`,
-        image: ultimate.image || hero.image || "",
+        type: "skill",
+        id: `skill-${hero.id}-${row.index}`,
+        title: skillName,
+        text: clip(`${name} 英雄技能 ${row.zh} ${skillName} ${row.skill?.text || ""}`, 220),
+        href: `/skills#skill-${hero.id}-${row.index}`,
+        image: row.skill?.image || hero.image || "",
       });
     }
     (hero.skins || []).forEach((skin, index) => {
@@ -197,6 +214,33 @@ export function buildSearchIndex(catalog) {
         href: `/heroes/${hero.id}#skin-${hero.id}-${skin.id ?? index}`,
         image: skin.thumb || skin.image || "",
       });
+    });
+  }
+  for (const row of catalog?.arcana || []) {
+    const arcanaName = String(row?.name || "").trim();
+    if (!arcanaName || !row.id) continue;
+    entries.push({
+      type: "arcana",
+      id: `katha-${row.level}-${row.id}`,
+      title: arcanaName,
+      text: clip(
+        [`奧義`, `魔紋`, `${row.level}級`, arcanaName, ...(row.tags || []), row.effect].filter(Boolean).join(" "),
+        220,
+      ),
+      href: `/ultimates#katha-${row.level}-${row.id}`,
+      image: row.image || "",
+    });
+  }
+  for (const row of catalog?.userSkills || []) {
+    const skillName = String(row?.name || "").trim();
+    if (!skillName || !row.id) continue;
+    entries.push({
+      type: "userSkill",
+      id: `user-${row.id}`,
+      title: skillName,
+      text: clip(`使用者技能 挑戰者技能 ${skillName} ${row.text || ""}`, 220),
+      href: `/user-skills#user-${row.id}`,
+      image: row.image || "",
     });
   }
   for (const item of catalog?.items || []) {

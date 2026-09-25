@@ -1,6 +1,8 @@
 const empty = {
   heroes: [],
   items: [],
+  arcana: [],
+  userSkills: [],
   modes: [],
   roles: [],
   activities: [],
@@ -13,6 +15,11 @@ let catalog = empty;
 let role = "all";
 let itemCategory = "all";
 let activityKind = "all";
+let arcanaLevel = "all";
+let arcanaTag = "all";
+let arcanaQuery = "";
+let skillSlot = "all";
+let skillQuery = "";
 
 export function getCatalog() {
   return catalog;
@@ -26,6 +33,8 @@ export function setCatalog(next) {
   catalog = {
     heroes: next.heroes,
     items: Array.isArray(next.items) ? next.items : [],
+    arcana: Array.isArray(next.arcana) ? next.arcana : [],
+    userSkills: Array.isArray(next.userSkills) ? next.userSkills : [],
     modes: Array.isArray(next.modes) ? next.modes : [],
     roles: Array.isArray(next.roles) ? next.roles : [],
     activities: Array.isArray(next.activities) ? next.activities : [],
@@ -65,4 +74,44 @@ export function getItemCategory() {
 
 export function setItemCategory(next) {
   itemCategory = typeof next === "string" && next ? next : "all";
+}
+
+export function getArcanaLevel() {
+  return arcanaLevel;
+}
+
+export function setArcanaLevel(next) {
+  arcanaLevel = typeof next === "string" && next ? next : "all";
+}
+
+export function getArcanaTag() {
+  return arcanaTag;
+}
+
+export function setArcanaTag(next) {
+  arcanaTag = typeof next === "string" && next ? next : "all";
+}
+
+export function getArcanaQuery() {
+  return arcanaQuery;
+}
+
+export function setArcanaQuery(next) {
+  arcanaQuery = String(next || "").slice(0, 40);
+}
+
+export function getSkillSlot() {
+  return skillSlot;
+}
+
+export function setSkillSlot(next) {
+  skillSlot = typeof next === "string" && next ? next : "all";
+}
+
+export function getSkillQuery() {
+  return skillQuery;
+}
+
+export function setSkillQuery(next) {
+  skillQuery = String(next || "").slice(0, 40);
 }

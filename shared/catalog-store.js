@@ -19,7 +19,13 @@ function withActivities(payload) {
     ...payload,
     activities: Array.isArray(payload.activities) ? payload.activities : [],
     items: Array.isArray(payload.items) ? payload.items : [],
+    arcana: Array.isArray(payload.arcana) ? payload.arcana : [],
+    userSkills: Array.isArray(payload.userSkills) ? payload.userSkills : [],
   };
+}
+
+function preferList(next, prev) {
+  return Array.isArray(next) && next.length ? next : Array.isArray(prev) ? prev : [];
 }
 
 function richerHero(fallback, primary) {
@@ -57,6 +63,8 @@ export function mergeCatalog(primary, fallback) {
     ...next,
     heroes,
     items,
+    arcana: preferList(next.arcana, prev.arcana),
+    userSkills: preferList(next.userSkills, prev.userSkills),
     modes,
     activities,
     attribution: next.attribution || prev.attribution || null,
