@@ -1,5 +1,5 @@
 import { AGE_BANDS, GENDERS, POSITIONS, RANKS } from "../shared/apply.js";
-import { applyDraft } from "./apply-state.js";
+import { applyDraft, applyErrorText } from "./apply-state.js";
 import { getActivityFilter, getCatalog, getRoleFilter } from "./catalog-state.js";
 import {
   getContactEmail,
@@ -711,8 +711,11 @@ export function renderApply(copy) {
     const checked = applyDraft.positions.includes(row.id) ? " checked" : "";
     return `<label class="check"><input type="checkbox" name="positions" value="${esc(row.id)}"${checked}>${esc(lang === "en" ? row.en : row.zh)}</label>`;
   }).join("");
+  const marked = (name) => (applyDraft.field === name ? ` aria-invalid="true"` : "");
+  const errorText = applyDraft.errorCode == null ? "" : applyErrorText(page, applyDraft.errorCode);
+  const mailNote = applyDraft.mailDelayed ? `<p class="form-note">${esc(page.mailDelayed || "")}</p>` : "";
   const banner = applyDraft.status === "sent"
-    ? `<div class="plate"><div><h2>${esc(page.sent)}</h2><p>${esc(page.sentBody)}</p></div></div>`
+    ? `<div class="plate"><div><h2>${esc(page.sent)}</h2><p>${esc(page.sentBody)}</p>${mailNote}</div></div>`
     : "";
   return `<article class="page subpage">
     ${mast(copy, page)}
@@ -721,26 +724,26 @@ export function renderApply(copy) {
       <form class="apply-form glass frame" id="apply-form" autocomplete="off">
         <p class="section-note">${esc(page.discord)}</p>
         <label>${esc(page.rank)}
-          <select name="rank" required>
+          <select name="rank" required${marked("rank")}>
             <option value="">—</option>
             ${optionList(RANKS, applyDraft.rank, lang)}
           </select>
           <small>${esc(page.rankHint)}</small>
         </label>
-        <label>${esc(page.uid)}<input name="uid" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${esc(applyDraft.uid)}" required><small>${esc(page.uidHint)}</small></label>
-        <label>${esc(page.nickname)}<input name="nickname" autocomplete="off" value="${esc(applyDraft.nickname)}" required></label>
-        <label>${esc(page.email)}<input name="email" type="email" autocomplete="off" value="${esc(applyDraft.email)}" required></label>
-        <label>${esc(page.gender)}<select name="gender" required><option value="">—</option>${optionList(GENDERS, applyDraft.gender, lang)}</select></label>
-        <label>${esc(page.age)}<select name="ageBand" required><option value="">—</option>${optionList(AGE_BANDS, applyDraft.ageBand, lang)}</select></label>
-        <label>${esc(page.motivation)}<textarea name="motivation" rows="4" required>${esc(applyDraft.motivation)}</textarea></label>
-        <fieldset><legend>${esc(page.positions)}</legend><p>${esc(page.positionsHint)}</p><div class="position-grid">${positions}</div></fieldset>
-        <label>${esc(page.weekday)}<input name="weekday" value="${esc(applyDraft.weekday)}" required></label>
-        <label>${esc(page.holiday)}<input name="holiday" value="${esc(applyDraft.holiday)}" required></label>
-        <label>${esc(page.practice)}<input name="practice" value="${esc(applyDraft.practice)}" required><small>${esc(page.practiceHint)}</small></label>
-        <label class="check"><input type="checkbox" name="conduct"${applyDraft.conduct ? " checked" : ""} required>${esc(page.conduct)}</label>
+        <label>${esc(page.uid)}<input name="uid" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${esc(applyDraft.uid)}" required${marked("uid")}><small>${esc(page.uidHint)}</small></label>
+        <label>${esc(page.nickname)}<input name="nickname" autocomplete="off" value="${esc(applyDraft.nickname)}" required${marked("nickname")}></label>
+        <label>${esc(page.email)}<input name="email" type="email" autocomplete="off" value="${esc(applyDraft.email)}" required${marked("email")}></label>
+        <label>${esc(page.gender)}<select name="gender" required${marked("gender")}><option value="">—</option>${optionList(GENDERS, applyDraft.gender, lang)}</select></label>
+        <label>${esc(page.age)}<select name="ageBand" required${marked("ageBand")}><option value="">—</option>${optionList(AGE_BANDS, applyDraft.ageBand, lang)}</select></label>
+        <label>${esc(page.motivation)}<textarea name="motivation" rows="4" required${marked("motivation")}>${esc(applyDraft.motivation)}</textarea></label>
+        <fieldset${marked("positions")}><legend>${esc(page.positions)}</legend><p>${esc(page.positionsHint)}</p><div class="position-grid">${positions}</div></fieldset>
+        <label>${esc(page.weekday)}<input name="weekday" value="${esc(applyDraft.weekday)}" required${marked("weekday")}></label>
+        <label>${esc(page.holiday)}<input name="holiday" value="${esc(applyDraft.holiday)}" required${marked("holiday")}></label>
+        <label>${esc(page.practice)}<input name="practice" value="${esc(applyDraft.practice)}" required${marked("practice")}><small>${esc(page.practiceHint)}</small></label>
+        <label class="check"><input type="checkbox" name="conduct"${applyDraft.conduct ? " checked" : ""} required${marked("conduct")}>${esc(page.conduct)}</label>
         <p class="hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></p>
         <button class="btn btn-primary" type="submit">${esc(page.submit)}</button>
-        <p class="form-error" data-apply-error>${esc(applyDraft.error)}</p>
+        <p class="form-error" data-apply-error${errorText ? ` role="alert" tabindex="-1"` : ""}>${esc(errorText)}</p>
       </form>
     </section>
   </article>`;

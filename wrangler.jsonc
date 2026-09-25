@@ -17,6 +17,10 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
+    // Stay on "none". servePublic already returns index.html for extensionless
+    // routes and follows Assets' 307 to / inside the Worker. Switching this to
+    // single-page-application would also rewrite missing files (for example a
+    // bad .js URL) into index.html when the Worker calls the ASSETS binding.
     "not_found_handling": "none",
     "run_worker_first": true
   },

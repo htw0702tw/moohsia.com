@@ -131,6 +131,22 @@ export function validateApplication(input) {
   };
 }
 
+/**
+ * Checks the rules people most often miss, with the same position and clock
+ * rules as validateApplication. Other rules stay on the server.
+ * @param {unknown} input
+ */
+export function previewApplication(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const positions = Array.isArray(source.positions) ? source.positions.map((item) => clip(item, 20)) : [];
+  const unique = [...new Set(positions)];
+  if (unique.length !== 2 || unique.some((id) => !POSITIONS.some((item) => item.id === id))) {
+    return reject("positions_invalid", "positions");
+  }
+  if (!practiceTimeOk(clip(source.practice, 80))) return reject("practice_time_invalid", "practice");
+  return { ok: true };
+}
+
 export function rankLabel(id, lang) {
   const row = RANKS.find((item) => item.id === id);
   if (!row) return id;

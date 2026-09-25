@@ -461,6 +461,53 @@ test("admin spa routes serve the shell instead of the assets 307", async () => {
   assert.deepEqual(seen, ["/admin/", "/admin/shell.html"]);
 });
 
+test("public spa routes serve the shell instead of the assets 307", async () => {
+  const env = await adminEnv();
+  const seen = [];
+  env.ASSETS = {
+    async fetch(request) {
+      const path = new URL(request.url).pathname;
+      seen.push(`${request.method} ${path}`);
+      if (path === "/index.html") {
+        return new Response(null, { status: 307, headers: { location: "/" } });
+      }
+      if (path === "/") {
+        return new Response("public-shell", {
+          status: 200,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      if (!/\.[a-z0-9]{1,8}$/i.test(path)) {
+        return new Response(null, { status: 307, headers: { location: "/" } });
+      }
+      return new Response("missing", { status: 404 });
+    },
+  };
+
+  for (const route of ["/apply", "/player", "/activities", "/about"]) {
+    seen.length = 0;
+    const response = await worker.fetch(new Request(`https://moohsia.com${route}`), env);
+    assert.equal(response.status, 200, route);
+    assert.equal(response.headers.get("location"), null, route);
+    assert.equal(await response.text(), "public-shell");
+    assert.deepEqual(seen, ["GET /index.html", "GET /"]);
+  }
+
+  seen.length = 0;
+  const head = await worker.fetch(new Request("https://moohsia.com/apply", { method: "HEAD" }), env);
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get("location"), null);
+  assert.equal(head.headers.get("content-type"), "text/html; charset=utf-8");
+  assert.deepEqual(seen, ["HEAD /index.html", "HEAD /"]);
+
+  const missing = await worker.fetch(new Request("https://moohsia.com/assets/missing.js"), env);
+  assert.equal(missing.status, 404);
+  assert.equal(await missing.text(), "missing");
+
+  const leaked = await worker.fetch(new Request("https://moohsia.com/admin/login"), env);
+  assert.equal(leaked.status, 404);
+});
+
 test("admin is not configured when secrets are missing", async () => {
   const response = await handleAdmin(loginRequest(PASSWORD, "203.0.113.90"), { CMS_STORE: createMemoryStore() });
   assert.equal(response.status, 503);

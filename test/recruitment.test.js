@@ -4,7 +4,9 @@ import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
 import { createMemoryApplications } from "../shared/applications.js";
 import { parseActivityList } from "../shared/aov-parse.js";
-import { validateApplication } from "../shared/apply.js";
+import { previewApplication, validateApplication } from "../shared/apply.js";
+import { applyErrorText } from "../src/apply-state.js";
+import { getCopy } from "../src/content.js";
 import { createMemoryStore } from "../shared/cms-store.js";
 import { createMemoryMedia, sniffMedia } from "../shared/media.js";
 import { hashPassword } from "../shared/password.js";
@@ -79,6 +81,36 @@ async function login(env, now) {
   const cookie = (response.headers.get("set-cookie") || "").split(";")[0];
   return { response, body, cookie };
 }
+
+test("client preview matches the server on positions and practice time", () => {
+  assert.equal(previewApplication(validApplication({ positions: ["mid"] })).code, "positions_invalid");
+  assert.equal(previewApplication(validApplication({ positions: ["mid"] })).field, "positions");
+  assert.equal(previewApplication(validApplication({ positions: ["mid", "mid"] })).code, "positions_invalid");
+  assert.equal(previewApplication(validApplication({ positions: ["mid", "jungle", "roam"] })).code, "positions_invalid");
+  assert.equal(previewApplication(validApplication({ positions: ["mid", "nope"] })).code, "positions_invalid");
+  assert.equal(previewApplication(validApplication({ practice: "晚上" })).code, "practice_time_invalid");
+  assert.equal(previewApplication(validApplication({ practice: "晚上" })).field, "practice");
+  assert.equal(previewApplication(validApplication({ practice: "20:00-22:00" })).ok, true);
+  assert.equal(previewApplication(validApplication({ practice: "20:00～22:00" })).ok, true);
+  assert.equal(previewApplication(validApplication()).ok, true);
+  assert.equal(previewApplication(validApplication({ rank: "bronze" })).ok, true);
+  assert.equal(validateApplication(validApplication({ rank: "bronze" })).code, "rank_below_gold");
+});
+
+test("apply errors name the failed rule and fall back only without a code", () => {
+  const zh = getCopy("zh").apply;
+  const en = getCopy("en").apply;
+  for (const code of ["practice_time_invalid", "positions_invalid", "rank_below_gold", "uid_invalid", "motivation_invalid", "conduct_required"]) {
+    assert.notEqual(applyErrorText(zh, code), zh.fail, code);
+    assert.notEqual(applyErrorText(en, code), en.fail, code);
+  }
+  assert.match(zh.errors.positions_invalid, /2/);
+  assert.match(zh.errors.practice_time_invalid, /20:00/);
+  assert.match(zh.errors.rank_below_gold, /黃金/);
+  assert.equal(applyErrorText(zh, ""), zh.fail);
+  assert.equal(applyErrorText(zh, "not_a_code"), zh.fail);
+  assert.equal(applyErrorText(en, "uid_invalid"), en.errors.uid_invalid);
+});
 
 test("applications reject bronze, bad uid, wrong position count, and missing conduct", () => {
   assert.equal(validateApplication(validApplication({ rank: "bronze" })).code, "rank_below_gold");
@@ -295,6 +327,46 @@ test("activity lists keep public posts and drop third-party mail", () => {
   assert.equal(rows[0].image.includes("garenanow.com"), true);
   assert.equal(rows[0].excerpt.includes("@"), false);
   assert.equal(rows.some((row) => row.id === "5714" && row.date === "2026-09-18"), true);
+});
+
+function applyRequest(body, ip) {
+  return new Request("https://moohsia.com/api/apply", {
+    method: "POST",
+    headers: {
+      origin: "https://moohsia.com",
+      "content-type": "application/json",
+      "cf-connecting-ip": ip,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+test("apply validation names the code and field", async () => {
+  const env = await adminEnv();
+  const response = await handleApi(applyRequest(validApplication({ positions: ["mid"], practice: "晚上" }), "203.0.113.83"), env);
+  assert.equal(response.status, 400);
+  const body = await response.json();
+  assert.equal(body.ok, false);
+  assert.equal(body.code, "positions_invalid");
+  assert.equal(body.field, "positions");
+});
+
+test("mail failure still stores the application", async () => {
+  const env = await adminEnv({ RESEND_API_KEY: "" });
+  const unconfigured = await handleApi(applyRequest(validApplication({ uid: "2000000000000091" }), "203.0.113.84"), env);
+  const quiet = await unconfigured.json();
+  assert.equal(unconfigured.status, 201);
+  assert.equal(quiet.ok, true);
+  assert.equal(quiet.stored, true);
+  assert.equal(quiet.mailed, false);
+
+  const failing = await adminEnv();
+  failing.MAIL_FETCH = async () => new Response("no", { status: 502 });
+  const response = await handleApi(applyRequest(validApplication({ uid: "2000000000000092", email: "later@example.com" }), "203.0.113.85"), failing);
+  const body = await response.json();
+  assert.equal(response.status, 201);
+  assert.equal(body.stored, true);
+  assert.equal(body.mailed, false);
 });
 
 test("highlight uploads accept real image bytes only", () => {

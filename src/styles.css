@@ -1132,7 +1132,11 @@ body.intro-on { overflow: hidden; }
   padding: 0.6rem 0.7rem;
 }
 .position-grid { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.apply-form [aria-invalid="true"] { border-color: #ffb4c8; }
+.apply-form fieldset[aria-invalid="true"] { outline: 1px solid #ffb4c8; border-radius: 10px; padding: 0.45rem; }
 .form-error { color: #ffb4c8; min-height: 1.2em; }
+.form-error:focus { outline: none; }
+.form-note { color: var(--dim); margin: 0.4rem 0 0; }
 .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
 .nav-links { flex-wrap: wrap; justify-content: center; }
 .nav { height: auto; }

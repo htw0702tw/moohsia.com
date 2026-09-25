@@ -82,6 +82,17 @@ async function serveAsset(request, env, fallbackPath) {
   return env.ASSETS.fetch(new Request(fallback, request));
 }
 
+/** Fetch a shell and follow one Assets redirect (index.html → /) inside the Worker. */
+async function fetchAssetShell(request, env, shellPath) {
+  const url = new URL(request.url);
+  let shell = await env.ASSETS.fetch(new Request(new URL(shellPath, url.origin), request));
+  const location = shell.headers.get("location");
+  if ((shell.status === 301 || shell.status === 302 || shell.status === 307 || shell.status === 308) && location) {
+    shell = await env.ASSETS.fetch(new Request(new URL(location, url.origin), request));
+  }
+  return shell;
+}
+
 function withAdminPageHeaders(response) {
   const headers = new Headers(response.headers);
   headers.set("cache-control", "no-store");
@@ -112,12 +123,7 @@ async function serveAdmin(request, env) {
     if (path === "/login" && session) return redirect("/dashboard");
     // Assets 307s /admin/index.html and extensionless client routes (/login, /dashboard) to /admin/.
     // Fetch the directory shell, and follow one Assets redirect, so the browser stays on the SPA path.
-    let shell = await env.ASSETS.fetch(new Request(new URL(ADMIN_FALLBACK, url.origin), request));
-    const location = shell.headers.get("location");
-    if ((shell.status === 301 || shell.status === 302 || shell.status === 307 || shell.status === 308) && location) {
-      shell = await env.ASSETS.fetch(new Request(new URL(location, url.origin), request));
-    }
-    return withAdminPageHeaders(shell);
+    return withAdminPageHeaders(await fetchAssetShell(request, env, ADMIN_FALLBACK));
   }
 
   const response = await serveAsset(request, env, ADMIN_FALLBACK);
@@ -130,6 +136,12 @@ async function servePublic(request, env) {
   const path = url.pathname.replace(/\/+$/, "") || "/";
   if (path === "/api" || path.startsWith("/api/")) return handleApi(request, env);
   if (path === "/admin" || path.startsWith("/admin/")) return text(404, "Not found");
+  // Assets 307s extensionless client routes (/apply, /player, /activities, …) to /.
+  // Serve index.html and follow that redirect inside the Worker so a refresh stays on the path.
+  // Missing files (a real .js/.css/.svg 404) still pass through serveAsset.
+  if ((request.method === "GET" || request.method === "HEAD") && !isFilePath(url.pathname)) {
+    return fetchAssetShell(request, env, PUBLIC_FALLBACK);
+  }
   return serveAsset(request, env, PUBLIC_FALLBACK);
 }
 
