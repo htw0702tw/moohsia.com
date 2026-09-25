@@ -16,7 +16,11 @@
  * shell history if it contains notes you do not want stored there.
  *
  * Re-import from AOVRanking still adds matches that are not in this file.
+ * A direct FightHistory fetch is often blocked by the ranking site's challenge page,
+ * so a newer 22:59 match is not invented here. Paste the expanded HTML in admin.
  * The rolling window is about 50 games; older games already stored are kept.
+ * Rows whose 控場 value is seconds (for example 8.382) are stored as rankingFarm
+ * and are not published as in-game 補刀數.
  */
 import { readFileSync } from "node:fs";
 import { rewriteSiteDocument } from "../shared/player-rewrite.js";

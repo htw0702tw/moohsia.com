@@ -3,7 +3,7 @@ import test from "node:test";
 import { itemSlots, playerMemberPath } from "../shared/match-present.js";
 import { rewritePlayer } from "../shared/player-rewrite.js";
 
-test("30 farm and 7964 healing are not swapped", () => {
+test("ranking 補兵 30 is not shown as in-game 補刀數", () => {
   const player = rewritePlayer({
     handle: "htw0702aov",
     matches: [
@@ -17,15 +17,22 @@ test("30 farm and 7964 healing are not swapped", () => {
         deaths: "10",
         assists: "5",
         minions: "30",
+        lastHits: "30",
+        control: "8.382",
         healing: "7964",
+        tower: "2743",
       },
     ],
   });
   assert.equal(player.matches.length, 1);
-  assert.equal(player.matches[0].lastHits, "30");
-  assert.equal(player.matches[0].minions, "30");
-  assert.equal(player.matches[0].healing, "7964");
-  assert.notEqual(player.matches[0].lastHits, player.matches[0].healing);
+  assert.equal(player.matches[0].rankingFarm, "30");
+  assert.equal(player.matches[0].rankingControl, "8.382");
+  assert.equal(player.matches[0].rankingHealing, "7964");
+  assert.equal(player.matches[0].rankingTower, "2743");
+  assert.equal(player.matches[0].lastHits, "");
+  assert.equal(player.matches[0].healing, "");
+  assert.equal(player.matches[0].control, "");
+  assert.notEqual(player.matches[0].rankingFarm, player.matches[0].rankingHealing);
 });
 
 test("a swapped creep count in healing is corrected without inventing matches", () => {
@@ -77,7 +84,12 @@ test("stored 22:59 Natalya row is patched to in-game farm and healing", () => {
   assert.equal(match.mode, "排位賽");
   assert.equal(match.lastHits, "34");
   assert.equal(match.healing, "6077");
+  assert.equal(match.control, "6534");
+  assert.equal(match.tower, "2089");
+  assert.equal(match.farmValidated, true);
+  assert.equal(match.rankingFarm, "30");
   assert.notEqual(match.lastHits, match.healing);
+  assert.notEqual(match.lastHits, match.rankingFarm);
   assert.equal(match.jungleGold, "160");
   assert.equal(match.gold, "9819");
   assert.equal(match.damageRatio, "1.51");

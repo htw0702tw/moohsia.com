@@ -50,7 +50,7 @@ function ownerStats(match) {
     assists: row?.assists || match.assists || "",
     gold: row?.gold || match.gold || "",
     jungleGold: row?.jungleGold || match.jungleGold || "",
-    lastHits: row?.lastHits || row?.minions || match.lastHits || match.minions || "",
+    lastHits: row?.lastHits || match.lastHits || "",
     healing: row?.healing || match.healing || "",
     control: row?.control || match.control || "",
     tower: row?.tower || match.tower || "",
@@ -162,7 +162,7 @@ function pctBar(label, value, pct, tone) {
 function metricTrio(page, row, side, match, tab) {
   const tone = side === "red" ? "is-red" : "is-blue";
   const allies = sideRows(match, side);
-  const farm = row.lastHits || row.minions || "";
+  const farm = row.lastHits || "";
   const specs = {
     data: [
       [page.kills, row.kills, percentOf(row.kills, sumField(allies, "kills"))],
@@ -181,7 +181,7 @@ function metricTrio(page, row, side, match, tab) {
     farm: [
       [page.goldTotal, row.gold, percentOf(row.gold, sumField(allies, "gold"))],
       [page.jungle, row.jungleGold, percentOf(row.jungleGold, sumField(allies, "jungleGold"))],
-      [page.lastHits, farm, percentOf(farm, sumField(allies, "minions") || sumField(allies, "lastHits"))],
+      [page.lastHits, farm, percentOf(farm, sumField(allies, "lastHits"))],
     ],
     record: [
       [page.score, row.score, ""],
@@ -261,7 +261,7 @@ function historyList(copy, player, limit = 0) {
             <span class="aov-when"><b>${esc(match.mode || page.pending)}</b><small>${esc(whenLabel(match))}</small></span>
             <span class="aov-chevron" aria-hidden="true">›</span>
           </button>
-          ${open ? `<div class="aov-detail">${boardLine(match, page, view.tab)}<div class="aov-tabs">${tabs}</div></div>` : ""}
+          ${open ? `<div class="aov-detail">${boardLine(match, page, view.tab)}${(view.tab === "farm" && !self.lastHits) || (view.tab === "team" && !self.healing && !self.control && !self.tower) ? `<p class="section-note">${esc(page.farmUnverified)}</p>` : ""}<div class="aov-tabs">${tabs}</div></div>` : ""}
         </article>`;
       })
       .join("")}

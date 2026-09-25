@@ -101,21 +101,22 @@ function columnKey(text) {
     ["勳章", "award"],
     ["榮譽", "award"],
     ["對塔傷害", "tower"],
-    ["塔傷", "tower"],
     ["對塔", "tower"],
-    ["控制時間", "control"],
-    ["控場", "control"],
+    ["塔傷", "rankingTower"],
+    ["控制效果", "control"],
+    ["控制時間", "rankingControl"],
+    ["控場", "rankingControl"],
     ["控制", "control"],
     ["治療量", "healing"],
-    ["治療", "healing"],
+    ["治療", "rankingHealing"],
     ["排位積分變化", "rankDelta"],
     ["排位積分", "rankDelta"],
     ["積分變化", "rankDelta"],
     ["積分", "rankDelta"],
     ["戰力變化詳情", "powerDetail"],
-    ["補刀數", "minions"],
-    ["補刀", "minions"],
-    ["補兵", "minions"],
+    ["補刀數", "lastHits"],
+    ["補刀", "lastHits"],
+    ["補兵", "rankingFarm"],
     ["分均經濟", "gpm"],
     ["GPM", "gpm"],
     ["野怪經濟", "jungleGold"],
@@ -391,12 +392,17 @@ function materialize(row) {
     taken: numberFrom(cells.taken?.text),
     takenPct: numberFrom(cells.takenPct?.text, { places: 2 }) || pctOf(cells.taken?.text),
     level: numberFrom(cells.level?.text) || notes.level,
-    minions: numberFrom(cells.minions?.text),
-    lastHits: numberFrom(cells.minions?.text),
+    minions: "",
+    lastHits: numberFrom(cells.lastHits?.text),
     jungleGold: numberFrom(cells.jungleGold?.text),
     control: numberFrom(cells.control?.text, { places: 3 }),
     healing: numberFrom(cells.healing?.text),
     tower: numberFrom(cells.tower?.text),
+    rankingFarm: numberFrom(cells.rankingFarm?.text),
+    rankingControl: numberFrom(cells.rankingControl?.text, { places: 3 }),
+    rankingHealing: numberFrom(cells.rankingHealing?.text),
+    rankingTower: numberFrom(cells.rankingTower?.text),
+    farmValidated: Boolean(numberFrom(cells.lastHits?.text)),
     rankDelta: deltaFrom(cells.rankDelta?.text),
     reputation: numberFrom(cells.reputation?.text, { signed: true }) || notes.reputation,
     powerDelta: deltaFrom(cells.powerDelta?.text),
@@ -437,15 +443,25 @@ function pipeKeys(parts) {
   const norm = parts.map((part) => part.replace(/\s+/g, ""));
   if (
     norm.length === 4 &&
-    (norm[0].includes("補兵") || norm[0].includes("補刀")) &&
-    (norm[1].includes("控場") || norm[1].includes("控制")) &&
+    norm[0].includes("補兵") &&
+    !norm[0].includes("補刀") &&
+    norm[1].includes("控場") &&
     norm[2].includes("治療") &&
     norm[3].includes("塔")
   ) {
-    return ["minions", "control", "healing", "tower"];
+    return ["rankingFarm", "rankingControl", "rankingHealing", "rankingTower"];
+  }
+  if (
+    norm.length === 4 &&
+    norm[0].includes("補刀") &&
+    norm[1].includes("控制") &&
+    norm[2].includes("治療") &&
+    norm[3].includes("塔")
+  ) {
+    return ["lastHits", "control", "healing", "tower"];
   }
   if (norm.length === 3 && norm[1].includes("野怪") && norm[2].includes("補") && (norm[0].includes("經濟") || norm[0].includes("金幣"))) {
-    return ["gold", "jungleGold", "minions"];
+    return ["gold", "jungleGold", "lastHits"];
   }
   if (norm.length === 3 && norm[0].includes("輸出") && norm[1].includes("承傷") && norm[2].includes("經濟")) {
     return ["heroDamage", "taken", "gold"];
@@ -659,14 +675,19 @@ function copyOwner(match, owner) {
   match.gold = owner.gold || match.gold;
   match.damage = owner.heroDamage || match.damage;
   match.taken = owner.taken || match.taken;
-  match.minions = owner.minions || match.minions;
-  match.lastHits = owner.lastHits || owner.minions || match.lastHits;
+  match.minions = "";
+  match.lastHits = owner.lastHits || match.lastHits;
   match.jungleGold = owner.jungleGold || match.jungleGold;
   match.damageRatio = owner.damageRatio || match.damageRatio;
   match.takenPer = owner.takenPer || match.takenPer;
   match.control = owner.control || match.control;
   match.healing = owner.healing || match.healing;
   match.tower = owner.tower || match.tower;
+  match.rankingFarm = owner.rankingFarm || match.rankingFarm;
+  match.rankingControl = owner.rankingControl || match.rankingControl;
+  match.rankingHealing = owner.rankingHealing || match.rankingHealing;
+  match.rankingTower = owner.rankingTower || match.rankingTower;
+  match.farmValidated = owner.farmValidated === true || match.farmValidated === true;
   match.lane = owner.lane || match.lane;
   match.reputation = owner.reputation || match.reputation;
   match.rankDelta = owner.rankDelta || match.rankDelta;
@@ -741,6 +762,11 @@ function parseChunk(chunk, keyword, index) {
     control: "",
     healing: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     lane: "",
     reputation: "",
     rankDelta: "",

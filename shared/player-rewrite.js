@@ -1,9 +1,10 @@
 /**
  * Rewrite stored player matches without inventing games.
- * 補刀 (lastHits / minions) and 治療量 (healing) are different columns.
- * A swapped pair is only corrected when last-hits are impossibly high and healing
- * looks like a creep count. The 2026-09-25 22:59 Natalya row is patched to the
- * in-game ground truth when that match is already stored.
+ * AOVRanking `補兵 | 控場 | 治療 | 塔傷` is not in-game 補刀數. cleanPlayer moves
+ * that quartet onto ranking* fields when 控場 is seconds. A swapped in-game pair
+ * is corrected only when last-hits are impossibly high and healing looks like a
+ * creep count. The 2026-09-25 22:59 Natalya row is patched to the screenshot
+ * when that match is already stored.
  */
 import { normalizeQueueMode } from "./aov-import.js";
 import { cleanPlayer } from "./player.js";
@@ -34,10 +35,9 @@ export function unswapFarm(row) {
   if (farm > 400 && heal >= 0 && heal <= 400 && heal < farm) {
     const hits = String(heal);
     const healing = String(Math.trunc(farm));
-    return { ...source, minions: hits, lastHits: hits, healing };
+    return { ...source, minions: hits, lastHits: hits, healing, farmValidated: true };
   }
-  const hits = source.lastHits || source.minions || "";
-  return { ...source, minions: hits, lastHits: hits };
+  return { ...source };
 }
 
 function isNatalyaTruth(match) {
@@ -53,6 +53,7 @@ function isNatalyaTruth(match) {
 
 function applyNatalyaTruth(match) {
   if (!isNatalyaTruth(match)) return match;
+  const previousFarm = String(match.rankingFarm || match.minions || match.lastHits || "");
   const ownerPatch = {
     minions: "34",
     lastHits: "34",
@@ -65,6 +66,8 @@ function applyNatalyaTruth(match) {
     tower: "2089",
     damageRatio: "1.51",
     takenPer: "18961",
+    rankingFarm: previousFarm && previousFarm !== "34" ? previousFarm : match.rankingFarm || "",
+    farmValidated: true,
     mvp: true,
   };
   return {
@@ -72,6 +75,8 @@ function applyNatalyaTruth(match) {
     minions: "34",
     lastHits: "34",
     healing: "6077",
+    rankingFarm: ownerPatch.rankingFarm,
+    farmValidated: true,
     jungleGold: "160",
     gold: "9819",
     damage: "125875",

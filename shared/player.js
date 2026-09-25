@@ -122,6 +122,11 @@ export function emptyBoardPlayer() {
     jungleGold: "",
     control: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     rankDelta: "",
     reputation: "",
     powerDelta: "",
@@ -158,6 +163,11 @@ export function emptyMatch() {
     control: "",
     healing: "",
     tower: "",
+    rankingFarm: "",
+    rankingControl: "",
+    rankingHealing: "",
+    rankingTower: "",
+    farmValidated: false,
     lane: "",
     reputation: "",
     rankDelta: "",
@@ -288,6 +298,55 @@ function flag(value) {
   return value === true;
 }
 
+/** AOVRanking 控場 is a seconds value such as 8.382, not in-game 控制效果. */
+function rankingSeconds(value) {
+  return /^\d{1,4}\.\d{1,3}$/.test(String(value ?? "").trim());
+}
+
+/**
+ * `補兵 | 控場 | 治療 | 塔傷` stays on ranking* fields.
+ * In-game 補刀數, 控制效果, 治療量, and 對塔傷害 are kept when the row was
+ * parsed from those labels, patched from a screenshot, or marked farmValidated.
+ * A copied 補兵 (lastHits === minions next to 控場 seconds) is not shown as 補刀數.
+ */
+function separateInGameStats(source) {
+  const raw = source && typeof source === "object" ? source : {};
+  const validated = raw.farmValidated === true;
+  const creep = whole(raw.minions, 6);
+  const hits = whole(raw.lastHits, 6);
+  const controlRaw = decimal(raw.control, 6, 3);
+  const seconds = rankingSeconds(controlRaw);
+  const rankingControl = decimal(raw.rankingControl, 6, 3) || (seconds ? controlRaw : "");
+  let rankingFarm = whole(raw.rankingFarm, 6);
+  let lastHits = hits;
+  if ((seconds || rankingFarm) && !rankingFarm) rankingFarm = creep || (hits && hits === creep ? hits : "");
+  if (!validated && (seconds || rankingFarm) && lastHits && (lastHits === creep || lastHits === rankingFarm)) lastHits = "";
+  if (!validated && !seconds && !rankingFarm && !lastHits && creep) lastHits = creep;
+  if (validated) lastHits = hits || (!seconds && !rankingFarm ? creep : lastHits);
+  let rankingHealing = whole(raw.rankingHealing, 9);
+  let rankingTower = whole(raw.rankingTower, 9);
+  let healing = whole(raw.healing, 9);
+  let tower = whole(raw.tower, 9);
+  if (!validated && seconds) {
+    if (!rankingHealing) rankingHealing = healing;
+    if (!rankingTower) rankingTower = tower;
+    healing = "";
+    tower = "";
+  }
+  return {
+    farmValidated: validated,
+    lastHits,
+    minions: lastHits,
+    rankingFarm,
+    rankingControl,
+    rankingHealing,
+    rankingTower,
+    control: seconds ? "" : controlRaw,
+    healing,
+    tower,
+  };
+}
+
 function dateOnly(value) {
   const text = clip(value, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : "";
@@ -372,12 +431,8 @@ function cleanBoardPlayer(value) {
     takenPer: whole(source.takenPer, 9),
     gpm: whole(source.gpm, 6),
     level: whole(source.level, 3),
-    minions: whole(source.lastHits, 6) || whole(source.minions, 6),
-    lastHits: whole(source.lastHits, 6) || whole(source.minions, 6),
+    ...separateInGameStats(source),
     jungleGold: whole(source.jungleGold, 9),
-    control: decimal(source.control, 6, 3),
-    healing: whole(source.healing, 9),
-    tower: whole(source.tower, 9),
     rankDelta: signed(source.rankDelta),
     reputation: signed(source.reputation),
     powerDelta: signed(source.powerDelta),
@@ -397,6 +452,7 @@ function boardFilled(row) {
       row.healing ||
       row.minions ||
       row.lastHits ||
+      row.rankingFarm ||
       row.jungleGold ||
       row.score ||
       row.skin ||
@@ -457,14 +513,10 @@ function cleanMatch(item) {
     gold: whole(source.gold, 9),
     damage: whole(source.damage, 9),
     taken: whole(source.taken, 9),
-    minions: whole(source.lastHits, 6) || whole(source.minions, 6),
-    lastHits: whole(source.lastHits, 6) || whole(source.minions, 6),
+    ...separateInGameStats(source),
     jungleGold: whole(source.jungleGold, 9),
     damageRatio: decimal(source.damageRatio, 4, 2),
     takenPer: whole(source.takenPer, 9),
-    control: decimal(source.control, 6, 3),
-    healing: whole(source.healing, 9),
-    tower: whole(source.tower, 9),
     lane: clip(source.lane, 24),
     reputation: signed(source.reputation),
     rankDelta: signed(source.rankDelta),
@@ -501,6 +553,7 @@ function matchFilled(match) {
       match.damage ||
       match.minions ||
       match.lastHits ||
+      match.rankingFarm ||
       match.jungleGold ||
       match.healing ||
       match.tower ||
@@ -793,6 +846,44 @@ function publicHighlight(highlight) {
   };
 }
 
+function publicBoardRow(row) {
+  return {
+    side: row.side,
+    hero: row.hero,
+    ign: row.ign,
+    lane: row.lane,
+    badge: row.badge,
+    kills: row.kills,
+    deaths: row.deaths,
+    assists: row.assists,
+    gold: row.gold,
+    score: row.score,
+    mvp: row.mvp,
+    owner: row.owner,
+    items: row.items,
+    heroDamage: row.heroDamage,
+    heroDamagePct: row.heroDamagePct,
+    taken: row.taken,
+    takenPct: row.takenPct,
+    healing: row.healing,
+    teamfightCount: row.teamfightCount,
+    teamfightRate: row.teamfightRate,
+    damageRatio: row.damageRatio,
+    takenPer: row.takenPer,
+    gpm: row.gpm,
+    level: row.level,
+    minions: row.lastHits,
+    lastHits: row.lastHits,
+    jungleGold: row.jungleGold,
+    control: row.control,
+    tower: row.tower,
+    rankDelta: row.rankDelta,
+    reputation: row.reputation,
+    powerDelta: row.powerDelta,
+    skin: row.skin,
+  };
+}
+
 function publicMatch(match) {
   const kda = match.kda || derivedKda(match.kills, match.deaths, match.assists);
   return {
@@ -811,8 +902,8 @@ function publicMatch(match) {
     gold: match.gold,
     damage: match.damage,
     taken: match.taken,
-    minions: match.minions,
-    lastHits: match.lastHits || match.minions,
+    minions: match.lastHits,
+    lastHits: match.lastHits,
     jungleGold: match.jungleGold,
     damageRatio: match.damageRatio,
     takenPer: match.takenPer,
@@ -833,7 +924,7 @@ function publicMatch(match) {
     badges: match.badges,
     note: match.note,
     highlight: publicHighlight(match.highlight),
-    board: match.board,
+    board: (match.board || []).map(publicBoardRow),
   };
 }
 
