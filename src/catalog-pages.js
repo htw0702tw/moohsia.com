@@ -1,4 +1,4 @@
-import { getCatalog, getItemCategory } from "./catalog-state.js";
+import { getCatalog, getItemCategory, getRoleFilter } from "./catalog-state.js";
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
 import { frequentBuilds } from "../shared/match-present.js";
@@ -221,13 +221,13 @@ export function renderUltimates(copy) {
       <p class="kicker">${esc(page.kicker)}</p>
       <h1>${esc(page.title)}</h1>
       <p class="lead">${esc(page.lead)}</p>
+      <p class="section-note">${esc(page.method)}</p>
       <p class="hud-readout"><span>ULT // ${esc(String(resolved.length))}</span><span>${esc(page.count)}</span></p>
       <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${chips}</div>
     </header>
     <section class="section wrap">
       ${cards}
       ${gaps}
-      <p class="section-note">${esc(page.method)}</p>
       <p class="section-note">${esc(page.source)}</p>
     </section>
   </article>`;
