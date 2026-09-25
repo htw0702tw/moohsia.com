@@ -10,10 +10,13 @@ import {
   getPlayer,
   getProfileFields,
   getRosterMembers,
+  getTeams,
 } from "./content.js";
 import { esc } from "./html.js";
 import { renderPlayerBody } from "./player-page.js";
 import { findRosterMember, memberSlug, playerMemberPath } from "../shared/match-present.js";
+import { findTeam, memberTeamSlug, teamAka, teamPrimary } from "../shared/teams.js";
+import { renderUltimates } from "./catalog-pages.js";
 
 export function brandMark() {
   return `
@@ -102,19 +105,37 @@ function pending(copy, value) {
   return `<span class="fact-value${klass}">${esc(text)}</span>`;
 }
 
+function publishedRoster(copy) {
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  return getRosterMembers().filter(
+    (member) => !member.hidden && (member.name?.[lang] || member.name?.zh || "").trim(),
+  );
+}
+
+function memberTeamView(member) {
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  const slug = memberTeamSlug(member);
+  const team = findTeam(getTeams(), slug);
+  return {
+    slug: team?.slug || slug,
+    name: team ? teamPrimary(team, lang) || slug : slug,
+    aka: team ? teamAka(team, lang) : "",
+    href: team ? `/teams/${team.slug}` : "",
+  };
+}
+
 function rosterCards(copy) {
   const roster = copy.roster;
   const lang = document.documentElement.lang === "en" ? "en" : "zh";
-  const rosterMembers = getRosterMembers();
-  const published = rosterMembers.filter(
-    (member) => !member.hidden && (member.name?.[lang] || member.name?.zh || "").trim(),
-  );
+  const published = publishedRoster(copy);
   if (published.length) {
     return published
       .map((member, index) => {
         const name = (member.name?.[lang] || member.name?.zh || "").trim();
         const role = (member.role?.[lang] || member.role?.zh || "").trim() || roster.rolePending;
-        return slotCard(index, name, role, roster.stampLive, false, memberSlug(member) ? `/roster/${memberSlug(member)}` : "");
+        const team = memberTeamView(member);
+        const teamText = `${roster.columns?.team || "戰隊"} ${team.name}${team.aka ? `｜${team.aka}` : ""}`;
+        return slotCard(index, name, role, roster.stampLive, false, memberSlug(member) ? `/roster/${memberSlug(member)}` : "", teamText);
       })
       .join("");
   }
@@ -123,7 +144,36 @@ function rosterCards(copy) {
   ).join("");
 }
 
-function slotCard(index, name, meta, stamp, empty, href = "") {
+function rosterTable(copy) {
+  const roster = copy.roster;
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  const published = publishedRoster(copy);
+  if (!published.length) return "";
+  const columns = roster.columns || { name: "成員", role: "位置", team: "戰隊" };
+  const head = `<div class="roster-row is-head" role="row">
+    <span role="columnheader">${esc(columns.name)}</span>
+    <span role="columnheader">${esc(columns.role)}</span>
+    <span role="columnheader">${esc(columns.team)}</span>
+  </div>`;
+  const rows = published
+    .map((member) => {
+      const name = (member.name?.[lang] || member.name?.zh || "").trim();
+      const role = (member.role?.[lang] || member.role?.zh || "").trim() || roster.rolePending;
+      const team = memberTeamView(member);
+      const slug = memberSlug(member);
+      const nameCell = slug ? `<a href="/roster/${esc(slug)}" data-nav>${esc(name)}</a>` : esc(name);
+      const aka = team.aka ? `<small>${esc(team.aka)}</small>` : "";
+      const teamCell = team.href
+        ? `<a href="${esc(team.href)}" data-nav>${esc(team.name)}${aka}</a>`
+        : `${esc(team.name)}${aka}`;
+      return `<div class="roster-row" role="row"><span role="cell">${nameCell}</span><span role="cell">${esc(role)}</span><span role="cell" class="roster-team">${teamCell}</span></div>`;
+    })
+    .join("");
+  return `<div class="roster-table" role="table">${head}${rows}</div>`;
+}
+
+function slotCard(index, name, meta, stamp, empty, href = "", teamText = "") {
+  const team = teamText ? `<p class="slot-team">${esc(teamText)}</p>` : "";
   const body = `
       <div class="slot-top">
         <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
@@ -131,7 +181,8 @@ function slotCard(index, name, meta, stamp, empty, href = "") {
       </div>
       <div class="silhouette" aria-hidden="true"><span></span></div>
       <h3>${esc(name)}</h3>
-      <p>${esc(meta)}</p>`;
+      <p>${esc(meta)}</p>
+      ${team}`;
   const klass = `slot${empty ? " is-empty" : ""} reveal`;
   if (href) return `<a class="${klass}" href="${esc(href)}" data-nav>${body}</a>`;
   return `<article class="${klass}">${body}</article>`;
@@ -434,6 +485,7 @@ export function renderAbout(copy) {
           <h2>${esc(about.principlesTitle)}</h2>
         </div>
         <ol class="principles">${principles}</ol>
+        <p class="section-note"><a class="text-link" href="/teams" data-nav>${esc(copy.nav.teams || copy.teams.title)}</a></p>
       </section>
       <section class="section wrap">
         <div class="plate reveal">
@@ -461,6 +513,7 @@ export function renderRoster(copy) {
       <section class="section roster-stage">
         <div class="wrap">
           <p class="section-kicker">${esc(roster.stageKicker)}</p>
+          ${rosterTable(copy)}
           <div class="slots">${rosterCards(copy)}</div>
           ${published.length ? "" : note(roster.emptyNote)}
         </div>
@@ -574,6 +627,118 @@ function heroCard(hero, copy) {
     </article>`;
 }
 
+function memberTeamLine(copy, member) {
+  if (!member) return "";
+  const team = memberTeamView(member);
+  const label = copy.roster.columns?.team || "戰隊";
+  const aka = team.aka ? `<small>${esc(team.aka)}</small>` : "";
+  const value = team.href
+    ? `<a href="${esc(team.href)}" data-nav>${esc(team.name)}</a>${aka}`
+    : `${esc(team.name)}${aka}`;
+  return `<p class="slot-team"><span>${esc(label)}</span> ${value}</p>`;
+}
+
+function requirementList(team) {
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  return (team.requirements || [])
+    .map((row) => {
+      const text = (lang === "en" ? row.en || row.zh : row.zh || row.en) || "";
+      return text.trim() ? `<li>${esc(text.trim())}</li>` : "";
+    })
+    .join("");
+}
+
+function teamMembers(team) {
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  return getRosterMembers().filter((member) => {
+    if (member.hidden) return false;
+    const name = (member.name?.[lang] || member.name?.zh || "").trim();
+    return name && memberTeamSlug(member) === team.slug;
+  });
+}
+
+export function renderTeams(copy) {
+  const page = copy.teams;
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  const list = getTeams();
+  const cards = list.length
+    ? `<div class="mode-grid">${list
+        .map((team, index) => {
+          const name = teamPrimary(team, lang) || team.slug;
+          const aka = teamAka(team, lang);
+          const lead = (lang === "en" ? team.lead?.en || team.lead?.zh : team.lead?.zh || team.lead?.en) || "";
+          return `<article class="mode-card glass tilt frame reveal" data-tilt>
+            <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
+            <h2><a href="/teams/${esc(team.slug)}" data-nav>${esc(name)}</a></h2>
+            ${aka ? `<p class="stamp">${esc(page.aka)} ${esc(aka)}</p>` : ""}
+            ${lead ? `<p>${esc(lead)}</p>` : ""}
+            <a class="text-link" href="/teams/${esc(team.slug)}" data-nav>${esc(page.open)}</a>
+          </article>`;
+        })
+        .join("")}</div>`
+    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
+  return `<article class="page subpage">
+    ${mast(copy, page)}
+    <section class="section wrap">${cards}</section>
+  </article>`;
+}
+
+export function renderTeam(copy, slug) {
+  const page = copy.teams;
+  const lang = document.documentElement.lang === "en" ? "en" : "zh";
+  const team = findTeam(getTeams(), slug);
+  if (!team) return renderNotFound(copy);
+  const name = teamPrimary(team, lang) || team.slug;
+  const aka = teamAka(team, lang);
+  const lead = (lang === "en" ? team.lead?.en || team.lead?.zh : team.lead?.zh || team.lead?.en) || page.lead;
+  const rules = requirementList(team);
+  const members = teamMembers(team);
+  const memberRows = members.length
+    ? `<div class="roster-table" role="table"><div class="roster-row is-head is-pair" role="row"><span role="columnheader">${esc(copy.roster.columns?.name || page.members)}</span><span role="columnheader">${esc(copy.roster.columns?.role || "")}</span></div>${members
+        .map((member) => {
+          const memberName = (member.name?.[lang] || member.name?.zh || "").trim();
+          const role = (member.role?.[lang] || member.role?.zh || "").trim() || copy.roster.rolePending;
+          const memberPath = memberSlug(member);
+          const nameCell = memberPath ? `<a href="/roster/${esc(memberPath)}" data-nav>${esc(memberName)}</a>` : esc(memberName);
+          return `<div class="roster-row is-pair" role="row"><span role="cell">${nameCell}</span><span role="cell">${esc(role)}</span></div>`;
+        })
+        .join("")}</div>`
+    : `<p class="section-note">${esc(page.membersEmpty)}</p>`;
+  return `<article class="page subpage">
+    <header class="mast wrap">
+      <p class="crumbs"><a href="/teams" data-nav>${esc(page.title)}</a><span aria-hidden="true">/</span><span>${esc(name)}</span></p>
+      <p class="kicker">${esc(page.kicker)}</p>
+      <h1>${esc(name)}</h1>
+      ${aka ? `<p class="stamp">${esc(aka)}</p>` : ""}
+      <p class="lead">${esc(lead)}</p>
+    </header>
+    <section class="section wrap">
+      <div class="section-head">
+        <p class="section-kicker">${esc(page.requirements)}</p>
+        <h2>${esc(page.requirements)}</h2>
+      </div>
+      <ol class="principles">${rules}</ol>
+    </section>
+    <section class="section wrap">
+      <div class="section-head">
+        <p class="section-kicker">ROSTER</p>
+        <h2>${esc(page.members)}</h2>
+      </div>
+      ${memberRows}
+    </section>
+    <section class="section wrap">
+      <div class="plate reveal">
+        ${seal(copy.nav.recruitChip)}
+        <div>
+          <h2>${esc(page.apply)}</h2>
+          <p>${esc(page.applyNote)}</p>
+          <a class="btn btn-primary" href="/apply" data-nav>${esc(copy.nav.apply)}</a>
+        </div>
+      </div>
+    </section>
+  </article>`;
+}
+
 export function renderMember(copy, key) {
   const member = findRosterMember(getRosterMembers(), key);
   const player = getPlayer();
@@ -588,6 +753,7 @@ export function renderMember(copy, key) {
         <h1>${esc(name)}</h1>
         <p class="lead">${esc(player ? copy.player.lead : copy.player.emptyBody)}</p>
         ${role ? `<p class="stamp">${esc(role)}</p>` : ""}
+        ${memberTeamLine(copy, member)}
         <p class="aov-jumps">
           <a href="/skins" data-nav>${esc(copy.nav.skins)}</a>
           <a href="/items" data-nav>${esc(copy.nav.items)}</a>
@@ -746,6 +912,11 @@ export function renderApply(copy) {
     ${mast(copy, page)}
     <section class="section wrap apply-layout">
       ${banner}
+      <div class="glass frame">
+        <h2>${esc(copy.teams?.requirements || "")}</h2>
+        <p>${esc(page.teamNote || copy.teams?.applyNote || "")}</p>
+        <p><a class="text-link" href="/teams" data-nav>${esc(copy.nav.teams || copy.teams?.title || "")}</a></p>
+      </div>
       <form class="apply-form glass frame" id="apply-form" autocomplete="off">
         <p class="section-note">${esc(page.discord)}</p>
         <label>${esc(page.rank)}
@@ -782,6 +953,12 @@ export function renderPage(name, copy, extra = {}) {
       return renderAbout(copy);
     case "roster":
       return renderRoster(copy);
+    case "teams":
+      return renderTeams(copy);
+    case "team":
+      return renderTeam(copy, extra.id);
+    case "ultimates":
+      return renderUltimates(copy);
     case "player":
       return renderPlayer(copy);
     case "heroes":

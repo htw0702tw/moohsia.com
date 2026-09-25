@@ -1,5 +1,6 @@
 import { CONTACT_EMAIL } from "../shared/brand.js";
 import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
+import { memberTeamSlug } from "../shared/teams.js";
 
 /**
  * Editable team facts.
@@ -12,8 +13,27 @@ import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 
 export const PLACEHOLDER_SLOTS = 5;
 
-/** @type {{ id: string, name: { zh: string, en: string }, role: { zh: string, en: string } }[]} */
+/** @type {{ id: string, name: { zh: string, en: string }, role: { zh: string, en: string }, team?: string }[]} */
 export const rosterMembers = [];
+
+/** Competitive teams under the guild. Add another object to open `/teams/:slug`. */
+export const teams = [
+  {
+    id: "moohsia",
+    slug: "moohsia",
+    name: { zh: "MOOHSIA", en: "MOOHSIA" },
+    aka: { zh: "暮霞", en: "Dusk" },
+    lead: {
+      zh: "公會暮霞｜MOS 底下的戰隊。加入公會請走官網申請。",
+      en: "A competitive team in the 暮霞｜MOS guild. Apply on this site to join the guild.",
+    },
+    requirements: [
+      { zh: "每個週末 20:30–21:30 訓練", en: "Weekend training, 20:30–21:30." },
+      { zh: "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄", en: "At least two lanes, with at least five familiar heroes in each." },
+      { zh: "排位至少黃金以上", en: "Ranked Gold or above." },
+    ],
+  },
+];
 
 /** @type {{ id: string, date: string, title: { zh: string, en: string }, body: { zh: string, en: string } }[]} */
 export const newsPosts = [];
@@ -28,14 +48,16 @@ export const profileFields = [
 
 const zh = {
   meta: {
-    homeTitle: "暮霞｜MOS — 傳說對決戰隊",
-    homeDescription: "公會 MOOHSIA，戰隊暮霞｜MOS。加入只接受官網申請。聯絡 Info@moohsia.com。",
+    homeTitle: "暮霞｜MOS — 傳說對決公會",
+    homeDescription: "公會暮霞｜MOS（MOOHSIA）。加入只接受官網申請。聯絡 Info@moohsia.com。",
     titleSuffix: "暮霞｜MOS",
   },
   nav: {
     home: "首頁",
-    about: "戰隊",
+    about: "公會",
+    teams: "戰隊",
     roster: "成員",
+    ultimates: "奧義",
     news: "動態",
     contact: "聯絡",
     player: "選手",
@@ -61,6 +83,7 @@ const zh = {
     hero: "英雄",
     skin: "造型",
     item: "裝備",
+    ultimate: "奧義",
     page: "頁面",
   },
   intro: {
@@ -69,18 +92,18 @@ const zh = {
     skip: "略過入場",
   },
   footer: {
-    blurb: "公會 MOOHSIA，戰隊暮霞｜MOS。",
+    blurb: "公會暮霞｜MOS（MOOHSIA）。",
     rule: "加入只接受官網申請。Discord 不開放加入。",
     recruit: "官網申請",
     explore: "站內",
   },
   home: {
     kicker: "ARENA OF VALOR",
-    kickerZh: "傳說對決戰隊",
+    kickerZh: "傳說對決公會",
     tagline: "暮色未歇，戰線仍在。",
     taglineAlt: "Dusk holds. The line stays.",
-    lead: "公會 MOOHSIA，戰隊暮霞｜MOS。暮色未歇，戰線仍在。加入只走官網申請，Discord 不開放加入。",
-    ctaTeam: "進入戰隊",
+    lead: "公會暮霞｜MOS（MOOHSIA）。暮色未歇，戰線仍在。加入只走官網申請，Discord 不開放加入。",
+    ctaTeam: "進入公會",
     ctaRoster: "成員席位",
     ctaContact: "聯絡信箱",
     ctaApply: "提出申請",
@@ -94,13 +117,13 @@ const zh = {
     crestRec: "APPLY // SITE",
     hudChannel: "CH // PUBLIC",
     hudGame: "AOV // 傳說對決",
-    ticker: "公會 MOOHSIA · 戰隊暮霞｜MOS · 傳說對決 · 官網申請 · Discord 不開放加入 · 成員資訊即將公開 · Info@moohsia.com · ",
+    ticker: "公會暮霞｜MOS · MOOHSIA · 傳說對決 · 官網申請 · Discord 不開放加入 · 成員資訊即將公開 · Info@moohsia.com · ",
     metricsKicker: "00 — STAGE",
     metrics: [
       { index: "01", label: "主場", value: "傳說對決", note: "Arena of Valor" },
       { index: "02", label: "招募", value: "官網申請", note: "Discord 不開放加入" },
       { index: "03", label: "名單", value: "即將公開", note: "成員資訊即將公開" },
-      { index: "04", label: "信箱", value: "戰隊信箱", note: "Info@moohsia.com" },
+      { index: "04", label: "信箱", value: "公會信箱", note: "Info@moohsia.com" },
     ],
     identityKicker: "01 — IDENTITY",
     identityTitle: "關於暮霞",
@@ -108,13 +131,13 @@ const zh = {
     cards: [
       {
         index: "01",
-        title: "戰隊",
-        body: "公會 MOOHSIA。戰隊暮霞｜MOS（MOS），傳說對決。",
+        title: "公會",
+        body: "公會暮霞｜MOS（MOOHSIA），傳說對決。底下的戰隊另列。",
       },
       {
         index: "02",
         title: "暮色",
-        body: "餘燼、堇紫與暮色，是這支隊伍的顏色。",
+        body: "餘燼、堇紫與暮色，是這支公會的顏色。",
       },
       {
         index: "03",
@@ -151,11 +174,11 @@ const zh = {
     rosterLead: "名單即將公布。",
     rosterCta: "查看成員",
     signalKicker: "05 — SIGNAL",
-    signalTitle: "戰隊動態",
+    signalTitle: "公會動態",
     signalCta: "開啟動態台",
     finaleKicker: "06 — TRANSMIT",
-    finaleTitle: "聯絡戰隊",
-    finaleBody: "媒體、合作與戰隊事務，請寄到這個信箱。加入請用官網申請。",
+    finaleTitle: "聯絡公會",
+    finaleBody: "媒體、合作與公會事務，請寄到這個信箱。加入請用官網申請。",
     playerKicker: "07 — PLAYER",
     playerTitle: "選手數據",
     playerLead: "只顯示已經公開的個人資料。",
@@ -163,14 +186,14 @@ const zh = {
     playerEmpty: "個人數據尚未公布。",
     catalogKicker: "08 — CATALOG",
     catalogTitle: "英雄與模式",
-    catalogLead: "官方公開名單。不是戰隊戰績。",
+    catalogLead: "官方公開名單。不是公會戰績。",
     heroesCta: "英雄名單",
     modesCta: "遊戲模式",
   },
   about: {
-    kicker: "02 — TEAM",
-    title: "戰隊",
-    lead: "公會 MOOHSIA，戰隊暮霞｜MOS。暮色未歇，戰線仍在。",
+    kicker: "02 — GUILD",
+    title: "公會",
+    lead: "公會暮霞｜MOS（MOOHSIA）。暮色未歇，戰線仍在。",
     pending: "待公布",
     manifestoKicker: "DUSK",
     manifestoTitle: "暮色未歇",
@@ -200,11 +223,39 @@ const zh = {
     liveLead: "上場名單。",
     rolePending: "位置未公開",
     stageKicker: "LINEUP // PENDING",
+    columns: { name: "成員", role: "位置", team: "戰隊" },
+  },
+  teams: {
+    kicker: "03 — TEAMS",
+    title: "戰隊名單",
+    lead: "公會暮霞｜MOS 底下的戰隊。",
+    emptyTitle: "目前沒有公開戰隊",
+    emptyBody: "戰隊公布之後會列在這裡。",
+    open: "查看戰隊",
+    aka: "又稱",
+    requirements: "加入條件",
+    members: "成員",
+    membersEmpty: "這支戰隊還沒有公開成員。",
+    apply: "提出申請",
+    applyNote: "加入公會請走官網申請。戰隊條件列在下面，通過後由擁有者安排。",
+    missing: "找不到這支戰隊。",
+  },
+  ultimates: {
+    kicker: "08 — ULT",
+    title: "奧義",
+    lead: "傳說對決英雄的奧義，整理自 Garena 公開英雄頁。",
+    emptyTitle: "目錄暫時讀不到",
+    emptyBody: "請稍後再看。",
+    source: "資料來源：Garena 傳說對決官方英雄頁。",
+    method: "官方頁沒有單獨的「奧義」欄位。技能順序是被動、一技、二技、奧義，本頁取第 4 個。說明裡的 {0} 這類符號是官方頁的數值占位，本站不另填冷卻或傷害。技能數不是 4 的英雄不會猜測哪一個是奧義。",
+    unresolved: "這些英雄的技能數不是 4，公開頁無法判斷奧義。",
+    count: "個奧義",
+    hero: "英雄",
   },
   news: {
     kicker: "04 — SIGNAL",
     title: "動態",
-    lead: "賽事與戰隊消息。",
+    lead: "賽事與公會消息。",
     emptyTitle: "目前沒有新消息",
     emptyBody: "新的公告會出現在這裡。",
     silent: "SIGNAL // SILENT",
@@ -220,8 +271,8 @@ const zh = {
   contact: {
     kicker: "05 — CONTACT",
     title: "聯絡",
-    lead: "媒體、合作與戰隊事務，寫信到這裡。",
-    emailLabel: "寫信給戰隊",
+    lead: "媒體、合作與公會事務，寫信到這裡。",
+    emailLabel: "寫信給公會",
     only: "Info@moohsia.com",
     recruitTitle: "官網申請",
     recruitBody: "加入只接受這個網站的申請。Discord 不開放加入。",
@@ -231,13 +282,13 @@ const zh = {
       ["02  招募", "官網申請", "開放"],
       ["03  Discord", "不開放加入", "關閉"],
     ],
-    writeTitle: "戰隊信箱",
+    writeTitle: "公會信箱",
     writeBody: "請寄到 Info@moohsia.com。加入請用官網申請。",
   },
   notFound: {
     kicker: "404 — OFF MAP",
     title: "找不到這個頁面",
-    lead: "這個網址不在戰隊站內。",
+    lead: "這個網址不在公會站內。",
     back: "回到首頁",
   },
   player: {
@@ -348,7 +399,7 @@ const zh = {
   activities: {
     kicker: "10 — OFFICIAL",
     title: "官方活動",
-    lead: "Garena 公開頁上的活動、公告與賽事。不是戰隊自己的賽程。",
+    lead: "Garena 公開頁上的活動、公告與賽事。不是公會自己的賽程。",
     emptyTitle: "目前沒有抓到活動",
     emptyBody: "每日更新或管理頁的重新整理之後，公開列表會出現在這裡。",
     source: "來源是 Garena 傳說對決公開新聞頁。是否仍在進行，以官方頁為準。",
@@ -361,7 +412,8 @@ const zh = {
   apply: {
     kicker: "11 — APPLY",
     title: "加入申請",
-    lead: "公會 MOOHSIA、戰隊暮霞｜MOS 只接受這個網站的申請。Discord 不開放加入。",
+    lead: "公會暮霞｜MOS（MOOHSIA）只接受這個網站的申請。Discord 不開放加入。",
+    teamNote: "這是公會申請。各戰隊的加入條件在戰隊頁，MOOHSIA 的條件也寫在那一頁。",
     rank: "歷史排位賽最高戰績",
     rankHint: "最低黃金。低於黃金的申請不會送出。",
     uid: "使用者 UID",
@@ -463,14 +515,16 @@ const zh = {
 
 const en = {
   meta: {
-    homeTitle: "MOS — Arena of Valor team",
-    homeDescription: "Guild MOOHSIA, team 暮霞｜MOS. Apply only on this site. Contact Info@moohsia.com.",
+    homeTitle: "MOS — Arena of Valor guild",
+    homeDescription: "Guild 暮霞｜MOS (MOOHSIA). Apply only on this site. Contact Info@moohsia.com.",
     titleSuffix: "暮霞｜MOS",
   },
   nav: {
     home: "Home",
-    about: "Team",
+    about: "Guild",
+    teams: "Teams",
     roster: "Roster",
+    ultimates: "Ultimates",
     news: "News",
     contact: "Contact",
     player: "Player",
@@ -496,6 +550,7 @@ const en = {
     hero: "Hero",
     skin: "Skin",
     item: "Item",
+    ultimate: "Ultimate",
     page: "Page",
   },
   intro: {
@@ -504,7 +559,7 @@ const en = {
     skip: "Skip intro",
   },
   footer: {
-    blurb: "Guild MOOHSIA. Team 暮霞｜MOS.",
+    blurb: "Guild 暮霞｜MOS (MOOHSIA).",
     rule: "Apply only on this website. Discord is not open to join.",
     recruit: "Apply on site",
     explore: "On this site",
@@ -514,8 +569,8 @@ const en = {
     kickerZh: "暮霞｜MOS",
     tagline: "Dusk holds. The line stays.",
     taglineAlt: "暮色未歇，戰線仍在。",
-    lead: "Guild MOOHSIA, team 暮霞｜MOS. Dusk holds. The line stays. Apply on this site. Discord is not open to join.",
-    ctaTeam: "Enter the team",
+    lead: "Guild 暮霞｜MOS (MOOHSIA). Dusk holds. The line stays. Apply on this site. Discord is not open to join.",
+    ctaTeam: "Enter the guild",
     ctaRoster: "Roster",
     ctaContact: "Email",
     ctaApply: "Apply",
@@ -529,13 +584,13 @@ const en = {
     crestRec: "APPLY // SITE",
     hudChannel: "CH // PUBLIC",
     hudGame: "AOV // ARENA OF VALOR",
-    ticker: "GUILD MOOHSIA · TEAM 暮霞｜MOS · ARENA OF VALOR · APPLY ON SITE · DISCORD IS CLOSED · ROSTER PENDING · Info@moohsia.com · ",
+    ticker: "GUILD 暮霞｜MOS · MOOHSIA · ARENA OF VALOR · APPLY ON SITE · DISCORD IS CLOSED · ROSTER PENDING · Info@moohsia.com · ",
     metricsKicker: "00 — STAGE",
     metrics: [
       { index: "01", label: "Title", value: "Arena of Valor", note: "Home game" },
       { index: "02", label: "Gate", value: "Apply", note: "Discord is closed" },
       { index: "03", label: "Lineup", value: "Soon", note: "Roster coming soon" },
-      { index: "04", label: "Mail", value: "Team inbox", note: "Info@moohsia.com" },
+      { index: "04", label: "Mail", value: "Guild inbox", note: "Info@moohsia.com" },
     ],
     identityKicker: "01 — IDENTITY",
     identityTitle: "About MOS",
@@ -543,13 +598,13 @@ const en = {
     cards: [
       {
         index: "01",
-        title: "The team",
-        body: "Guild MOOHSIA. Team 暮霞｜MOS plays Arena of Valor.",
+        title: "The guild",
+        body: "Guild 暮霞｜MOS (MOOHSIA) plays Arena of Valor. Competitive teams are listed separately.",
       },
       {
         index: "02",
         title: "Dusk",
-        body: "Ember, violet, and dusk are the colors of this team.",
+        body: "Ember, violet, and dusk are the colors of this guild.",
       },
       {
         index: "03",
@@ -586,11 +641,11 @@ const en = {
     rosterLead: "The lineup is coming soon.",
     rosterCta: "View roster",
     signalKicker: "05 — SIGNAL",
-    signalTitle: "Team signal",
+    signalTitle: "Guild signal",
     signalCta: "Open the feed",
     finaleKicker: "06 — TRANSMIT",
-    finaleTitle: "Reach the team",
-    finaleBody: "Press, partners, and team business: write to this address. Apply on this site to join.",
+    finaleTitle: "Reach the guild",
+    finaleBody: "Press, partners, and guild business: write to this address. Apply on this site to join.",
     playerKicker: "07 — PLAYER",
     playerTitle: "Player record",
     playerLead: "Only published personal data is shown.",
@@ -598,18 +653,18 @@ const en = {
     playerEmpty: "Personal record not published.",
     catalogKicker: "08 — CATALOG",
     catalogTitle: "Heroes and modes",
-    catalogLead: "Official public catalog. Not a team result.",
+    catalogLead: "Official public catalog. Not a guild record.",
     heroesCta: "Hero roster",
     modesCta: "Game modes",
   },
   about: {
-    kicker: "02 — TEAM",
-    title: "Team",
-    lead: "Guild MOOHSIA, team 暮霞｜MOS. Dusk holds. The line stays.",
+    kicker: "02 — GUILD",
+    title: "Guild",
+    lead: "Guild 暮霞｜MOS (MOOHSIA). Dusk holds. The line stays.",
     pending: "To be announced",
     manifestoKicker: "DUSK",
     manifestoTitle: "Dusk holds",
-    manifesto: "The name is the last light of dusk, while the embers are still bright. This team plays Arena of Valor.",
+    manifesto: "The name is the last light of dusk, while the embers are still bright. This guild plays Arena of Valor.",
     principlesKicker: "NOW",
     principlesTitle: "Right now",
     principles: [
@@ -635,11 +690,39 @@ const en = {
     liveLead: "The lineup.",
     rolePending: "Role unannounced",
     stageKicker: "LINEUP // PENDING",
+    columns: { name: "Member", role: "Role", team: "Team" },
+  },
+  teams: {
+    kicker: "03 — TEAMS",
+    title: "Teams",
+    lead: "Competitive teams in the 暮霞｜MOS guild.",
+    emptyTitle: "No teams published",
+    emptyBody: "Teams will be listed here once they are public.",
+    open: "Open team",
+    aka: "Also",
+    requirements: "Requirements",
+    members: "Members",
+    membersEmpty: "No published members on this team yet.",
+    apply: "Apply",
+    applyNote: "Join the guild from the apply page. Team rules are below. Placement happens after approval.",
+    missing: "That team is not listed.",
+  },
+  ultimates: {
+    kicker: "08 — ULT",
+    title: "Ultimates",
+    lead: "Arena of Valor ultimate abilities, taken from public Garena hero pages.",
+    emptyTitle: "Catalog unavailable",
+    emptyBody: "Try again in a moment.",
+    source: "Source: official Garena Arena of Valor hero pages.",
+    method: "The official page does not label an ultimate on its own. Skills are listed as passive, skill 1, skill 2, then the ultimate, so this page uses the fourth skill. Tokens like {0} are official placeholders. This site does not fill in cooldown or damage. Heroes whose skill list is not four long are left unmarked.",
+    unresolved: "These heroes do not have four skills, so the public page does not show which one is the ultimate.",
+    count: "ultimates",
+    hero: "Hero",
   },
   news: {
     kicker: "04 — SIGNAL",
     title: "News",
-    lead: "Matches and team news.",
+    lead: "Matches and guild news.",
     emptyTitle: "No news yet",
     emptyBody: "New posts will show up here.",
     silent: "SIGNAL // SILENT",
@@ -655,8 +738,8 @@ const en = {
   contact: {
     kicker: "05 — CONTACT",
     title: "Contact",
-    lead: "Press, partners, and team business: write here.",
-    emailLabel: "Email the team",
+    lead: "Press, partners, and guild business: write here.",
+    emailLabel: "Email the guild",
     only: "Info@moohsia.com",
     recruitTitle: "Apply on site",
     recruitBody: "Applications are accepted only on this website. Discord is not open to join.",
@@ -666,13 +749,13 @@ const en = {
       ["02  Recruit", "Apply on site", "Open"],
       ["03  Discord", "Not open to join", "Shut"],
     ],
-    writeTitle: "Team inbox",
+    writeTitle: "Guild inbox",
     writeBody: "Write to Info@moohsia.com. Apply on this site to join.",
   },
   notFound: {
     kicker: "404 — OFF MAP",
     title: "Page not on the map",
-    lead: "That address is not part of the team site.",
+    lead: "That address is not part of the guild site.",
     back: "Back home",
   },
   player: {
@@ -783,7 +866,7 @@ const en = {
   activities: {
     kicker: "10 — OFFICIAL",
     title: "Official events",
-    lead: "Activities, news, and esports posts from public Garena pages. Not this team's fixtures.",
+    lead: "Activities, news, and esports posts from public Garena pages. Not this guild's fixtures.",
     emptyTitle: "No events loaded",
     emptyBody: "The daily refresh, or the admin refresh, fills this list from the public pages.",
     source: "Source: public Garena Arena of Valor news pages. What is still live is whatever those pages say.",
@@ -796,7 +879,8 @@ const en = {
   apply: {
     kicker: "11 — APPLY",
     title: "Apply",
-    lead: "Guild MOOHSIA and team 暮霞｜MOS take applications only on this website. Discord is not open to join.",
+    lead: "Guild 暮霞｜MOS (MOOHSIA) takes applications only on this website. Discord is not open to join.",
+    teamNote: "This form joins the guild. Each team's requirements are on its team page, including MOOHSIA.",
     rank: "Highest ranked tier",
     rankHint: "Gold is the minimum. Below Gold is rejected.",
     uid: "UID",
@@ -902,6 +986,7 @@ function snapshot() {
     contactEmail: CONTACT_EMAIL,
     placeholderSlots: PLACEHOLDER_SLOTS,
     profileFields: structuredClone(profileFields),
+    teams: structuredClone(teams),
     rosterMembers: structuredClone(rosterMembers),
     newsPosts: structuredClone(newsPosts),
     player: emptyPlayer(),
@@ -955,7 +1040,8 @@ export function applyPublishedContent(payload) {
     contactEmail: usableEmail(doc.contactEmail, base.contactEmail),
     placeholderSlots: Number.isInteger(slots) && slots >= 0 && slots <= 12 ? slots : base.placeholderSlots,
     profileFields: Array.isArray(doc.profileFields) ? doc.profileFields : base.profileFields,
-    rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers : base.rosterMembers,
+    teams: Array.isArray(doc.teams) ? doc.teams : base.teams,
+    rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers.map((member) => ({ ...member, team: memberTeamSlug(member) })) : base.rosterMembers,
     newsPosts: Array.isArray(doc.newsPosts) ? doc.newsPosts : base.newsPosts,
     player: adoptPublicPlayer(doc.player),
     copy: {
@@ -971,6 +1057,10 @@ export function getCopy(lang) {
 
 export function getRosterMembers() {
   return current.rosterMembers;
+}
+
+export function getTeams() {
+  return current.teams;
 }
 
 export function getNewsPosts() {
@@ -1002,8 +1092,10 @@ export function getMailto() {
 export const NAV = [
   { href: "/", key: "home" },
   { href: "/about", key: "about" },
+  { href: "/teams", key: "teams" },
   { href: "/roster", key: "roster" },
   { href: "/heroes", key: "heroes" },
+  { href: "/ultimates", key: "ultimates" },
   { href: "/skins", key: "skins" },
   { href: "/items", key: "items" },
   { href: "/modes", key: "modes" },

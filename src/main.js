@@ -3,12 +3,13 @@ import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
 import { getCatalog, setActivityFilter, setCatalog, setItemCategory, setItemFilter, setRoleFilter } from "./catalog-state.js";
 import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
-import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
+import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers, getTeams } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
 import { playerMemberPath } from "../shared/match-present.js";
-import { renderHeroDetail, renderItemDetail, renderItems, renderModeDetail, renderSkins } from "./catalog-pages.js";
-import { brandMark, renderMember, renderPage } from "./pages.js";
+import { renderHeroDetail, renderItemDetail, renderItems, renderModeDetail, renderSkins, renderUltimates } from "./catalog-pages.js";
+import { brandMark, renderMember, renderPage, renderTeam } from "./pages.js";
+import { findTeam, teamAka, teamPrimary } from "../shared/teams.js";
 import "./styles.css";
 
 document.documentElement.classList.add("js");
@@ -17,6 +18,8 @@ const ROUTES = {
   "/": "home",
   "/about": "about",
   "/roster": "roster",
+  "/teams": "teams",
+  "/ultimates": "ultimates",
   "/player": "player",
   "/heroes": "heroes",
   "/skins": "skins",
@@ -33,6 +36,8 @@ const searchState = { q: "", results: [], open: false, seq: 0 };
 function resolveRoute(path) {
   const roster = /^\/roster\/([A-Za-z0-9_-]{1,40})$/.exec(path);
   if (roster) return { name: "member", id: "", key: roster[1] };
+  const team = /^\/teams\/([a-z0-9-]{1,40})$/.exec(path);
+  if (team) return { name: "team", id: team[1], key: "" };
   const hero = /^\/heroes\/(\d{1,6})$/.exec(path);
   if (hero) return { name: "hero", id: hero[1], key: "" };
   const item = /^\/items\/(\d{3,6})$/.exec(path);
@@ -202,13 +207,15 @@ function setMeta() {
   const text = copy();
   const path = currentPath();
   const route = resolveRoute(path);
-  const pageKey = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
+  const pageKey = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "team" ? "teams" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
   const page = text[pageKey] || text.notFound;
   const hero = route.name === "hero" ? getCatalog().heroes.find((entry) => String(entry.id) === route.id) : null;
   const item = route.name === "item" ? getCatalog().items.find((entry) => String(entry.id) === route.id) : null;
   const heroName = hero?.name?.zh || "";
   const itemName = item?.name?.zh || "";
-  const title = path === "/" ? text.meta.homeTitle : `${heroName || itemName || page.title} — ${text.meta.titleSuffix}`;
+  const team = route.name === "team" ? findTeam(getTeams(), route.id) : null;
+  const teamName = team ? [teamPrimary(team, state.lang), teamAka(team, state.lang)].filter(Boolean).join("｜") : "";
+  const title = path === "/" ? text.meta.homeTitle : `${teamName || heroName || itemName || page.title} — ${text.meta.titleSuffix}`;
   document.title = title;
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
   const description = path === "/" ? text.meta.homeDescription : hero?.blurb || item?.description || page.lead || text.meta.homeDescription;
@@ -267,6 +274,8 @@ function restoreMenu() {
 
 function renderRoute(route, text) {
   if (route.name === "member") return renderMember(text, route.key);
+  if (route.name === "team") return renderTeam(text, route.id);
+  if (route.name === "ultimates") return renderUltimates(text);
   if (route.name === "skins") return renderSkins(text);
   if (route.name === "items") return renderItems(text);
   if (route.name === "hero") return renderHeroDetail(text, route.id);

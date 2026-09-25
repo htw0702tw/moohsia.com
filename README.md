@@ -1,8 +1,8 @@
 # 暮霞｜MOS
 
-傳說對決戰隊的公開網站，準備部署到 [moohsia.com](https://moohsia.com)。
+傳說對決公會的公開網站，準備部署到 [moohsia.com](https://moohsia.com)。
 
-這不是個人作品集。訪客看到的是公會 MOOHSIA、戰隊暮霞｜MOS。公開聯絡方式只有 `Info@moohsia.com`。加入只接受官網申請。Discord 不開放加入，邀請由擁有者在核准時貼上並寄出，網站不保存邀請網址。
+這不是個人作品集。訪客看到的是公會暮霞｜MOS（MOOHSIA）。公會底下有戰隊，目前有 MOOHSIA（暮霞）。公開聯絡方式只有 `Info@moohsia.com`。加入只接受官網申請。Discord 不開放加入，邀請由擁有者在核准時貼上並寄出，網站不保存邀請網址。
 
 ## 本地啟動
 
@@ -41,10 +41,13 @@ npm start
 
 | 路徑 | 內容 |
 | --- | --- |
-| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、選手數據、英雄與活動預覽、加入入口、聯絡 |
-| `/about` | 戰隊。未確認欄位顯示待公布 |
-| `/roster` | 成員。沒有名單時以待公布席位呈現，並附個人數據入口 |
+| `/` | 公會首頁：暮色舞台、識別、狀態、預留席位、選手數據、英雄與活動預覽、加入入口、聯絡 |
+| `/about` | 公會。未確認欄位顯示待公布 |
+| `/teams` | 戰隊名單。目前有 MOOHSIA（暮霞） |
+| `/teams/:slug` | 單一戰隊：加入條件與該隊成員，連到 `/roster/:name` |
+| `/roster` | 成員。每一列有戰隊。沒有名單時以待公布席位呈現，並附個人數據入口 |
 | `/roster/:name` | 玩家資料。點成員卡進入，側欄是常用英雄、歷史戰績、對戰資料。`/player` 會在瀏覽器改到這位成員，不另開選手頁 |
+| `/ultimates` | 奧義。取 Garena 英雄頁第 4 個技能（被動、一技、二技、奧義）。官方頁沒有單獨標記 |
 | `/heroes` | 官方英雄名單（Garena 公開頁）。點進去看技能與造型圖 |
 | `/heroes/:id` | 單一英雄：技能與造型圖。搜尋也連到這裡 |
 | `/skins` | 官方造型圖，連到所屬英雄 |
@@ -69,7 +72,7 @@ npm start
 | --- | --- |
 | `https://admin.moohsia.com/login` | 登入 |
 | `https://admin.moohsia.com/` | 已登入時轉到總覽，否則轉到登入 |
-| `https://moohsia.com` | 公開戰隊站，只讀已發布內容 |
+| `https://moohsia.com` | 公開公會站，只讀已發布內容 |
 
 只有一組帳號，使用者名稱固定是 `htw0702`（寫在 [`wrangler.jsonc`](wrangler.jsonc)，不是密碼）。密碼雜湊與簽章密鑰來自 Worker secret，不寫進 git，也不要在 pull request 裡發明密碼。
 
@@ -179,6 +182,7 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 | Name EN | rich text | 英文名字 |
 | Role | rich text | 繁中位置 |
 | Role EN | rich text | 英文位置 |
+| Team 或 戰隊 | rich text | 戰隊代稱，例如 `moohsia`。空白時公開頁歸到 MOOHSIA |
 | Hidden | checkbox | 勾了就留在草稿，但公開頁不顯示 |
 | Publish | checkbox | 沒勾的列不會進草稿 |
 | Order | number | 小的排前面 |
@@ -211,7 +215,7 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 
 常用鍵：`zh.home.tagline`、`en.home.tagline`、`zh.home.lead`、`zh.about.lead`、`zh.about.manifesto`、`en.about.manifesto`、`zh.contact.lead`、`zh.contact.writeBody`、`zh.roster.lead`、`zh.player.emptyBody`。英文把前綴換成 `en`。
 
-### 戰隊欄位 `NOTION_PROFILE_DB`
+### 公會欄位 `NOTION_PROFILE_DB`
 
 | 屬性 | 型別 | 用途 |
 | --- | --- | --- |
@@ -222,7 +226,7 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 | Publish | checkbox | 沒勾的欄位不會出現 |
 | Order | number | 排序 |
 
-這個資料庫有設定而且同步成功時，會整份換掉戰隊欄位。沒有任何 Publish 列時，關於頁的欄位表是空的。
+這個資料庫有設定而且同步成功時，會整份換掉公會欄位。沒有任何 Publish 列時，關於頁的欄位表是空的。
 
 ### 個人數據 `NOTION_PLAYER_DB`
 
@@ -352,7 +356,13 @@ npm run catalog:refresh
 
 Zone 還沒在這個帳號時，不要把 [`wrangler.jsonc`](wrangler.jsonc) 裡註解掉的 `routes` 打開。
 
-## 更新戰隊資料
+## 再加一支戰隊
+
+管理頁 **戰隊**（`/edit/teams`）新增一列：網址代稱（小寫，例如 `nova`）、名稱、又稱、加入條件。到 **成員** 把選手的戰隊改成這個代稱，再按 **發布到網站**。公開頁會出現在 `/teams` 與 `/teams/nova`。
+
+沒有進管理頁時，內建名單在 [`src/content.js`](src/content.js) 的 `teams`。再推一個物件，`slug` 就是網址。已發布的舊文案如果還寫著整站「戰隊」，讀取時只會把跟內建舊句完全一樣的句子改成公會；自己改過的句子保持原樣。成員沒填戰隊時，公開頁歸到 `moohsia`。
+
+## 更新公會資料
 
 平常改公開文案用管理後台即可，不用重新部署前端。內建預設仍在 [`src/content.js`](src/content.js)。空白代表尚未確認，不要填上推測的冠軍、選手、贊助或賽程。
 
@@ -418,7 +428,7 @@ npx wrangler r2 bucket create moohsia-media
 
 ## 部署到 moohsia.com
 
-Worker 名稱是 **`moohsia-com`**。它只負責戰隊網站。正式部署由協調者執行，不要在這次變更裡直接部署，也不要改或部署 **`moohsia-cloud`** / `api.moohsia.com`。
+Worker 名稱是 **`moohsia-com`**。它只負責公會網站。正式部署由協調者執行，不要在這次變更裡直接部署，也不要改或部署 **`moohsia-cloud`** / `api.moohsia.com`。
 
 既有的 Worker **`moohsia-cloud`** 是另一個 AI／聊天 API，不要用這次部署覆蓋它，也不要改它的程式。若 `moohsia.com` 目前指到 `moohsia-cloud`，先在該 Worker 拿掉這條 route，再把網域接到 `moohsia-com`。聊天 API 可繼續留在自己的 `workers.dev` 網址，或日後另放子網域；本專案不設定那條路由。
 
@@ -441,12 +451,12 @@ npm run deploy
 6. SSL/TLS 維持 **Full (strict)**。
 7. 若要讓 `www` 轉到裸網域，可在該 zone 加一條 Redirect Rule：`www.moohsia.com/*` → `https://moohsia.com/$1`。
 8. 確認：
-   - <https://moohsia.com> 是戰隊站，不是聊天 API。
+   - <https://moohsia.com> 是公會站，不是聊天 API。
    - <https://moohsia.com/api/health> 回 `service: "moohsia-com"`。
 
 也可以在 zone 已就緒時，把 [`wrangler.jsonc`](wrangler.jsonc) 裡註解掉的 `routes` 打開再部署。帳號還沒有這個 zone 時不要打開，否則部署會去綁網域而失敗。
 
-第一次部署後，還可以用 `moohsia-com.<你的帳號>.workers.dev` 預覽。正式網域仍建議只用在戰隊站。
+第一次部署後，還可以用 `moohsia-com.<你的帳號>.workers.dev` 預覽。正式網域仍建議只用在公會站。
 
 ## 技術
 

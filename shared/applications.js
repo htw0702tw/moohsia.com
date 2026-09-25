@@ -175,7 +175,7 @@ export async function submitApplication(env, input) {
     const mailed = await sendMail(env, {
       to: ownerInbox(env),
       subject: `MOOHSIA 加入申請 ${parsed.value.nickname}`,
-      text: `公會 MOOHSIA、戰隊暮霞｜MOS 收到一筆官網申請。\n\n${lines(parsed.value, "zh")}\n\n編號 ${id}\n請到管理後台審核。Discord 不開放公開加入。`,
+      text: `公會暮霞｜MOS（MOOHSIA）收到一筆官網申請。\n\n${lines(parsed.value, "zh")}\n\n編號 ${id}\n請到管理後台審核。Discord 不開放公開加入。`,
     });
     return { ok: true, id, mailed: mailed.ok === true };
   } catch (error) {
@@ -200,8 +200,8 @@ export async function approveApplication(env, id, input) {
     const lang = payload.lang === "en" ? "en" : "zh";
     const text =
       lang === "en"
-        ? `Your application to guild MOOHSIA, team 暮霞｜MOS, was approved.\n\nThis Discord invite is single-use. Discord is not open for cold join. Do not post the link.\n\n${invite}\n\nQuestions: Info@moohsia.com`
-        : `你的加入申請已通過。公會 MOOHSIA，戰隊暮霞｜MOS。\n\n下面是一次性 Discord 邀請，用過即失效。Discord 不開放公開加入，請不要把連結公開或轉傳。\n\n${invite}\n\n有問題寫到 Info@moohsia.com`;
+        ? `Your application to guild 暮霞｜MOS (MOOHSIA) was approved.\n\nThis Discord invite is single-use. Discord is not open for cold join. Do not post the link.\n\n${invite}\n\nQuestions: Info@moohsia.com`
+        : `你的加入申請已通過。公會暮霞｜MOS（MOOHSIA）。\n\n下面是一次性 Discord 邀請，用過即失效。Discord 不開放公開加入，請不要把連結公開或轉傳。\n\n${invite}\n\n有問題寫到 Info@moohsia.com`;
     const mailed = await sendMail(env, {
       to: row.email,
       subject: lang === "en" ? "MOOHSIA application approved" : "暮霞｜MOOHSIA 申請通過",
@@ -236,8 +236,8 @@ export async function rejectApplication(env, id, input) {
       const note = clipNote(input?.note);
       const text =
         lang === "en"
-          ? `Your application to guild MOOHSIA, team 暮霞｜MOS, was not accepted this time.\n${note ? `\n${note}\n` : ""}\nDiscord is not open for cold join. Questions: Info@moohsia.com`
-          : `你這次的加入申請沒有通過。公會 MOOHSIA，戰隊暮霞｜MOS。\n${note ? `\n${note}\n` : ""}\nDiscord 不開放公開加入。有問題寫到 Info@moohsia.com`;
+          ? `Your application to guild 暮霞｜MOS (MOOHSIA) was not accepted this time.\n${note ? `\n${note}\n` : ""}\nDiscord is not open for cold join. Questions: Info@moohsia.com`
+          : `你這次的加入申請沒有通過。公會暮霞｜MOS（MOOHSIA）。\n${note ? `\n${note}\n` : ""}\nDiscord 不開放公開加入。有問題寫到 Info@moohsia.com`;
       const sent = await sendMail(env, {
         to: row.email,
         subject: lang === "en" ? "MOOHSIA application update" : "暮霞｜MOOHSIA 申請結果",

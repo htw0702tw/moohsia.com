@@ -1,5 +1,7 @@
 /** Official Garena CDN helpers and the public search index. No login, no private API. */
 
+import { ultimateSkill } from "./ultimates.js";
+
 export const ITEM_ICON_BASE =
   "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/";
 
@@ -63,9 +65,25 @@ export const SITE_SEARCH = [
   {
     type: "page",
     id: "about",
-    title: "戰隊",
-    text: "戰隊 about 暮霞 MOS MOOHSIA",
+    title: "公會",
+    text: "公會 about 暮霞 MOS MOOHSIA guild",
     href: "/about",
+    image: "",
+  },
+  {
+    type: "page",
+    id: "teams",
+    title: "戰隊名單",
+    text: "戰隊 teams 名單 MOOHSIA 暮霞",
+    href: "/teams",
+    image: "",
+  },
+  {
+    type: "page",
+    id: "ultimates",
+    title: "奧義",
+    text: "奧義 ultimates 大招 技能",
+    href: "/ultimates",
     image: "",
   },
   {
@@ -157,6 +175,17 @@ export function buildSearchIndex(catalog) {
       href: `/heroes/${hero.id}`,
       image: hero.image || "",
     });
+    const ultimate = ultimateSkill(hero);
+    if (ultimate?.name) {
+      entries.push({
+        type: "ultimate",
+        id: `ult-${hero.id}`,
+        title: ultimate.name,
+        text: clip(`${name} 奧義 ${ultimate.name} ${ultimate.text || ""}`, 220),
+        href: `/ultimates#ult-${hero.id}`,
+        image: ultimate.image || hero.image || "",
+      });
+    }
     (hero.skins || []).forEach((skin, index) => {
       if (skin?.kind === "default") return;
       const skinName = skin?.name?.zh || "";

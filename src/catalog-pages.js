@@ -2,6 +2,7 @@ import { getCatalog, getItemCategory } from "./catalog-state.js";
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
 import { frequentBuilds } from "../shared/match-present.js";
+import { ultimateSkill } from "../shared/ultimates.js";
 
 function bi(value) {
   if (!value || typeof value !== "object") return "";
@@ -85,13 +86,16 @@ export function renderHeroDetail(copy, id) {
       </article>`;
     })
     .join("");
+  const ultimate = ultimateSkill(hero);
   const skills = (hero.skills || [])
-    .map(
-      (skill) => `<article class="aov-skill">
+    .map((skill) => {
+      const isUltimate = ultimate && skill === ultimate;
+      const badge = isUltimate ? `<span class="stamp">${esc(copy.ultimates?.title || "奧義")}</span>` : "";
+      return `<article class="aov-skill${isUltimate ? " is-ultimate" : ""}" ${isUltimate ? `id="ult-${esc(hero.id)}"` : ""}>
         ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ""}
-        <div><h3>${esc(skill.name || "")}</h3><p>${esc(skill.text || "")}</p></div>
-      </article>`,
-    )
+        <div><h3>${esc(skill.name || "")} ${badge}</h3><p>${esc(skill.text || "")}</p></div>
+      </article>`;
+    })
     .join("");
   return `<article class="page subpage">
     <header class="mast catalog-mast wrap">
@@ -164,6 +168,66 @@ export function renderItems(copy) {
     <section class="section wrap">
       ${buildBlock}
       ${grid}
+      <p class="section-note">${esc(page.source)}</p>
+    </section>
+  </article>`;
+}
+
+export function renderUltimates(copy) {
+  const page = copy.ultimates;
+  const catalog = getCatalog();
+  const filter = getRoleFilter();
+  const roles = catalog.roles || [];
+  const heroes = catalog.heroes.filter((hero) => filter === "all" || hero.role === filter);
+  const resolved = [];
+  const unresolved = [];
+  for (const hero of heroes) {
+    const skill = ultimateSkill(hero);
+    if (skill) resolved.push({ hero, skill });
+    else unresolved.push(hero);
+  }
+  const chips = [`<button type="button" class="chip${filter === "all" ? " is-on" : ""}" data-role-filter="all">${esc(copy.heroes.all)}</button>`]
+    .concat(
+      roles.map(
+        (role) =>
+          `<button type="button" class="chip${filter === role.id ? " is-on" : ""}" data-role-filter="${esc(role.id)}">${esc(bi(role) || role.zh)}</button>`,
+      ),
+    )
+    .join("");
+  const cards = resolved.length
+    ? `<div class="ult-grid">${resolved
+        .map(({ hero, skill }) => {
+          const name = bi(hero.name) || hero.name?.zh || "";
+          const role = bi(hero.roleLabel) || "";
+          return `<a class="ult-card" id="ult-${esc(hero.id)}" href="/heroes/${esc(hero.id)}#ult-${esc(hero.id)}" data-nav>
+            ${skill.image ? `<img src="${esc(skill.image)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : `<span class="ult-fallback"></span>`}
+            <span>
+              <strong>${esc(skill.name || "")}</strong>
+              <em>${esc(name)}${role ? ` · ${esc(role)}` : ""}</em>
+              <small>${esc(skill.text || "")}</small>
+            </span>
+          </a>`;
+        })
+        .join("")}</div>`
+    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
+  const gaps = unresolved.length
+    ? `<section class="ult-gaps"><h2>${esc(page.unresolved)}</h2><ul>${unresolved
+        .map((hero) => `<li><a href="/heroes/${esc(hero.id)}" data-nav>${esc(bi(hero.name) || hero.name?.zh || hero.id)}</a></li>`)
+        .join("")}</ul></section>`
+    : "";
+  return `<article class="page subpage">
+    <header class="mast catalog-mast wrap">
+      <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><span>${esc(page.title)}</span></p>
+      <p class="kicker">${esc(page.kicker)}</p>
+      <h1>${esc(page.title)}</h1>
+      <p class="lead">${esc(page.lead)}</p>
+      <p class="hud-readout"><span>ULT // ${esc(String(resolved.length))}</span><span>${esc(page.count)}</span></p>
+      <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${chips}</div>
+    </header>
+    <section class="section wrap">
+      ${cards}
+      ${gaps}
+      <p class="section-note">${esc(page.method)}</p>
       <p class="section-note">${esc(page.source)}</p>
     </section>
   </article>`;

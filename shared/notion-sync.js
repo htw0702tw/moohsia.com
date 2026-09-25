@@ -160,6 +160,7 @@ export function applyNotionCollections(document, sections) {
         id: pageId(page, index),
         name: bilingual(titleText(page.properties), textProp(page.properties, "Name EN")),
         role: bilingual(textProp(page.properties, "Role"), textProp(page.properties, "Role EN")),
+        team: textProp(page.properties, "Team") || textProp(page.properties, "戰隊"),
         hidden: flag(page.properties, "Hidden"),
       }));
   }

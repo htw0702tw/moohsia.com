@@ -13,7 +13,8 @@ import {
 const NAV = [
   ["dashboard", "/dashboard", "總覽"],
   ["home", "/edit/home", "首頁"],
-  ["about", "/edit/about", "戰隊"],
+  ["about", "/edit/about", "公會"],
+  ["teams", "/edit/teams", "戰隊"],
   ["roster", "/edit/roster", "成員"],
   ["player", "/edit/player", "選手數據"],
   ["applications", "/applications", "加入申請"],
@@ -51,7 +52,8 @@ const LABELS = {
   intro: "入場",
   footer: "頁尾",
   home: "首頁",
-  about: "戰隊",
+  about: "公會",
+  teams: "戰隊",
   roster: "成員",
   news: "動態",
   contact: "聯絡",
@@ -60,7 +62,7 @@ const LABELS = {
   homeDescription: "首頁說明",
   titleSuffix: "標題後綴",
   home: "首頁",
-  about: "戰隊",
+  about: "公會",
   menu: "選單",
   close: "關閉",
   lang: "語言按鈕說明",
@@ -80,7 +82,7 @@ const LABELS = {
   tagline: "主標語",
   taglineAlt: "副標語",
   lead: "導言",
-  ctaTeam: "按鈕：戰隊",
+  ctaTeam: "按鈕：公會",
   ctaRoster: "按鈕：成員",
   ctaContact: "按鈕：信箱",
   chips: "標籤",
@@ -366,6 +368,60 @@ function copyBlocks(id) {
     .join("");
 }
 
+function teamOptions(selected) {
+  const teams = Array.isArray(state.draft?.teams) ? state.draft.teams : [];
+  const current = String(selected || "moohsia");
+  const slugs = new Set(teams.map((team) => String(team.slug || team.id || "")));
+  const extra = slugs.has(current) ? "" : `<option value="${esc(current)}" selected>${esc(current)}</option>`;
+  const options = teams
+    .map((team) => {
+      const slug = String(team.slug || team.id || "");
+      const label = team.name?.zh || team.aka?.zh || slug;
+      return `<option value="${esc(slug)}"${slug === current ? " selected" : ""}>${esc(label)}</option>`;
+    })
+    .join("");
+  return `${extra}${options}`;
+}
+
+function teamsEditor() {
+  const teams = Array.isArray(state.draft.teams) ? state.draft.teams : [];
+  const cards = teams
+    .map((team, index) => {
+      const requirements = Array.isArray(team.requirements) ? team.requirements : [];
+      const rules = requirements
+        .map(
+          (rule, ruleIndex) => `<div class="pair">
+            <label>條件 ${ruleIndex + 1} 繁中<input data-team="${index}" data-req="${ruleIndex}" data-lang="zh" value="${esc(rule.zh)}" ${CMS_TEXT}></label>
+            <label>條件 ${ruleIndex + 1} EN<input data-team="${index}" data-req="${ruleIndex}" data-lang="en" value="${esc(rule.en)}" ${CMS_TEXT}></label>
+            <button class="ghost" type="button" data-action="team-req-remove" data-index="${index}" data-req="${ruleIndex}">移除條件</button>
+          </div>`,
+        )
+        .join("");
+      return `<article class="repeat">
+        <header><b>戰隊 ${index + 1}</b><button class="ghost" type="button" data-action="team-remove" data-index="${index}">刪除</button></header>
+        <div class="pair">
+          <label>網址代稱<input data-team="${index}" data-field="slug" value="${esc(team.slug)}" ${CMS_TEXT}></label>
+          <label>名稱 繁中<input data-team="${index}" data-field="name" data-lang="zh" value="${esc(team.name?.zh)}" ${CMS_TEXT}></label>
+          <label>名稱 EN<input data-team="${index}" data-field="name" data-lang="en" value="${esc(team.name?.en)}" ${CMS_TEXT}></label>
+          <label>又稱 繁中<input data-team="${index}" data-field="aka" data-lang="zh" value="${esc(team.aka?.zh)}" ${CMS_TEXT}></label>
+          <label>又稱 EN<input data-team="${index}" data-field="aka" data-lang="en" value="${esc(team.aka?.en)}" ${CMS_TEXT}></label>
+        </div>
+        <label>導言 繁中<textarea data-team="${index}" data-field="lead" data-lang="zh" rows="2" ${CMS_TEXT}>${esc(team.lead?.zh)}</textarea></label>
+        <label>導言 EN<textarea data-team="${index}" data-field="lead" data-lang="en" rows="2" ${CMS_TEXT}>${esc(team.lead?.en)}</textarea></label>
+        <h3>加入條件</h3>
+        ${rules}
+        <button class="btn" type="button" data-action="team-req-add" data-index="${index}">新增條件</button>
+      </article>`;
+    })
+    .join("");
+  return `<section class="stack">
+    <h2>戰隊</h2>
+    <p class="hint">公會底下的戰隊。網址代稱用小寫英文與數字，例如 moohsia，公開頁是 /teams/moohsia。再加一隊就按新增，成員頁把人指到這一隊，然後發布到網站。內建預設已有 MOOHSIA（暮霞）。</p>
+    <div class="repeats">${cards}</div>
+    <button class="btn" type="button" data-action="team-add">新增戰隊</button>
+  </section>`;
+}
+
 function rosterEditor() {
   const cards = state.draft.rosterMembers
     .map((member, index) => {
@@ -376,6 +432,7 @@ function rosterEditor() {
           <label>名字 EN<input data-roster="${index}" data-field="name" data-lang="en" value="${esc(member.name?.en)}" ${CMS_TEXT}></label>
           <label>位置 繁中<input data-roster="${index}" data-field="role" data-lang="zh" value="${esc(member.role?.zh)}" ${CMS_TEXT}></label>
           <label>位置 EN<input data-roster="${index}" data-field="role" data-lang="en" value="${esc(member.role?.en)}" ${CMS_TEXT}></label>
+          <label>戰隊<select data-roster="${index}" data-field="team" ${CMS_CHOICE}>${teamOptions(member.team)}</select></label>
         </div>
         <label class="check"><input type="checkbox" data-roster="${index}" data-field="hidden"${member.hidden ? " checked" : ""}>在公開頁隱藏</label>
       </article>`;
@@ -434,7 +491,7 @@ function profileEditor() {
     })
     .join("");
   return `<section class="stack">
-    <h2>戰隊欄位</h2>
+    <h2>公會欄位</h2>
     <p class="hint">空白的內容在公開頁會顯示「待公布」。</p>
     <div class="repeats">${cards}</div>
     <button class="btn" type="button" data-action="profile-add">新增欄位</button>
@@ -648,6 +705,7 @@ function pageBody() {
   if (id === "dashboard") return dashboard();
   if (id === "about") return `${profileEditor()}${copyBlocks("about")}`;
   if (id === "roster") return rosterEditor();
+  if (id === "teams") return teamsEditor();
   if (id === "player") return playerEditor();
   if (id === "applications") return applicationsView();
   if (id === "news") return newsEditor();
@@ -756,10 +814,28 @@ function onInput(event) {
     markDirty("有未儲存的修改");
     return;
   }
+  if (target.dataset.team != null && target.dataset.roster == null) {
+    const team = state.draft.teams?.[Number(target.dataset.team)];
+    if (!team) return;
+    if (target.dataset.req != null) {
+      const rule = team.requirements?.[Number(target.dataset.req)];
+      if (!rule || !target.dataset.lang) return;
+      rule[target.dataset.lang] = target.value;
+    } else if (target.dataset.field === "slug") {
+      team.slug = String(target.value || "").trim().toLowerCase();
+      team.id = team.slug;
+    } else if (target.dataset.lang && target.dataset.field) {
+      if (!team[target.dataset.field] || typeof team[target.dataset.field] !== "object") team[target.dataset.field] = { zh: "", en: "" };
+      team[target.dataset.field][target.dataset.lang] = target.value;
+    }
+    markDirty("有未儲存的修改");
+    return;
+  }
   if (target.dataset.roster != null) {
     const member = state.draft.rosterMembers[Number(target.dataset.roster)];
     if (!member) return;
     if (target.dataset.field === "hidden") member.hidden = target instanceof HTMLInputElement && target.checked;
+    else if (target.dataset.field === "team") member.team = target.value;
     else if (target.dataset.lang) member[target.dataset.field][target.dataset.lang] = target.value;
     markDirty("有未儲存的修改");
     return;
@@ -1042,7 +1118,46 @@ function onClick(event) {
     return;
   }
   if (action === "roster-add") {
-    state.draft.rosterMembers.push({ id: newId(), name: { zh: "", en: "" }, role: { zh: "", en: "" }, hidden: false });
+    state.draft.rosterMembers.push({ id: newId(), name: { zh: "", en: "" }, role: { zh: "", en: "" }, team: "moohsia", hidden: false });
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "team-add") {
+    if (!Array.isArray(state.draft.teams)) state.draft.teams = [];
+    const slug = `team${state.draft.teams.length + 1}`;
+    state.draft.teams.push({
+      id: slug,
+      slug,
+      name: { zh: "", en: "" },
+      aka: { zh: "", en: "" },
+      lead: { zh: "", en: "" },
+      requirements: [{ zh: "", en: "" }],
+    });
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "team-remove") {
+    state.draft.teams.splice(Number(event.target.closest("[data-index]").dataset.index), 1);
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "team-req-add") {
+    const team = state.draft.teams?.[Number(event.target.closest("[data-index]").dataset.index)];
+    if (!team) return;
+    if (!Array.isArray(team.requirements)) team.requirements = [];
+    team.requirements.push({ zh: "", en: "" });
+    markDirty("有未儲存的修改");
+    render();
+    return;
+  }
+  if (action === "team-req-remove") {
+    const button = event.target.closest("[data-index]");
+    const team = state.draft.teams?.[Number(button.dataset.index)];
+    if (!team || !Array.isArray(team.requirements)) return;
+    team.requirements.splice(Number(button.dataset.req), 1);
     markDirty("有未儲存的修改");
     render();
     return;
