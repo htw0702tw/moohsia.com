@@ -35,7 +35,7 @@ npm start
 | `npm run deploy` | 建置並部署名為 `moohsia-com` 的 Worker。這次變更不要執行 |
 | `npm run cms:hash` | 產生 `ADMIN_PASSWORD_HASH` |
 | `npm run cms:migrate` | 對正式 D1 套用 CMS migration |
-| `npm run catalog:refresh` | 從 Garena 公開頁重抓英雄、模式與活動，寫進 `data/aov-catalog.json` |
+| `npm run catalog:refresh` | 從 Garena 公開頁重抓英雄、造型圖、技能、裝備與活動，寫進 `data/aov-catalog.json` |
 
 ## 頁面
 
@@ -44,17 +44,18 @@ npm start
 | `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、選手數據、英雄與活動預覽、加入入口、聯絡 |
 | `/about` | 戰隊。未確認欄位顯示待公布 |
 | `/roster` | 成員。沒有名單時以待公布席位呈現，並附個人數據入口 |
-| `/roster/:name` | 玩家資料。點成員卡進入，側欄是常用英雄、歷史戰績、對戰資料。`/player` 會在瀏覽器改到這位成員 |
+| `/roster/:name` | 玩家資料。點成員卡進入，側欄是常用英雄、歷史戰績、對戰資料。`/player` 會在瀏覽器改到這位成員，不另開選手頁 |
+| `/heroes` | 官方英雄名單（Garena 公開頁）。點進去看技能與造型圖 |
+| `/heroes/:id` | 單一英雄：技能與造型圖。搜尋也連到這裡 |
 | `/skins` | 官方造型圖，連到所屬英雄 |
-| `/items` | 官方裝備圖鑑，加上由歷史戰績整理的常用出裝 |
-| `/heroes` | 官方英雄名單（Garena 公開頁），點進去看技能與造型 |
-| `/modes` | 官方模式，另有排位賽說明。不代表遊戲內正在開放 |
+| `/items` | 官方裝備：名稱、圖示、說明，加上由歷史戰績整理的常用出裝 |
+| `/modes` | 官方模式名稱（Garena 公開公告），另有排位賽說明。不代表遊戲內正在開放 |
 | `/activities` | Garena 公開活動、公告與賽事 |
 | `/apply` | 加入申請。最低黃金，沒有公開 Discord |
 | `/news` | 動態。沒有公告時為廣播空狀態 |
 | `/contact` | 只有 `Info@moohsia.com` |
 
-右上角可切換 English。預設是繁體中文。
+右上角可搜尋英雄、造型、裝備與站內頁面，也可切換 English。預設是繁體中文。搜尋打到 Worker 的 `/api/search`。
 
 公開資訊架構沒有驗證頁。導覽、首頁按鈕、頁尾與行銷文案都不提供驗證入口；直接打開舊的驗證網址會落到站內 404。
 
@@ -146,7 +147,7 @@ Notion 是編輯來源。同步**只寫入 CMS 草稿**，不會直接改公開�
 | 方式 | 怎麼跑 |
 | --- | --- |
 | 管理按鈕 | 總覽的 **從 Notion 同步草稿**。要已登入，並帶 CSRF |
-| 排程 | Worker cron `15 18 * * *`（UTC 18:15，台北約 02:15）。只更新草稿與英雄目錄 |
+| 排程 | Worker cron `15 18 * * *`（UTC 18:15，台北約 02:15）。只更新草稿與英雄目錄。另一個 cron `0 * * * *` 每小時抓 `htw0702aov`（純潔之翼／1012）的歷史戰績，合併進選手草稿與已發布的選手資料，不改其他文案。AOVRanking 一次大約 50 場；合併會留下這 50 場以外、已經存著的較舊對局，上限 160 場。驗證頁不寫入，管理頁的貼上與檔案匯入仍可用 |
 | Webhook | `POST https://moohsia.com/api/notion/webhook`，標頭 `Authorization: Bearer <NOTION_WEBHOOK_SECRET>` |
 
 密鑰用 `wrangler secret put`，不要寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串（同名 var 與 secret 不能並存）。
@@ -281,7 +282,17 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 
 ## 官方英雄與模式
 
-英雄來自 Garena 傳說對決公開列表 <https://moba.garena.tw/game/heroes/>。頁面上的 `data-tags` 對應六種定位：坦克、戰士、刺客、法師、射手、輔助。肖像圖在官方 CDN `cdngarenanow-a.akamaihd.net`，卡片連回 `https://moba.garena.tw/game/hero/<id>`。英文定位是這六個中文標籤的譯名，不是另一份官方英文英雄名。
+英雄來自 Garena 傳說對決公開列表 <https://moba.garena.tw/game/heroes/>。頁面上的 `data-tags` 對應六種定位：坦克、戰士、刺客、法師、射手、輔助。肖像圖在官方 CDN `cdngarenanow-a.akamaihd.net`。站內英雄頁連到 `/heroes/<id>`，那一頁有技能說明，以及英雄頁上的造型圖。官方英雄頁通常沒有印出造型名稱，所以有圖就顯示圖，有名稱才顯示名稱。英文定位是這六個中文標籤的譯名，不是另一份官方英文英雄名。
+
+裝備來自 <https://moba.garena.tw/game/props>。每一件保留官方 id、名稱、說明，圖示用 `BattleEquip/{id}.png`。戰績裡的 `裝備 1423` 會對上這份表，例如顯示名稱與圖，而不是只留編號。目錄裡沒有的 id 仍用同一條官方圖示網址，不發明名稱。
+
+`GET /api/search?q=` 查英雄、造型、裝備與站內頁面。索引跟目錄一起存在快照、D1 與 KV。選手頁與成員頁可以只讀這些形狀，不必再抓 Garena：
+
+`GET /api/catalog` 的 `heroes[]`：`id`、`name.zh`、`name.en`、`role`、`roleLabel`、`image`（官方肖像）、`pageUrl`、`blurb`、`skills[]`（`name`、`text`、`image`）、`skins[]`（`id`、`name`、`image`、`thumb`、`kind` 為 `default` 或 `skin`）。造型掛在所屬英雄底下。官方頁常常沒有造型名稱，`name.zh` 會是空的。
+
+`items[]`：`id`、`name.zh`、`category`、`description`、`image`。圖示是 `https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/{id}.png`。戰績裝備格存成 `裝備 {id}`。`shared/aov-assets.js` 的 `resolveItem(token, items)` 回 `{ id, name, image, description, href }`，`resolveHero(name, heroes)` 回 `{ id, name, image, href }`。目錄裡沒有的 id 仍給官方圖示網址，名稱留空。
+
+`GET /api/search?q=` 回 `{ ok, query, results }`。每一筆是 `{ type, id, title, href, image }`，`type` 為 `hero`、`skin`、`item` 或 `page`。`href` 指到 `/heroes/{id}`、`/heroes/{id}#skin-{heroId}-{skinId}` 或 `/items#item-{id}`。
 
 模式名稱只在官方公開頁裡真的出現該字串時才收錄，並附上原文摘錄與來源網址。目前來源包括：
 
@@ -318,7 +329,7 @@ npm run catalog:refresh
 
 其中一份列表抓失敗時，英雄與模式仍會更新。摘錄裡的電子郵件與 Discord 邀請會拿掉。
 
-`GET /api/catalog` 回英雄、定位、模式與活動。沒有帳號資料。管理頁按鈕是 **更新官方目錄與活動**。
+`GET /api/catalog` 回英雄、造型、技能、裝備、定位、模式與活動。沒有帳號資料。管理頁按鈕是 **更新官方目錄與活動**。每日 cron 會順手補一批英雄內頁；已經在快照裡的造型與裝備不會被較舊的 D1 列蓋掉。
 
 ### 草稿與發布
 

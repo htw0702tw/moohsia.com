@@ -1,6 +1,7 @@
 import { AGE_BANDS, GENDERS, POSITIONS, RANKS } from "../shared/apply.js";
 import { applyDraft, applyErrorText } from "./apply-state.js";
 import { getActivityFilter, getCatalog, getRoleFilter } from "./catalog-state.js";
+import { renderHeroDetail, renderItems } from "./catalog-pages.js";
 import {
   getContactEmail,
   getMailto,
@@ -559,7 +560,7 @@ function heroCard(hero, copy) {
   const name = bi(hero.name) || hero.name?.zh || "";
   const role = bi(hero.roleLabel) || "";
   return `
-    <article class="hero-card reveal">
+    <article class="hero-card reveal" id="hero-${esc(hero.id)}">
       <a href="/heroes/${esc(hero.id)}" data-nav>
         <span class="hero-portrait">
           <img src="${esc(hero.image || "")}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
@@ -567,7 +568,7 @@ function heroCard(hero, copy) {
         <span class="hero-meta">
           <strong>${esc(name)}</strong>
           <em>${esc(role)}</em>
-          <small>${esc(copy.nav.skins)}</small>
+          <small>${esc(copy.heroes.skins || copy.nav.skins)}</small>
         </span>
       </a>
     </article>`;
@@ -773,7 +774,7 @@ export function renderApply(copy) {
   </article>`;
 }
 
-export function renderPage(name, copy) {
+export function renderPage(name, copy, extra = {}) {
   switch (name) {
     case "home":
       return renderHome(copy);
@@ -785,6 +786,10 @@ export function renderPage(name, copy) {
       return renderPlayer(copy);
     case "heroes":
       return renderHeroes(copy);
+    case "hero":
+      return renderHeroDetail(copy, extra.id);
+    case "items":
+      return renderItems(copy);
     case "modes":
       return renderModes(copy);
     case "activities":

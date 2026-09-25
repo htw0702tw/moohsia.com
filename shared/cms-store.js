@@ -12,6 +12,25 @@ function playerJson(json) {
   }
 }
 
+async function mirrorPlayerPair(db, draftJson, publishedJson, now) {
+  try {
+    await db
+      .prepare(
+        `INSERT INTO player_records (id, draft_json, published_json, updated_at, published_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           draft_json = excluded.draft_json,
+           published_json = excluded.published_json,
+           updated_at = excluded.updated_at,
+           published_at = excluded.published_at`,
+      )
+      .bind(PLAYER_ID, playerJson(draftJson), playerJson(publishedJson), now, now)
+      .run();
+  } catch (error) {
+    logFailure("player_mirror_failed", error);
+  }
+}
+
 async function mirrorPlayer(db, json, now, mode) {
   const payload = playerJson(json);
   try {
@@ -76,6 +95,10 @@ export function createMemoryStore() {
       row = { draft_json: json, published_json: json, updated_at: now, published_at: now };
       return { ...row };
     },
+    async savePair(draftJson, publishedJson, now) {
+      row = { draft_json: draftJson, published_json: publishedJson, updated_at: now, published_at: now };
+      return { ...row };
+    },
     async discard(now) {
       if (!row) return null;
       row = { ...row, draft_json: row.published_json ?? row.draft_json, updated_at: now };
@@ -132,6 +155,22 @@ export function createD1Store(db) {
         .bind(SITE_ID, json, json, now, now)
         .run();
       await mirrorPlayer(db, json, now, "publish");
+      return select();
+    },
+    async savePair(draftJson, publishedJson, now) {
+      await db
+        .prepare(
+          `INSERT INTO site_documents (id, draft_json, published_json, updated_at, published_at)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             draft_json = excluded.draft_json,
+             published_json = excluded.published_json,
+             updated_at = excluded.updated_at,
+             published_at = excluded.published_at`,
+        )
+        .bind(SITE_ID, draftJson, publishedJson, now, now)
+        .run();
+      await mirrorPlayerPair(db, draftJson, publishedJson, now);
       return select();
     },
     async discard(now) {

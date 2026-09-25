@@ -8698,5 +8698,3055 @@
       "sourceUrl": "https://moba.garena.tw/news/show/5367",
       "listUrl": "https://moba.garena.tw/news/Esports"
     }
+  ],
+  "search": [
+    {
+      "type": "hero",
+      "id": "5",
+      "title": "勇",
+      "text": "勇 射手 Marksman 勇的第五次普通攻擊將會造成七段傷害，每段對英雄造成目標最大生命值{0}%(每200點額外物理攻擊增加1%)的 物理傷害 (可暴擊)，對非英雄單位造成 {1} 點 物理傷害 。",
+      "href": "/heroes/5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/5/20190117014152-8480.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "5-1",
+      "title": "勇 造型",
+      "text": "勇 造型",
+      "href": "/heroes/5#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/5/skin/20190117014214-6252.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "5-2",
+      "title": "勇 造型",
+      "text": "勇 造型",
+      "href": "/heroes/5#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/5/skin/20170327061648-1858.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "5-3",
+      "title": "勇 造型",
+      "text": "勇 造型",
+      "href": "/heroes/5#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/5/skin/20190117014305-1386.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "24",
+      "title": "渥馬爾",
+      "text": "渥馬爾 坦克 Tank 渥馬爾的普攻或技能有一定機率附帶0.75秒 暈眩 以及自身最大生命值4~8% (隨英雄等級成長) 的 魔法傷害 。",
+      "href": "/heroes/24",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/24/20161223112400-4818.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "24-1",
+      "title": "渥馬爾 造型",
+      "text": "渥馬爾 造型",
+      "href": "/heroes/24#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/24/skin/20161223112516-2631.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "24-2",
+      "title": "渥馬爾 造型",
+      "text": "渥馬爾 造型",
+      "href": "/heroes/24#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/24/skin/20171002025218-7339.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "24-3",
+      "title": "渥馬爾 造型",
+      "text": "渥馬爾 造型",
+      "href": "/heroes/24#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/24/skin/20171218064555-5316.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "25",
+      "title": "愛麗絲",
+      "text": "愛麗絲 輔助 Support 愛麗絲施放技能的同時會 加速 自身20%跑速，持續2秒。",
+      "href": "/heroes/25",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/25/20161006042200-9724.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "25-1",
+      "title": "愛麗絲 造型",
+      "text": "愛麗絲 造型",
+      "href": "/heroes/25#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/25/skin/20161006042248-2686.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "46",
+      "title": "特爾安娜絲",
+      "text": "特爾安娜絲 射手 Marksman 特爾安娜絲的物理攻擊提升{0}%。",
+      "href": "/heroes/46",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/46/20170704114328-4949.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "46-1",
+      "title": "特爾安娜絲 造型",
+      "text": "特爾安娜絲 造型",
+      "href": "/heroes/46#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/46/skin/20170704114441-4289.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "46-2",
+      "title": "特爾安娜絲 造型",
+      "text": "特爾安娜絲 造型",
+      "href": "/heroes/46#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/46/skin/20171208111955-1765.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "47",
+      "title": "齊爾",
+      "text": "齊爾 刺客 Assassin 齊爾的一、二技能命中敵人將會施加 【印記】 ，持續3秒：疊滿3層後，造成{0} (+{1}) 魔法傷害 (非英雄單位雙倍) ，並刷新二技能冷卻。齊爾的普通攻擊會對有 【印記】 的敵人額外造成{2} (+{3}) 魔法傷害 。",
+      "href": "/heroes/47",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/47/20170704111455-7252.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "47-1",
+      "title": "齊爾 造型",
+      "text": "齊爾 造型",
+      "href": "/heroes/47#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/47/skin/20170704111526-8210.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "65",
+      "title": "閃電俠",
+      "text": "閃電俠 刺客 Assassin 閃電俠每移動4m會獲得一層計數，10層之後啟動被動，強化下一次普攻，使其附帶突進效果，並 減速 目標{0}%跑速，持續0.5秒，且額外造成{4} (+{1}) 點 魔法傷害 。命中單位時閃電俠會獲得一個{2} (+{3}) 的 護盾 ，持續3秒。",
+      "href": "/heroes/65",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/65/20180413075946-1482.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "68",
+      "title": "瑪迦",
+      "text": "瑪迦 法師 Mage 瑪迦的一技能和大招每命中一個單位就能獲得一層 【印記】 （命中每個英雄獲得三層），每層 【印記】 提升自身(18~60)點 魔法攻擊(隨角色等級成長) ，持續8秒。 【印記】 疊滿時前5層累積的 【印記】 屬性增加一倍。普通攻擊造成( {0} + {1} )點的 魔法傷害 。",
+      "href": "/heroes/68",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/68/20180615092509-1760.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "68-1",
+      "title": "瑪迦 造型",
+      "text": "瑪迦 造型",
+      "href": "/heroes/68#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/68/skin/20180615092649-2886.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "71",
+      "title": "古木",
+      "text": "古木 坦克 Tank 古木進入草叢時會獲得每秒 恢復 {0}%最大生命值和{1}點移動速度提升的增益效果，持續5秒，冷卻15秒。 （這個效果會隨等級成長） 。 恢復 過程中受到傷害，會立刻打斷被動效果。",
+      "href": "/heroes/71",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/71/20180917071916-4961.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "71-1",
+      "title": "古木 造型",
+      "text": "古木 造型",
+      "href": "/heroes/71#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/71/skin/20180917081138-5601.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "80",
+      "title": "瀾",
+      "text": "瀾 法師 Mage 瀾施放技能對自身範圍內血量最少的敵方英雄造成{0}% (+{1}) 點最大生命值的 魔法傷害 ，同時 恢復 範圍內血量最少的友方英雄， 恢復 其{2} (+{3}) 點生命， （回復量隨等級提升） 。",
+      "href": "/heroes/80",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/80/20190426081950-6265.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "80-1",
+      "title": "瀾 造型",
+      "text": "瀾 造型",
+      "href": "/heroes/80#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/80/skin/20181206112149-8321.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "81",
+      "title": "達爾西",
+      "text": "達爾西 法師 Mage 達爾西每次施放技能獲得一層印記，到達4層時強化下一個基礎技能，印記持續5秒。每次施放技能5秒內強化下次普攻：攻擊距離更遠。強化普攻造成額外{0} (+{1}) 點 魔法傷害 。",
+      "href": "/heroes/81",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/81/20190121105616-5094.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "81-1",
+      "title": "達爾西 造型",
+      "text": "達爾西 造型",
+      "href": "/heroes/81#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/81/skin/20190121105705-2114.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "85",
+      "title": "葉娜",
+      "text": "葉娜 戰士 Warrior 葉娜使用雙刃時，將會增加{0} (隨大招等級，每級+10) 點跑速，並且對敵方英雄造成傷害時還會疊加 【印記】 ，持續5秒，達到5層時會對目標造成 {1} 點的 物理傷害 ，同時將其 沉默 並 減速 80%，持續0.75秒，且自身獲得吸收{2} (隨大招等級每級+100) (+{3}) 點傷害的 護盾 持續2秒。",
+      "href": "/heroes/85",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/85/20191208090558-9539.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "85-1",
+      "title": "葉娜 造型",
+      "text": "葉娜 造型",
+      "href": "/heroes/85#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/85/skin/20190527113132-4666.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "92",
+      "title": "安格列",
+      "text": "安格列 戰士 Warrior 安格列對目標累計造成4次傷害後，額外對目標造成{0} （隨角色等級成長，每級+30） (+{1}) 點 物理傷害 ，當目標為英雄單位時還將獲得一個自身最大生命值15%的 護盾 ，持續3秒 （護盾效果有8秒冷卻時間） 。",
+      "href": "/heroes/92",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/92/20191208073209-7067.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "92-1",
+      "title": "安格列 造型",
+      "text": "安格列 造型",
+      "href": "/heroes/92#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/92/skin/20191208045609-2073.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "108",
+      "title": "布萊特",
+      "text": "布萊特 刺客 Assassin 布萊特會根據攻擊範圍自動切換近遠攻擊。 遠程狀態下，每次普攻會疊加1層 【印記】 ，持續5秒，最多5層 。 近戰狀態下，每次普攻造成{0} (+{1}) 點 物理傷害 ，攻擊帶有 【印記】 的敵人時，額外造成{2}（每升3級+2） (+{3}) * 【印記】 層數的 真實傷害 。",
+      "href": "/heroes/108",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/108/54000.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "109",
+      "title": "伊格",
+      "text": "伊格 法師 Mage 伊格有5點能量，每4秒恢復1點能量。受冷卻縮減影響。只有1技能消耗能量。伊格的2技能命中英雄後，會對目標施加 【標記】 效果。 【標記】 持續5秒，暴露目標視野。伊格的技能對被 【標記】 的目標造成傷害時，會恢復1點能量。",
+      "href": "/heroes/109",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/109/53800.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "110",
+      "title": "洛里昂",
+      "text": "洛里昂 法師 Mage 當洛里昂的二技能和三技能命中了單位後，洛里昂的飛行物將被啟動。 飛行物在體內 時，啟動的飛行物將對範圍內的所有單位造成傷害每0.75秒一次，持續4秒。每次造成{0}(每級+{1}) (+{2}) 點 魔法傷害 ，並為洛里昂 恢復 {3}(每級+{4}) (+{5}) 點生命值 （對非英雄單位的傷害和回血都只有1/3的數值效果並且同類型的回血會衰減50%） 。",
+      "href": "/heroes/110",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/110/53900.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "111",
+      "title": "令月",
+      "text": "令月 法師 Mage 令月每次釋放一、二技能都會獲得一層印記，當印記達到兩層時，會強化並刷新一、二技能CD。",
+      "href": "/heroes/111",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/111/54500.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "112",
+      "title": "緹莉",
+      "text": "緹莉 射手 Marksman 緹莉使用普攻或技能命中多個單位3次會使後續的普攻附帶額外{0}點 物理傷害 ，且下次強化普攻不消耗次數，持續3秒。效果觸發後有8秒冷卻時間。",
+      "href": "/heroes/112",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/112/54600.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "113",
+      "title": "芽芽",
+      "text": "芽芽 輔助 Support 芽芽受到攻擊導致血量低於40%時，芽芽會變身持續3秒，期間 不可選中 但也無法攻擊敵人，並獲得新的基礎技能：變回基礎形態和向前跳躍。冷卻時間180秒。",
+      "href": "/heroes/113",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/113/54300.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "104",
+      "title": "青硯",
+      "text": "青硯 戰士 Warrior 青硯使用一、二技能時，會獲得一格能量，擁有兩格能量會強化下次普攻，依據上個技能觸發不同的額外效果 (並對野怪傷害提升50%) ；命中敵人可提升自身{0}%攻速4秒並 恢復 自身最大生命的{1} (+{2}) % (非英雄效果減半) 。",
+      "href": "/heroes/104",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/104/54400.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "105",
+      "title": "霧己",
+      "text": "霧己 戰士 Warrior 當霧己對敵人 (英雄或史詩野怪) 造成傷害時，解封所朝向的 【印記】 ，對目標造成目標最大生命值4% (野怪上限500) 的 物理傷害 ，霧己 恢復 自身已損失生命值 {0}% 的生命和持續0.5秒50%的 加速 效果。當四個 【印記】 解封時，霧己獲得{1}%攻速加成和{2} (+{3}) 點 護盾 ，解封後的3次普通攻擊命中均可增加{4} (+{5})",
+      "href": "/heroes/105",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/105/54200.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "106",
+      "title": "夜姬",
+      "text": "夜姬 戰士 Warrior 夜姬每次技能、普攻命中英雄竊取對方物理攻擊的2%。竊取對每個英雄最多生效8層，夜姬竊取的總上限不能超過20層。【血系之結】：如果蘇離二技能的施放目標是夜姬的話，夜姬可以接應蘇離到身邊 （30秒冷卻時間） ，並吸納蘇離的血劍恢復生命。【血祭】：在蘇離使用被動的時候，夜姬獲得血祭鍵，使用後可以獻祭自己所有生命復活蘇離 （若此時有大招則自動觸發，反之則在儀式結束時",
+      "href": "/heroes/106",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/106/53400.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "107",
+      "title": "星葵",
+      "text": "星葵 刺客 Assassin 在施放一次技能後，星葵會儲存一層 【印記】 (最多四層) 以強化下次普攻，提高{0}%攻擊速度、額外造成{1}(每升1級+10) (+{2}) 點 物理傷害 (額外傷害不可暴擊) ，並向敵人突進。每第四次由 【印記】 強化的普攻必定暴擊，並在命中敵人時減少自身所有技能{3}秒的冷卻、儲備、間隔時間，但該次普攻初始只能造成150%暴擊傷害。 對局開始時星葵擁有",
+      "href": "/heroes/107",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/107/53600.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "101",
+      "title": "蘇離",
+      "text": "蘇離 刺客 Assassin 主動裝備欄被永久覆蓋為技能 【血祭】 。 【血祭】 ：持續3秒的施法後，蘇離死亡並產生爆炸，對範圍內單位造成{0} (+{1}) 點 物理傷害 和1秒 暈眩 ，該過程 不可選中 、逆轉。每完成1次擊殺，蘇離獲得一層計數，每層計數在 【血祭】 後消耗並每層縮減4%復活時間，若蘇離擁有7層計數，則在 【血祭】 後原地復活並恢復滿狀態。 以吾之命，還汝之血——夜姬",
+      "href": "/heroes/101",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/101/20200822045725-2967.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "101-1",
+      "title": "蘇離 造型",
+      "text": "蘇離 造型",
+      "href": "/heroes/101#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/101/skin/20200822045914-5109.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "102",
+      "title": "亞連",
+      "text": "亞連 戰士 Warrior 亞連的普攻分為四段七次傷害並帶有突進效果，不受攻速影響，施放疊加普攻層數：前六次混合 物理傷害 、 魔法傷害 ，最後一次造成 真實傷害 ，每1%攻速加成轉為2點物理攻擊。使用普通攻擊、一技能擊中敵方英雄將會疊加層數，增加2%減傷、4%穿透，持續1.5秒： 達到8層恢復自身{0}%的已損生命值，16層恢復1.5倍並短暫禁止疊加。",
+      "href": "/heroes/102",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/102/20200623035124-1030.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "103",
+      "title": "索文",
+      "text": "索文 射手 Marksman 索文的技能不受冷卻縮減影響，每1%冷卻縮減轉為4點物理攻擊。索文的普通攻擊只受 80%物理加成 。",
+      "href": "/heroes/103",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/103/20200717111041-9137.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "103-1",
+      "title": "索文 造型",
+      "text": "索文 造型",
+      "href": "/heroes/103#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/103/skin/20200717111113-3988.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "98",
+      "title": "颯枷",
+      "text": "颯枷 刺客 Assassin 颯枷每第三次普攻將進行強化普攻，對一條路徑上的敵人額外造成{0} (+{1}) 點 魔法傷害 。颯枷各個技能相互觸碰時會引發爆炸，對附近敵人造成{2} (+{3}) 點 魔法傷害 （1秒內連續命中傷害衰減至40%） ，同時強化下次普攻。爆炸造成傷害時，會減少三技能2秒冷卻 （命中非英雄單位時效果減半，單次爆炸效果不疊加） ，如果在三技能施放過程中觸發則效果會",
+      "href": "/heroes/98",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/98/20200521095332-7433.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "98-1",
+      "title": "颯枷 造型",
+      "text": "颯枷 造型",
+      "href": "/heroes/98#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/98/skin/20200521095510-7392.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "99",
+      "title": "拉維爾",
+      "text": "拉維爾 射手 Marksman 拉維爾每次普通攻擊命中敵方目標時疊層，每層會增加拉維爾10%攻擊速度，最多累計3層。當疊滿3層時，拉維爾普通攻擊將射出3發子彈，每發子彈造成原傷害的40%，持續3秒，期間每次命中會刷新持續時間。拉維爾對非史詩野怪的傷害降低40% （隨英雄等級恢復） 。",
+      "href": "/heroes/99",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/99/20200412030514-4255.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "99-1",
+      "title": "拉維爾 造型",
+      "text": "拉維爾 造型",
+      "href": "/heroes/99#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/99/skin/20200412125440-8567.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "100",
+      "title": "若伊",
+      "text": "若伊 輔助 Support 若伊 加速 自身與6m範圍內最近友軍英雄40-60移動速度(每3級提升5點)。",
+      "href": "/heroes/100",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/100/20200501042446-2722.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "100-1",
+      "title": "若伊 造型",
+      "text": "若伊 造型",
+      "href": "/heroes/100#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/100/skin/20200501042542-7159.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "96",
+      "title": "阿塔",
+      "text": "阿塔 坦克 Tank 阿塔損失的生命會以 【殘血】 暫存，暫存期間阿塔對英雄\\非英雄造成傷害45%\\20% (計算忽略敵方免傷) 的等值 【殘血】 會轉化為真實血量。 【殘血】 產生7秒後開始以每秒3%最大生命值的速度自動消減，另外阿塔的普攻附帶{0}(+{1})點 物理傷害 。",
+      "href": "/heroes/96",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/96/20200220104420-4010.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "96-1",
+      "title": "阿塔 造型",
+      "text": "阿塔 造型",
+      "href": "/heroes/96#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/96/skin/20200220110144-6394.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "97",
+      "title": "潘因",
+      "text": "潘因 刺客 Assassin 潘因使用技能後的5秒內會將普攻轉化為近戰強化普攻，並且增加30%攻速 (可以疊加3層) ：每次攻擊對範圍內敵人造成{0} （基礎傷害隨角色等級成長） (+{1}) 點 魔法傷害 ，首擊快速衝向敵人身後，對主目標造成1.75倍傷害。擊殺助攻提升10點能量上限，最高可提升到200點能量上限。",
+      "href": "/heroes/97",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/97/20200314053217-4730.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "97-1",
+      "title": "潘因 造型",
+      "text": "潘因 造型",
+      "href": "/heroes/97#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/97/skin/20200314060543-4910.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "94",
+      "title": "綺蘿",
+      "text": "綺蘿 刺客 Assassin 綺蘿擁有20%魔法吸血，並且普攻傷害同時享受 100%物理加成 以及 {0}%魔法加成 。",
+      "href": "/heroes/94",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/94/20200123034958-3995.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "95",
+      "title": "狄拉克",
+      "text": "狄拉克 法師 Mage 當狄拉克血量耗盡時，將消耗魔力來抵擋傷害，每1點魔力抵擋1.5點傷害。",
+      "href": "/heroes/95",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/95/20191212112606-9441.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "95-1",
+      "title": "狄拉克 造型",
+      "text": "狄拉克 造型",
+      "href": "/heroes/95#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/95/skin/20191212115201-3046.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "93",
+      "title": "卡瑞茲",
+      "text": "卡瑞茲 輔助 Support 卡瑞茲脫離敵方視野3秒後，他的下一次普攻額外造成{0} (+{1}) 點 魔法傷害 ，並 減速 50%，持續1.5秒。若攻擊時卡瑞茲處於敵方視野外，則該技能冷卻時間延長至10秒。",
+      "href": "/heroes/93",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/93/20191031073532-9754.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "90",
+      "title": "希露卡",
+      "text": "希露卡 射手 Marksman 希露卡使用普攻擊中敵人時，將會提升3%暴擊機率以及8點物理攻擊，持續3秒，最多疊加5層。 (對普通野怪不生效。)",
+      "href": "/heroes/90",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/90/20190814120046-6229.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "90-1",
+      "title": "希露卡 造型",
+      "text": "希露卡 造型",
+      "href": "/heroes/90#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/90/skin/20190814120128-5295.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "91",
+      "title": "蘭鐸",
+      "text": "蘭鐸 射手 Marksman 蘭鐸的普攻會為目標疊加 【印記】 ，疊到3層額外造成{0} (+{1}) 點 魔法傷害 。施放技能或收回飛行物後，蘭鐸的普攻將額外造成 (+{2}) 點 物理傷害 。蘭鐸能夠在施放技能後再次使用技能回歸到飛行物的位置，當蘭鐸手中沒有飛行物時，跑速增加30。",
+      "href": "/heroes/91",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/91/20191031070459-5940.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "91-1",
+      "title": "蘭鐸 造型",
+      "text": "蘭鐸 造型",
+      "href": "/heroes/91#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/91/skin/20191031071112-9101.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "89",
+      "title": "依夏",
+      "text": "依夏 法師 Mage 依夏能與召喚物輔助作戰，召喚物的攻擊力、生命值、物防和魔防受依夏魔法攻擊的加成，召喚物第一次普攻會附帶基於目標最大生命值({0} (+{1}) )%的 魔法傷害 。如果召喚物離依夏的距離超過12m時，召喚物會加速跑回依夏的身邊。脫戰後，召喚物每秒 恢復 6%的最大生命值，若生命值歸零則在15秒後重新被召喚。依夏死亡時，召喚物會進入 【狂暴狀態】 ，提升100",
+      "href": "/heroes/89",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/89/20190906064339-7347.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "89-1",
+      "title": "依夏 造型",
+      "text": "依夏 造型",
+      "href": "/heroes/89#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/89/skin/20190906065300-7176.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "88",
+      "title": "皮皮",
+      "text": "皮皮 輔助 Support 皮皮在使用二、三技能變胖之後獲得{0}%的傷害減免效果。",
+      "href": "/heroes/88",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/88/20190708120427-5585.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "88-1",
+      "title": "皮皮 造型",
+      "text": "皮皮 造型",
+      "href": "/heroes/88#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/88/skin/20190708121109-9837.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "87",
+      "title": "銀晝",
+      "text": "銀晝 刺客 Assassin 附加於刑具上的神聖之力，會對近處敵人造成 1.00 點 物理傷害 ，遠處額外造成35%的傷害。若命中遠處敵人，則短暫提升跑速，具體效果受刖足等級影響。",
+      "href": "/heroes/87",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/87/20190613100725-3897.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "87-1",
+      "title": "銀晝 造型",
+      "text": "銀晝 造型",
+      "href": "/heroes/87#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/87/skin/20190613100917-2397.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "86",
+      "title": "筱清",
+      "text": "筱清 戰士 Warrior 筱清施放技能可以增加一層物理防禦，最多疊加3層，每層增加{0}（隨角色等級提升）點物理防禦，持續5秒。如果技能命中敵人，下兩次普攻提升100%攻擊速度，並且額外造成{1} (+{2}) 點 物理傷害 ，同時 恢復 {3}點生命。強化普攻最多可以儲存4次。",
+      "href": "/heroes/86",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/86/20190726051217-4444.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "86-1",
+      "title": "筱清 造型",
+      "text": "筱清 造型",
+      "href": "/heroes/86#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/86/skin/20190726051244-4841.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "84",
+      "title": "埃羅",
+      "text": "埃羅 戰士 Warrior 埃羅使用普攻、技能擊中敵人時會獲得1層 【印記】 ，持續5秒，最多5層。每層加速自身{0}%跑速、{1}%~{2}%攻速 (隨等級成長) 、{3}%物理吸血 (非英雄單位降低75%) 。5層起每次獲得 【印記】 時會減少二技能10%冷卻時間。埃羅每第三次普攻附帶突進效果，造成 {4} 點物理傷害。",
+      "href": "/heroes/84",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/84/20190402105927-1205.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "84-1",
+      "title": "埃羅 造型",
+      "text": "埃羅 造型",
+      "href": "/heroes/84#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/84/skin/20190402110308-7645.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "82",
+      "title": "亥犽",
+      "text": "亥犽 射手 Marksman 亥犽的普攻會對目標附近另一個非英雄單位進行彈射造成 {0} 點 物理傷害 ，但對野怪傷害降低50%（隨英雄等級恢復，滿級時恢復對野怪的正常傷害。）當亥犽連續用普攻和技能傷害同一目標6次後將立刻恢復40點能量，並在接下來的4秒內亥犽攻擊該目標會附帶額外{1} (+{2}) 點 真實傷害 ，真實傷害可以暴擊。",
+      "href": "/heroes/82",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/82/20190314103313-5814.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "82-1",
+      "title": "亥犽 造型",
+      "text": "亥犽 造型",
+      "href": "/heroes/82#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/82/skin/20190314103405-6108.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "83",
+      "title": "卡芬妮",
+      "text": "卡芬妮 射手 Marksman 被動：卡芬妮自己研製的“幽藍”是一套自動射擊武裝，先進的設計使卡芬妮在攻擊的同時可以保持移動並有“速射炮”和“脈衝炮”兩種射擊模式，但卡芬妮對野怪造成的傷害會降低50%（隨英雄等級恢復）。“幽藍”有穩定的動力支持，會將來自裝備的攻速加成轉化為物理攻擊。",
+      "href": "/heroes/83",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/83/20190201061033-4786.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "77",
+      "title": "緋淚",
+      "text": "緋淚 戰士 Warrior 緋淚普攻擊中敵人時會累積1層 【印記】 ，持續5秒，達到4層時將自動施放 【強化技能】 ：對自身周圍外圈內的敵人造成{0} (+{1}) 點 物理傷害 ，如果擊中英雄，還會附帶8%~15%吸血 (自己生命越低，吸血比例越高，最多80%~150%) ，同時減少一技能、二技能的冷卻時間1秒，三技能的冷卻時間2秒。施放同時立即解除控制效果，期間可以移動和 加速 自",
+      "href": "/heroes/77",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/77/20190103101444-2604.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "77-1",
+      "title": "緋淚 造型",
+      "text": "緋淚 造型",
+      "href": "/heroes/77#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/77/skin/20190103101650-9536.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "78",
+      "title": "弗洛倫",
+      "text": "弗洛倫 戰士 Warrior 弗洛倫脫戰時，強化下次普攻附帶突進效果：額外造成{0} (+{1}) 點 物理傷害 。如果擊中英雄，還會 恢復 自身最大生命的{2}% (+{3}) 。突進結束後可以使用左搖桿方向快速位移一段距離。",
+      "href": "/heroes/78",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/78/20190221061837-7570.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "78-1",
+      "title": "弗洛倫 造型",
+      "text": "弗洛倫 造型",
+      "href": "/heroes/78#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/78/skin/20190221061937-3212.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "79",
+      "title": "奎倫",
+      "text": "奎倫 刺客 Assassin 奎倫在敵人身後發起的所有攻擊，必定暴擊；在敵人正面發起的所有攻擊，必定不暴擊。奎倫的初始暴擊傷害為125%，每1%暴擊機率將額外的增加0.5%暴擊傷害 (奎倫對非英雄目標最多造成2000點傷害) 。",
+      "href": "/heroes/79",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/79/20181115114402-6850.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "79-1",
+      "title": "奎倫 造型",
+      "text": "奎倫 造型",
+      "href": "/heroes/79#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/79/skin/20181116120313-2032.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "76",
+      "title": "瑞克",
+      "text": "瑞克 戰士 Warrior 瑞克處於特定環境下短時間內，會進入相應形態並強化自身能力，切換形態時獲得短暫 加速 。 【陸地】 ：提升攻速。 【草叢】 ： 恢復 已損失生命值。 【河道】 ： 加速 自身。",
+      "href": "/heroes/76",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/76/20180928082313-8373.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "76-1",
+      "title": "瑞克 造型",
+      "text": "瑞克 造型",
+      "href": "/heroes/76#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/76/skin/20180928082555-8542.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "75",
+      "title": "蘇",
+      "text": "蘇 射手 Marksman 蘇的普通攻擊會造成 {0} 點 物理傷害 ，但攻擊間隔更長且無法暴擊；蘇每獲得1%暴擊機率就會將其轉化為3點物理攻擊；非戰鬥狀態下，蘇能在地形邊緣進入 隱身 狀態，並 加速 自身16%~30%移動速度 （隨英雄等級成長）",
+      "href": "/heroes/75",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/75/20181022082307-5967.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "75-1",
+      "title": "蘇 造型",
+      "text": "蘇 造型",
+      "href": "/heroes/75#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/75/skin/20181022082519-8029.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "75-2",
+      "title": "蘇 造型",
+      "text": "蘇 造型",
+      "href": "/heroes/75#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/75/skin/20181022082456-2553.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "74",
+      "title": "艾蜜莉",
+      "text": "艾蜜莉 戰士 Warrior 艾蜜莉的普攻與二技能只命中一個目標，則額外造成50%傷害。",
+      "href": "/heroes/74",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/74/20180809022712-2887.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "74-1",
+      "title": "艾蜜莉 造型",
+      "text": "艾蜜莉 造型",
+      "href": "/heroes/74#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/74/skin/20180809031808-6623.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "73",
+      "title": "維羅",
+      "text": "維羅 坦克 Tank 維羅在受到致死傷害時立即 恢復 90%生命，並且之後的4.5秒內 霸體 和禁止操作。期間維羅身邊將會出現3個 【印記】 ，隊友觸碰 【印記】 將會 恢復 自身10%生命。全部 【印記】 都被點亮或者持續時間結束時，維羅立即對周圍的敵人造成{0} （隨角色等級成長） (+{1}) 點 魔法傷害 和持續2秒的50% 減速 效果，並且提升自身50%攻擊速度和 加速",
+      "href": "/heroes/73",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/73/20181010021111-9203.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "72",
+      "title": "安奈特",
+      "text": "安奈特 輔助 Support 安奈特附近存在隊友時 加速 自身10%跑速，並且移動過程中會加速回魔以及減少技能冷卻。",
+      "href": "/heroes/72",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/72/20180830094302-1327.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "72-1",
+      "title": "安奈特 造型",
+      "text": "安奈特 造型",
+      "href": "/heroes/72#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/72/skin/20180830094443-4158.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "70",
+      "title": "諾可西",
+      "text": "諾可西 坦克 Tank 諾可西每40點最大生命可以增加1點魔法攻擊，並且第三下普通攻擊擊中敵人可以恢復8%最大魔力，同時給目標添加 【印記】 ，持續3秒。",
+      "href": "/heroes/70",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/70/20180720124810-1826.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "70-1",
+      "title": "諾可西 造型",
+      "text": "諾可西 造型",
+      "href": "/heroes/70#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/70/skin/20180720124910-8795.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "69",
+      "title": "伯頓",
+      "text": "伯頓 坦克 Tank 伯頓的技能命中敵方，會使敵方獲得易傷效果，受到的傷害增加5%，持續3秒。",
+      "href": "/heroes/69",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/69/20180629061622-2279.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "69-1",
+      "title": "伯頓 造型",
+      "text": "伯頓 造型",
+      "href": "/heroes/69#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/69/skin/20180629062134-2068.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "67",
+      "title": "洛克",
+      "text": "洛克 戰士 Warrior 被动：弩炮发射特殊弩矢，每发弩矢在命中敌方英雄时会减少其物理护甲，持续6秒，可叠加12层。只有中间2发弩矢可暴击可触发装备效果，目标会受到50%总攻击力+40%×额外弩矢数的总伤害。(建筑固定受到100%攻击力的伤害)",
+      "href": "/heroes/67",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/67/20180427081245-2176.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "66",
+      "title": "艾瑞",
+      "text": "艾瑞 輔助 Support 艾瑞的召喚物環繞自身，對觸碰到的敵人造成{0} (+{1}) (目標3%最大生命值 (野怪上限75) ）點 魔法傷害 ，並 恢復 艾瑞{2} (+{3}) (自身最大生命3%)點生命值。若命中非英雄單位，則 恢復 最大生命值1%的生命值。",
+      "href": "/heroes/66",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/66/20180518100131-8115.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "66-1",
+      "title": "艾瑞 造型",
+      "text": "艾瑞 造型",
+      "href": "/heroes/66#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/66/skin/20180518103508-4885.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "64",
+      "title": "靈靈",
+      "text": "靈靈 射手 Marksman 靈靈的普攻分為兩次傷害。普攻以及大招會對處於控制狀態的敵人額外造成40(+5/級)點 魔法傷害 (額外部分無法暴擊，無法對野怪單位生效且每次普攻只會觸發一次普攻特效和被動效果)(靈靈對野怪造成的傷害會減少50%，這個效果會隨著等級逐漸恢復，滿級時會恢復成正常數值) 。",
+      "href": "/heroes/64",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/64/20180316062404-5769.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "63",
+      "title": "莉莉安",
+      "text": "莉莉安 法師 Mage 莉莉安擁有 【人類形態】 和 【靈狐形態】 兩種形態。 【人類形態】 擁有遠程普攻能力。 【靈狐形態】 提升20點雙防（每級+5點），30點跑速，普攻造成( +{0} )( +{1} )點 魔法傷害 。",
+      "href": "/heroes/63",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/63/20180214010600-8211.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "63-1",
+      "title": "莉莉安 造型",
+      "text": "莉莉安 造型",
+      "href": "/heroes/63#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/63/skin/20180214010644-2353.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "60",
+      "title": "圖倫",
+      "text": "圖倫 法師 Mage 圖倫技能命中敵人時，會為自己增加 【印記】 ，當 【印記】 達到5層時，會召喚5個法球環繞自身，短暫時間後依次飛出攻擊附近敵人 （優先英雄） ，每個法球造成{0} (+{1}) 點 魔法傷害 。 （法球不會攻擊非戰鬥狀態下的野怪）",
+      "href": "/heroes/60",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/60/20171208062854-8295.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "60-1",
+      "title": "圖倫 造型",
+      "text": "圖倫 造型",
+      "href": "/heroes/60#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/60/skin/20171208063046-3157.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "61",
+      "title": "琳蒂",
+      "text": "琳蒂 射手 Marksman 琳蒂每三次普攻的第一次造成兩段 65%物理加成 的 物理傷害 並且獲得1層大招印記。",
+      "href": "/heroes/61",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/61/20191208090425-1159.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "61-1",
+      "title": "琳蒂 造型",
+      "text": "琳蒂 造型",
+      "href": "/heroes/61#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/61/skin/20171130014813-3991.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "62",
+      "title": "提米",
+      "text": "提米 輔助 Support 當提米周圍有敵方非英雄單位死亡時（包括小兵和野怪），提米會熟練的拾起戰利品，使自己和周圍友方英雄額外獲得{0}%金幣。",
+      "href": "/heroes/62",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/62/20180105114410-5897.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "62-1",
+      "title": "提米 造型",
+      "text": "提米 造型",
+      "href": "/heroes/62#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/62/skin/20180105114552-9849.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "59",
+      "title": "夜叉",
+      "text": "夜叉 戰士 Warrior 夜叉連續5次普通攻擊命中後，可獲得強化效果，增加夜叉{0}點移動速度及{1}%攻擊速度 （人物每升一級增加2%） ，普通攻擊附帶{2}點 真實傷害 ，並減少一技能和二技能1秒冷卻時間，持續5秒。第三次普攻會攻擊兩次，第二擊僅造成50%傷害，強化效果開始和結束時會重新計數。",
+      "href": "/heroes/59",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/59/20180118103037-5582.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "57",
+      "title": "麥克思",
+      "text": "麥克思 坦克 Tank 麥克思每次對敵人造成傷害時，額外造成每秒{0} （隨角色等級成長） (+{1}) 點 真實傷害 ，並降低目標40%生命恢復速度 （和裝備的拘魂效果不疊加） ，持續3秒。",
+      "href": "/heroes/57",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/57/20180201065920-7127.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "57-1",
+      "title": "麥克思 造型",
+      "text": "麥克思 造型",
+      "href": "/heroes/57#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/57/skin/20180201070138-4616.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "58",
+      "title": "神力女超人",
+      "text": "神力女超人 戰士 Warrior 神力女超人每普攻2次，強化下次普攻將會投擲飛行物攻擊敵人，飛行物會對沿路的敵人額外造成 10%物理加成 (在5/9/13級時成長 10% )點 真實傷害 和{0}% 減速 ，持續0.5秒。命中敵方後 恢復 自身{1} (+{2}) 點生命值，在命中英雄時提升至三倍。",
+      "href": "/heroes/58",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/58/20171108065843-4849.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "58-1",
+      "title": "神力女超人 造型",
+      "text": "神力女超人 造型",
+      "href": "/heroes/58#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/58/skin/20171108070026-2583.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "56",
+      "title": "摩恩",
+      "text": "摩恩 射手 Marksman 摩恩每次普通攻擊命中目標會為自身增加{0}點雙防，持續1.5秒，最高可疊加10層，疊滿後每次普通攻擊會刷新效果的持續時間，疊層會以遞減的形式降低。",
+      "href": "/heroes/56",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/56/20170929114445-8875.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "56-1",
+      "title": "摩恩 造型",
+      "text": "摩恩 造型",
+      "href": "/heroes/56#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/56/skin/20170929114522-6052.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "54",
+      "title": "龍馬",
+      "text": "龍馬 戰士 Warrior 每隔5秒，龍馬強化下一次普攻，對前方敵人額外造成 {0} 點 物理傷害 ，並附帶{1}% 減速 效果，持續2秒。強化普攻會對位處末端的敵人造成40%的額外 物理傷害 。",
+      "href": "/heroes/54",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/54/20170907112711-5290.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "54-1",
+      "title": "龍馬 造型",
+      "text": "龍馬 造型",
+      "href": "/heroes/54#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/54/skin/20170907112745-9715.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "55",
+      "title": "艾翠絲",
+      "text": "艾翠絲 戰士 Warrior 艾翠絲使用普通攻擊 (除了強化普攻) 擊中敵人將會縮減一技能、二技能1秒冷卻 (對野怪效果減半) 。",
+      "href": "/heroes/55",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/55/20170824054524-4518.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "55-1",
+      "title": "艾翠絲 造型",
+      "text": "艾翠絲 造型",
+      "href": "/heroes/55#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/55/skin/20170824054628-5815.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "52",
+      "title": "贊尼爾",
+      "text": "贊尼爾 坦克 Tank 贊尼爾的下次普通攻擊附帶自身最大生命值5%的 魔法傷害 並 減速 50%持續1秒，冷卻時間5秒 (不受冷卻縮減影響) 。",
+      "href": "/heroes/52",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/52/20171011014120-8523.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "52-1",
+      "title": "贊尼爾 造型",
+      "text": "贊尼爾 造型",
+      "href": "/heroes/52#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/52/skin/20171011014157-9677.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "53",
+      "title": "阿杜恩",
+      "text": "阿杜恩 坦克 Tank 阿杜恩生命值低於50%且受到傷害時，每次技能或普通攻擊命中目標，都會 恢復 4%的生命值，持續8秒。 （該效果每45秒冷卻一次）",
+      "href": "/heroes/53",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/53/20170811114847-1575.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "53-1",
+      "title": "阿杜恩 造型",
+      "text": "阿杜恩 造型",
+      "href": "/heroes/53#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/53/skin/20170811114936-6647.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "51",
+      "title": "凱格路士",
+      "text": "凱格路士 戰士 Warrior 每次普通攻擊會提高{0}~{1}%攻速（隨英雄等級變化），此效果最多疊加{2}層，持續2.5秒。凱格路士的第3次普攻擁有更大的攻擊範圍。",
+      "href": "/heroes/51",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/51/20170731063142-6276.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "51-1",
+      "title": "凱格路士 造型",
+      "text": "凱格路士 造型",
+      "href": "/heroes/51#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/51/skin/20170731063231-9356.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "50",
+      "title": "超人",
+      "text": "超人 戰士 Warrior 超人擁有飛行和行走兩種形態。每行走移動1m距離可提高2.5%跑速並積累能量，充滿能量後進入飛行形態。飛行形態下面朝敵人將獲得20%移動 加速 ，同時普攻可 擊退 敵人0.5秒並造成 {0} (+{1})點 物理傷害 。超人受到減速或者控制導致速度低於375時則回到行走形態。",
+      "href": "/heroes/50",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/50/20171102010641-2750.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "50-1",
+      "title": "超人 造型",
+      "text": "超人 造型",
+      "href": "/heroes/50#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/50/skin/20171102010757-1059.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "48",
+      "title": "伊耿士",
+      "text": "伊耿士 法師 Mage 伊耿士技能命中目標後會立即生成 【標記】 ，伊耿士 加速 自身6%的跑速和20%的攻速，最多疊加5次，下個技能命中時會觸發 【標記】 獲得強化效果，減少一技能20%冷卻時間並刷新 【標記】 持續時間。當敵方英雄身上的 【標記】 被觸發時， 恢復 自身{0} (+{1}) 點生命值，伊耿士的普攻對有 【標記】 的目標造成額外的{2} (+{3}) 點 魔法傷害",
+      "href": "/heroes/48",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/48/20170606080014-6184.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "48-1",
+      "title": "伊耿士 造型",
+      "text": "伊耿士 造型",
+      "href": "/heroes/48#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/48/skin/20170606080231-3106.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "49",
+      "title": "小丑",
+      "text": "小丑 射手 Marksman 每隔10秒或使用二技能，獲得強化普攻額外造成3%(4/7/10/13級時成長1%)目標當前生命值 (+{1}) 點 物理傷害 (當前生命值部分對野怪最多造成700點傷害) 。強化普攻最多儲存5次，技能命中會獲得額外的強化普攻： 一技能命中敵方英雄獲得2次，命中非英雄單位獲得1次 三技能命中目標獲得3次",
+      "href": "/heroes/49",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/49/20170629044540-6590.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "49-1",
+      "title": "小丑 造型",
+      "text": "小丑 造型",
+      "href": "/heroes/49#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/49/skin/20170629044714-1449.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "44",
+      "title": "祖卡",
+      "text": "祖卡 戰士 Warrior 祖卡每過15秒，對敵方英雄造成五次攻擊後，將會 恢復 自身(+{0})點生命。",
+      "href": "/heroes/44",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/44/20190117020344-9419.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "44-1",
+      "title": "祖卡 造型",
+      "text": "祖卡 造型",
+      "href": "/heroes/44#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/44/skin/20190117020405-2154.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "45",
+      "title": "莫拉",
+      "text": "莫拉 刺客 Assassin 莫拉每次普攻擊中敵人會獲得1層印記，達到4層解鎖大招，持續5秒，並且增加{0}點物理穿透(隨英雄等級成長，最高200點)。",
+      "href": "/heroes/45",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/45/20170614051447-2556.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "45-1",
+      "title": "莫拉 造型",
+      "text": "莫拉 造型",
+      "href": "/heroes/45#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/45/skin/20170614051519-2922.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "45-2",
+      "title": "莫拉 造型",
+      "text": "莫拉 造型",
+      "href": "/heroes/45#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/45/skin/20170808040505-1852.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "43",
+      "title": "拉茲",
+      "text": "拉茲 刺客 Assassin 被動：拉茲使用技能後能夠在結束時快步移動一段距離並提高移動速度。第一下普通攻擊額外造成100.00 (+0.70) 點 魔法傷害 和擊退",
+      "href": "/heroes/43",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/43/20170413051324-3078.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "43-1",
+      "title": "拉茲 造型",
+      "text": "拉茲 造型",
+      "href": "/heroes/43#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/43/skin/20170420023540-3229.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "42",
+      "title": "司科德",
+      "text": "司科德 戰士 Warrior 司科德每下普攻會對 最大生命值低於自己 的敵人額外造成{0} (+{1}) (+{2}) 點 魔法傷害 (額外部分不能暴擊) 。 司科德的最大生命值提升{3}%。",
+      "href": "/heroes/42",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/42/20170413044738-2269.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "42-1",
+      "title": "司科德 造型",
+      "text": "司科德 造型",
+      "href": "/heroes/42#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/42/skin/20170505104054-1438.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "41",
+      "title": "史蘭茲",
+      "text": "史蘭茲 射手 Marksman 史蘭茲每攻擊2次，都會賦予下一次普攻穿透效果，對目標及目標身後的敵人造成{0} (隨角色等級成長) (+{1}) 點 物理傷害 (物理加成部分可暴擊)。",
+      "href": "/heroes/41",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/41/20170407092544-3358.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "41-1",
+      "title": "史蘭茲 造型",
+      "text": "史蘭茲 造型",
+      "href": "/heroes/41#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/41/skin/20170407092709-2030.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "41-2",
+      "title": "史蘭茲 造型",
+      "text": "史蘭茲 造型",
+      "href": "/heroes/41#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/41/skin/20171107120636-6812.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "40",
+      "title": "蝙蝠俠",
+      "text": "蝙蝠俠 刺客 Assassin 蝙蝠俠在接近敵方英雄時，會 加速 自身20%跑速。",
+      "href": "/heroes/40",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/40/20170401082230-6095.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "40-1",
+      "title": "蝙蝠俠 造型",
+      "text": "蝙蝠俠 造型",
+      "href": "/heroes/40#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/40/skin/20170704110903-3557.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "39",
+      "title": "愛里",
+      "text": "愛里 戰士 Warrior 愛里每第四下普攻造成30 (+{0}) 的 真實傷害 (僅對當前目標) 並 減速 50%，持續1秒。 真實傷害無法暴擊，擊中英雄附帶100%吸血。",
+      "href": "/heroes/39",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/20170317022538-1411.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "39-1",
+      "title": "愛里 造型",
+      "text": "愛里 造型",
+      "href": "/heroes/39#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/skin/20170317023430-6168.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "39-2",
+      "title": "愛里 造型",
+      "text": "愛里 造型",
+      "href": "/heroes/39#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/skin/20170704105830-4769.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "39-3",
+      "title": "愛里 造型",
+      "text": "愛里 造型",
+      "href": "/heroes/39#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/skin/20171017062117-8071.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "39-4",
+      "title": "愛里 造型",
+      "text": "愛里 造型",
+      "href": "/heroes/39#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/39/skin/20171017062141-8130.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "38",
+      "title": "科里納卡",
+      "text": "科里納卡 刺客 Assassin 科里納卡的技能命中敵人時，下一次普通攻擊額外造成{0} (+{1}) 點 物理傷害 。",
+      "href": "/heroes/38",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/38/20170224100429-3904.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "38-1",
+      "title": "科里納卡 造型",
+      "text": "科里納卡 造型",
+      "href": "/heroes/38#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/38/skin/20170224102122-1499.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "37",
+      "title": "莫托斯",
+      "text": "莫托斯 戰士 Warrior 莫托斯每2秒 恢復 最大生命值的{0}%。",
+      "href": "/heroes/37",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/37/20170803110134-8740.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "37-1",
+      "title": "莫托斯 造型",
+      "text": "莫托斯 造型",
+      "href": "/heroes/37#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/37/skin/20170217100547-9126.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "37-2",
+      "title": "莫托斯 造型",
+      "text": "莫托斯 造型",
+      "href": "/heroes/37#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/37/skin/20170803111614-2737.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "36",
+      "title": "海倫",
+      "text": "海倫 輔助 Support 海倫受到傷害時將會立即 加速 自身70%跑速並持續衰減，持續2秒，並且每0.5秒 恢復 自身{0} (+{1}) 點生命值，持續2.5秒。 此效果有10秒冷卻時間。",
+      "href": "/heroes/36",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/36/20170105054334-6591.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "36-1",
+      "title": "海倫 造型",
+      "text": "海倫 造型",
+      "href": "/heroes/36#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/36/skin/20170117024119-2112.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "35",
+      "title": "金納",
+      "text": "金納 法師 Mage 金納進行四次攻擊後（普攻或者施放技能），強化下次普通攻擊並附帶穿透效果造成{0} (+{1}) 點 魔法傷害 。",
+      "href": "/heroes/35",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/35/20190426082017-9075.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "35-1",
+      "title": "金納 造型",
+      "text": "金納 造型",
+      "href": "/heroes/35#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/35/skin/20170418105006-7788.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "33",
+      "title": "娜塔亞",
+      "text": "娜塔亞 法師 Mage 娜塔亞使用技能會對敵人造成{0} (+{1}) 點 魔法傷害 ，可在3秒內繼續疊加，最多10層。",
+      "href": "/heroes/33",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/20191208091830-9354.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "33-1",
+      "title": "娜塔亞 造型",
+      "text": "娜塔亞 造型",
+      "href": "/heroes/33#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/skin/20170124041303-9402.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "33-2",
+      "title": "娜塔亞 造型",
+      "text": "娜塔亞 造型",
+      "href": "/heroes/33#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/skin/20171002025128-3673.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "33-3",
+      "title": "娜塔亞 造型",
+      "text": "娜塔亞 造型",
+      "href": "/heroes/33#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/skin/20171017061833-2780.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "33-4",
+      "title": "娜塔亞 造型",
+      "text": "娜塔亞 造型",
+      "href": "/heroes/33#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/33/skin/20171218064007-7518.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "34",
+      "title": "朗博",
+      "text": "朗博 輔助 Support 朗博周圍8m半徑內存在友方英雄時，自身以及範圍內血量最低的隊友，都會增加{0}點物理防禦和{1}點魔法防禦。",
+      "href": "/heroes/34",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/34/20161205050119-8087.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "34-1",
+      "title": "朗博 造型",
+      "text": "朗博 造型",
+      "href": "/heroes/34#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/34/skin/20170718063017-7244.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "31",
+      "title": "菲尼克",
+      "text": "菲尼克 射手 Marksman 菲尼克的第三下普攻擊中敵人時，會對目標與其身邊的所有敵人(包括建築)額外造成 {0} 點 物理傷害 。 額外傷害可以暴擊，享受普攻特效、物理吸血，並對野怪、兵線的傷害提升50%。",
+      "href": "/heroes/31",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/31/20161121102830-3575.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "31-1",
+      "title": "菲尼克 造型",
+      "text": "菲尼克 造型",
+      "href": "/heroes/31#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/31/skin/20161121102730-1219.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "31-2",
+      "title": "菲尼克 造型",
+      "text": "菲尼克 造型",
+      "href": "/heroes/31#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/31/skin/20170414101652-9773.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "31-3",
+      "title": "菲尼克 造型",
+      "text": "菲尼克 造型",
+      "href": "/heroes/31#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/31/skin/20171214091808-3286.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "32",
+      "title": "夸克",
+      "text": "夸克 輔助 Support 夸克受到超過自身當前生命值10%的單次傷害時會引發爆炸 (2秒冷卻時間) ，對自身周圍的敵人造成{0} (+{1}) (+{2}) 魔法傷害 。夸克死亡3秒之後會引爆自身周圍，對範圍內的敵人造成{3} (+{4}) (+{5}) 魔法傷害 。",
+      "href": "/heroes/32",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/32/20161108120717-7922.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "32-1",
+      "title": "夸克 造型",
+      "text": "夸克 造型",
+      "href": "/heroes/32#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/32/skin/20170612114334-1321.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "32-2",
+      "title": "夸克 造型",
+      "text": "夸克 造型",
+      "href": "/heroes/32#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/32/skin/20170704110512-1672.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "29",
+      "title": "普雷塔",
+      "text": "普雷塔 法師 Mage 普雷塔額外獲得40點移動速度。",
+      "href": "/heroes/29",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/29/20161006041855-5602.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "29-1",
+      "title": "普雷塔 造型",
+      "text": "普雷塔 造型",
+      "href": "/heroes/29#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/29/skin/20170317052933-1717.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "29-2",
+      "title": "普雷塔 造型",
+      "text": "普雷塔 造型",
+      "href": "/heroes/29#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/29/skin/20170718062840-2219.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "30",
+      "title": "克萊斯",
+      "text": "克萊斯 輔助 Support 克萊斯變身後每次施放技能時，都會對周圍造成 減速 50%，持續2秒。",
+      "href": "/heroes/30",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/30/20190117015747-4271.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "30-1",
+      "title": "克萊斯 造型",
+      "text": "克萊斯 造型",
+      "href": "/heroes/30#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/30/skin/20161220074249-5382.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "30-2",
+      "title": "克萊斯 造型",
+      "text": "克萊斯 造型",
+      "href": "/heroes/30#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/30/skin/20171002024643-3452.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "23",
+      "title": "查戈納爾",
+      "text": "查戈納爾 坦克 Tank 查戈納爾每6秒會解除自身控制並 霸體 ， 加速 自身15%跑速，持續2秒。",
+      "href": "/heroes/23",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/23/20161012122640-2297.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "23-1",
+      "title": "查戈納爾 造型",
+      "text": "查戈納爾 造型",
+      "href": "/heroes/23#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/23/skin/20161212064817-2771.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "26",
+      "title": "穆加爵",
+      "text": "穆加爵 法師 Mage 穆加爵使用普通攻擊以及一、二技能擊中敵人都會添加1層 【印記】 ，每秒造成{0} (+{1}) 點 魔法傷害 ，並且降低4%魔法防禦以及治療效果，最高5層，持續5秒。",
+      "href": "/heroes/26",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/26/20190426082152-1469.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "26-1",
+      "title": "穆加爵 造型",
+      "text": "穆加爵 造型",
+      "href": "/heroes/26#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/26/skin/20161223030103-7169.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "26-2",
+      "title": "穆加爵 造型",
+      "text": "穆加爵 造型",
+      "href": "/heroes/26#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/26/skin/20170704110032-4964.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "27",
+      "title": "馬洛斯",
+      "text": "馬洛斯 戰士 Warrior 馬洛斯擁有比其他近戰更遠的攻擊距離，在 【附魔】 狀態下，普攻會造成基於自身物理攻擊的 {0} 點 真實傷害 並且 恢復 自身已損生命值{1}% (+{2}) 點生命值。",
+      "href": "/heroes/27",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/27/20190426082125-2068.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "27-1",
+      "title": "馬洛斯 造型",
+      "text": "馬洛斯 造型",
+      "href": "/heroes/27#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/27/skin/20170223110406-6805.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "27-2",
+      "title": "馬洛斯 造型",
+      "text": "馬洛斯 造型",
+      "href": "/heroes/27#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/27/skin/20170301110054-6501.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "27-3",
+      "title": "馬洛斯 造型",
+      "text": "馬洛斯 造型",
+      "href": "/heroes/27#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/27/skin/20171002025043-5366.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "28",
+      "title": "塔拉",
+      "text": "塔拉 坦克 Tank 塔拉每損失1%最大生命值獲得額外3~7點物理攻擊(隨英雄等級變化)，使用技能/大招時會消耗11%/16%當前生命值，並在3秒內 恢復 9%已損失生命值。",
+      "href": "/heroes/28",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/28/20161006041957-5098.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "28-1",
+      "title": "塔拉 造型",
+      "text": "塔拉 造型",
+      "href": "/heroes/28#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/28/skin/20170309121937-4593.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "20",
+      "title": "克里希",
+      "text": "克里希 法師 Mage 克里希使用技能擊中敵人時，會提升自身跑速{0}%，持續2秒。",
+      "href": "/heroes/20",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/20161006042623-5332.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "20-1",
+      "title": "克里希 造型",
+      "text": "克里希 造型",
+      "href": "/heroes/20#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/skin/20161006042713-8118.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "20-2",
+      "title": "克里希 造型",
+      "text": "克里希 造型",
+      "href": "/heroes/20#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/skin/20170321094952-9863.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "20-3",
+      "title": "克里希 造型",
+      "text": "克里希 造型",
+      "href": "/heroes/20#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/skin/20170824061529-9972.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "20-4",
+      "title": "克里希 造型",
+      "text": "克里希 造型",
+      "href": "/heroes/20#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/20/skin/20171017062252-4460.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "21",
+      "title": "哥德爾",
+      "text": "哥德爾 坦克 Tank 哥德爾連續的第四次普通攻擊會將正前方的目標 擊退 1秒並造成 {0} + {1} 點 魔法傷害 ，使用技能和特殊普攻時會獲得一個吸收{2} (+{3}) 點傷害的 護盾 。",
+      "href": "/heroes/21",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/21/20161006042542-5248.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "21-1",
+      "title": "哥德爾 造型",
+      "text": "哥德爾 造型",
+      "href": "/heroes/21#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/21/skin/20170612113221-3340.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "21-2",
+      "title": "哥德爾 造型",
+      "text": "哥德爾 造型",
+      "href": "/heroes/21#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/21/skin/20170808040334-9576.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "22",
+      "title": "卡莉",
+      "text": "卡莉 法師 Mage 被動：卡莉的普通攻擊附帶穿透效果，可擊穿敵人的靈魂，造成{0} (+{1}) (+{2}) 點 魔法傷害 （對防禦塔傷害減半）。",
+      "href": "/heroes/22",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/22/20161006042500-2206.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "22-1",
+      "title": "卡莉 造型",
+      "text": "卡莉 造型",
+      "href": "/heroes/22#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/22/skin/20170104101844-7224.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "22-2",
+      "title": "卡莉 造型",
+      "text": "卡莉 造型",
+      "href": "/heroes/22#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/22/skin/20171107120920-9952.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "11",
+      "title": "趙雲",
+      "text": "趙雲 戰士 Warrior 趙雲擊殺或者助攻將會 恢復 自身最大生命值的5%，並增加12點物理攻擊，最多疊加20層。",
+      "href": "/heroes/11",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/20190805021939-9293.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "11-1",
+      "title": "趙雲 造型",
+      "text": "趙雲 造型",
+      "href": "/heroes/11#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/skin/20170210095754-6440.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "11-2",
+      "title": "趙雲 造型",
+      "text": "趙雲 造型",
+      "href": "/heroes/11#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/skin/20170704105939-6568.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "11-3",
+      "title": "趙雲 造型",
+      "text": "趙雲 造型",
+      "href": "/heroes/11#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/skin/20170824061634-5567.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "11-4",
+      "title": "趙雲 造型",
+      "text": "趙雲 造型",
+      "href": "/heroes/11#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/11/skin/20171130014905-5757.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "12",
+      "title": "凡恩",
+      "text": "凡恩 射手 Marksman 凡恩的第三次普通攻擊將會替換為一枚帶有特殊效果的子彈，施放為自身增加1層 【印記】 ，每層 加速 自身7.5%跑速，持續2.5秒，最多疊加4層。紅色子彈：造成範圍傷害。藍色子彈：命中敵人減少所有技能1秒冷卻。黃色子彈：命中敵人造成0.5秒 暈眩 。",
+      "href": "/heroes/12",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/20161006043336-8456.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "12-1",
+      "title": "凡恩 造型",
+      "text": "凡恩 造型",
+      "href": "/heroes/12#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/skin/20190117014909-9099.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "12-2",
+      "title": "凡恩 造型",
+      "text": "凡恩 造型",
+      "href": "/heroes/12#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/skin/20161121111327-7407.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "12-3",
+      "title": "凡恩 造型",
+      "text": "凡恩 造型",
+      "href": "/heroes/12#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/skin/20170824061122-8702.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "12-4",
+      "title": "凡恩 造型",
+      "text": "凡恩 造型",
+      "href": "/heroes/12#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/skin/20200504044028-1878.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "12-5",
+      "title": "凡恩 造型",
+      "text": "凡恩 造型",
+      "href": "/heroes/12#skin-5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/12/skin/20200504044806-2568.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "13",
+      "title": "薩尼",
+      "text": "薩尼 坦克 Tank 當薩尼生命值低於30%時，薩尼在4秒內減少25%所受傷害，並 恢復 24%自身最大生命值，此效果有75秒冷卻。薩尼施放技能後強化下一次普攻，提升攻擊距離並且對敵人額外造成自身{0}%最大生命值的 物理傷害 。",
+      "href": "/heroes/13",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/13/20161005081056-2941.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "13-1",
+      "title": "薩尼 造型",
+      "text": "薩尼 造型",
+      "href": "/heroes/13#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/13/skin/20190117014619-9720.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "13-2",
+      "title": "薩尼 造型",
+      "text": "薩尼 造型",
+      "href": "/heroes/13#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/13/skin/20200504051804-9993.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "14",
+      "title": "盧蜜亞",
+      "text": "盧蜜亞 法師 Mage 盧蜜亞施放一技能、二技能，以及二技能擊中敵方英雄，都會獲得1層 【印記】 ，達到2層時將會立即重置一技能的冷卻並5秒內 強化技能： 技能範圍變大且可穿透路徑上的敵人，造成2倍傷害以及0.75秒 擊飛 。",
+      "href": "/heroes/14",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/14/20170125115033-3111.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "14-1",
+      "title": "盧蜜亞 造型",
+      "text": "盧蜜亞 造型",
+      "href": "/heroes/14#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/14/skin/20170129033212-2409.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "14-2",
+      "title": "盧蜜亞 造型",
+      "text": "盧蜜亞 造型",
+      "href": "/heroes/14#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/14/skin/20170309121008-9510.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "15",
+      "title": "蘿兒",
+      "text": "蘿兒 法師 Mage 蘿兒的技能命中目標後會疊加 【印記】 ，每4層 【印記】 觸發一次爆炸， 恢復 自身{0}生命值，對周圍敵人造成{1} (+{2}) 點 真實傷害 與50%~90%的 減速 效果（隨等級成長），持續1秒。",
+      "href": "/heroes/15",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/15/20170516114415-4905.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "15-1",
+      "title": "蘿兒 造型",
+      "text": "蘿兒 造型",
+      "href": "/heroes/15#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/15/skin/20210504045733-7724.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "15-2",
+      "title": "蘿兒 造型",
+      "text": "蘿兒 造型",
+      "href": "/heroes/15#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/15/skin/20170824061449-1987.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "15-3",
+      "title": "蘿兒 造型",
+      "text": "蘿兒 造型",
+      "href": "/heroes/15#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/15/skin/20171107120552-8090.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "16",
+      "title": "納克羅斯",
+      "text": "納克羅斯 刺客 Assassin 第四次普通攻擊將會 擊飛 目標0.5秒，施放技能命中目標後會獲得{0}%攻擊速度加成，持續3秒。",
+      "href": "/heroes/16",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/16/20210504051622-3299.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "16-1",
+      "title": "納克羅斯 造型",
+      "text": "納克羅斯 造型",
+      "href": "/heroes/16#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/16/skin/20210504052852-9575.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "16-2",
+      "title": "納克羅斯 造型",
+      "text": "納克羅斯 造型",
+      "href": "/heroes/16#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/16/skin/20170718063148-1450.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "17",
+      "title": "貂蟬",
+      "text": "貂蟬 法師 Mage 如果貂蟬在12秒內沒有受到任何傷害或被控制，會獲得一個 護盾 ，這個 護盾 將在抵擋了敵方英雄的攻擊後消失，並殘留1秒抵擋控制以及極短抵擋傷害的效果。",
+      "href": "/heroes/17",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/17/20190805022354-2636.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "17-1",
+      "title": "貂蟬 造型",
+      "text": "貂蟬 造型",
+      "href": "/heroes/17#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/17/skin/20161006042948-1099.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "17-2",
+      "title": "貂蟬 造型",
+      "text": "貂蟬 造型",
+      "href": "/heroes/17#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/17/skin/20170824061351-4822.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "18",
+      "title": "阿萊斯特",
+      "text": "阿萊斯特 法師 Mage 阿萊斯特每三次技能傷害會對目標造成{0} (+{1}) 點 真實傷害 。",
+      "href": "/heroes/18",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/18/20190426082043-8447.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "18-1",
+      "title": "阿萊斯特 造型",
+      "text": "阿萊斯特 造型",
+      "href": "/heroes/18#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/18/skin/20170704110409-6207.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "19",
+      "title": "悟空",
+      "text": "悟空 刺客 Assassin 每次施放技能後強化下一次普攻，使之傷害提升至{0} (+{1}) 點 物理傷害 ，附帶位移效果。 悟空額外擁有12%暴擊率。",
+      "href": "/heroes/19",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/19/20210510104801-1468.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "19-1",
+      "title": "悟空 造型",
+      "text": "悟空 造型",
+      "href": "/heroes/19#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/19/skin/20170120122802-7720.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "19-2",
+      "title": "悟空 造型",
+      "text": "悟空 造型",
+      "href": "/heroes/19#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/19/skin/20170704110125-8537.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "1",
+      "title": "牛魔王",
+      "text": "牛魔王 坦克 Tank 牛魔王在技能施放期間霸體。",
+      "href": "/heroes/1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/1/20190805022622-8979.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "2",
+      "title": "瑟斐斯",
+      "text": "瑟斐斯 戰士 Warrior 被動：每損失3%最大生命值獲得額外1%免傷效果。",
+      "href": "/heroes/2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/20190805024725-7335.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "2-1",
+      "title": "瑟斐斯 造型",
+      "text": "瑟斐斯 造型",
+      "href": "/heroes/2#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/skin/20190117014418-6724.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "2-2",
+      "title": "瑟斐斯 造型",
+      "text": "瑟斐斯 造型",
+      "href": "/heroes/2#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/skin/20171107121136-7701.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "2-3",
+      "title": "瑟斐斯 造型",
+      "text": "瑟斐斯 造型",
+      "href": "/heroes/2#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/skin/20191208061543-7845.png"
+    },
+    {
+      "type": "skin",
+      "id": "2-4",
+      "title": "瑟斐斯 造型",
+      "text": "瑟斐斯 造型",
+      "href": "/heroes/2#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/2/skin/20191208062042-3088.PNG"
+    },
+    {
+      "type": "hero",
+      "id": "3",
+      "title": "薇菈",
+      "text": "薇菈 法師 Mage 薇菈脫離戰鬥之後， 加速 自身20%跑速。 無法和裝備【遊蕩者之靴】的脫戰加速疊加。 無法和【遊蕩者之靴】的脫戰加速疊加。",
+      "href": "/heroes/3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/3/20190426081635-6074.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "3-1",
+      "title": "薇菈 造型",
+      "text": "薇菈 造型",
+      "href": "/heroes/3#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/3/skin/20161007021643-7393.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "3-2",
+      "title": "薇菈 造型",
+      "text": "薇菈 造型",
+      "href": "/heroes/3#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/3/skin/20170412104021-7433.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "3-3",
+      "title": "薇菈 造型",
+      "text": "薇菈 造型",
+      "href": "/heroes/3#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/3/skin/20170704110221-1041.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "4",
+      "title": "堇",
+      "text": "堇 射手 Marksman 堇使用普通攻擊擊中敵方英雄時會減少一技能的冷卻時間0.5秒。",
+      "href": "/heroes/4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/20190805024953-3260.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "4-1",
+      "title": "堇 造型",
+      "text": "堇 造型",
+      "href": "/heroes/4#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/skin/20161006044204-3820.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "4-2",
+      "title": "堇 造型",
+      "text": "堇 造型",
+      "href": "/heroes/4#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/skin/20161006044246-1919.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "4-3",
+      "title": "堇 造型",
+      "text": "堇 造型",
+      "href": "/heroes/4#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/skin/20170718062936-2892.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "4-4",
+      "title": "堇 造型",
+      "text": "堇 造型",
+      "href": "/heroes/4#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/4/skin/20210503052245-3500.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "6",
+      "title": "歐米茄",
+      "text": "歐米茄 坦克 Tank 歐米茄的技能可以對防禦塔造成50%傷害，歐米茄每隔6秒會強化下次普攻造成額外傷害。對範圍內的目標額外造成自身最大生命值{0}%的 物理傷害 ，對小兵和野怪額外造成{1}(+{2}%最大生命加成)點 物理傷害 (隨人物等級成長)，對防禦塔額外造成2秒的 暈眩 效果。",
+      "href": "/heroes/6",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/6/20210504010134-3314.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "6-1",
+      "title": "歐米茄 造型",
+      "text": "歐米茄 造型",
+      "href": "/heroes/6#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/6/skin/20210504110104-2400.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "7",
+      "title": "刀鋒寶貝",
+      "text": "刀鋒寶貝 刺客 Assassin 刀鋒寶貝擊殺英雄會獲得2層 【刺殺印記】 ，助攻或者擊殺野怪、小兵會獲得1層：疊至三層時，下個釋放的技能不會進入冷卻。",
+      "href": "/heroes/7",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/20190426081710-1941.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "7-1",
+      "title": "刀鋒寶貝 造型",
+      "text": "刀鋒寶貝 造型",
+      "href": "/heroes/7#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/skin/20161005081407-3904.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "7-2",
+      "title": "刀鋒寶貝 造型",
+      "text": "刀鋒寶貝 造型",
+      "href": "/heroes/7#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/skin/20161005081459-3604.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "7-3",
+      "title": "刀鋒寶貝 造型",
+      "text": "刀鋒寶貝 造型",
+      "href": "/heroes/7#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/skin/20170316054831-8511.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "7-4",
+      "title": "刀鋒寶貝 造型",
+      "text": "刀鋒寶貝 造型",
+      "href": "/heroes/7#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/7/skin/20170601032840-9628.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "8",
+      "title": "美娜",
+      "text": "美娜 坦克 Tank 美娜受到普攻傷害或者使用普攻擊中敵人時，將會疊加1層被動， 加速 自身2%跑速，持續5秒，上限10層。 滿層時解除並且免疫減速，同時附送一次強化一技能：轉為真實傷害，生命回復提升100%",
+      "href": "/heroes/8",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/8/20161006043631-9045.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "8-1",
+      "title": "美娜 造型",
+      "text": "美娜 造型",
+      "href": "/heroes/8#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/8/skin/20161006043724-2939.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "8-2",
+      "title": "美娜 造型",
+      "text": "美娜 造型",
+      "href": "/heroes/8#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/8/skin/20170405101440-4063.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "9",
+      "title": "阿茲卡",
+      "text": "阿茲卡 法師 Mage 阿茲卡的技能會給命中的敵人添加 【印記】 持續5秒，疊滿三層時目標會被 石化 0.75秒並受到{0} (+{1}) 點 魔法傷害 。",
+      "href": "/heroes/9",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/9/20190117015115-7373.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "9-1",
+      "title": "阿茲卡 造型",
+      "text": "阿茲卡 造型",
+      "href": "/heroes/9#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/9/skin/20170612113339-4734.jpg"
+    },
+    {
+      "type": "hero",
+      "id": "10",
+      "title": "呂布",
+      "text": "呂布 戰士 Warrior 呂布每次施放技能會提升6%(4/7/10/13級時提升1%)的攻擊速度，持續4秒，最多疊加10層。施放技能和普通攻擊命中敵人時減少二技能1秒冷卻時間（命中小兵/野怪時效果減半）。",
+      "href": "/heroes/10",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/20190805021706-2731.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "10-1",
+      "title": "呂布 造型",
+      "text": "呂布 造型",
+      "href": "/heroes/10#skin-1",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/skin/20170309123427-4158.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "10-2",
+      "title": "呂布 造型",
+      "text": "呂布 造型",
+      "href": "/heroes/10#skin-2",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/skin/20170612113135-8647.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "10-3",
+      "title": "呂布 造型",
+      "text": "呂布 造型",
+      "href": "/heroes/10#skin-3",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/skin/20170808040255-1013.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "10-4",
+      "title": "呂布 造型",
+      "text": "呂布 造型",
+      "href": "/heroes/10#skin-4",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/skin/20170824061246-4663.jpg"
+    },
+    {
+      "type": "skin",
+      "id": "10-5",
+      "title": "呂布 造型",
+      "text": "呂布 造型",
+      "href": "/heroes/10#skin-5",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/10/skin/20171002024955-1929.jpg"
+    },
+    {
+      "type": "item",
+      "id": "1111",
+      "title": "短劍",
+      "text": "短劍 攻擊 +20物理攻擊 裝備 1111 1111",
+      "href": "/items#item-1111",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1111.png"
+    },
+    {
+      "type": "item",
+      "id": "1112",
+      "title": "短刀",
+      "text": "短刀 攻擊 +10%攻擊速度 裝備 1112 1112",
+      "href": "/items#item-1112",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1112.png"
+    },
+    {
+      "type": "item",
+      "id": "1113",
+      "title": "指虎",
+      "text": "指虎 攻擊 +12%暴擊率 裝備 1113 1113",
+      "href": "/items#item-1113",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1113.png"
+    },
+    {
+      "type": "item",
+      "id": "1114",
+      "title": "血錘",
+      "text": "血錘 攻擊 +10物理攻擊 +8%物理吸血 裝備 1114 1114",
+      "href": "/items#item-1114",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1114.png"
+    },
+    {
+      "type": "item",
+      "id": "1115",
+      "title": "鏈錘",
+      "text": "鏈錘 攻擊 +40物理攻擊 裝備 1115 1115",
+      "href": "/items#item-1115",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1115.png"
+    },
+    {
+      "type": "item",
+      "id": "1121",
+      "title": "騎士寬劍",
+      "text": "騎士寬劍 攻擊 +80物理攻擊 裝備 1121 1121",
+      "href": "/items#item-1121",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1121.png"
+    },
+    {
+      "type": "item",
+      "id": "1122",
+      "title": "石棒",
+      "text": "石棒 攻擊 +25物理攻擊 +15%攻擊速度 唯一被動-激進：普通攻擊會增加自身10%移動速度 裝備 1122 1122",
+      "href": "/items#item-1122",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1122.png"
+    },
+    {
+      "type": "item",
+      "id": "1123",
+      "title": "風暴雙刀",
+      "text": "風暴雙刀 攻擊 +25%攻擊速度 +5%跑速 裝備 1123 1123",
+      "href": "/items#item-1123",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1123.png"
+    },
+    {
+      "type": "item",
+      "id": "1124",
+      "title": "角鬥士長矛",
+      "text": "角鬥士長矛 攻擊 +50物理攻擊 唯一被動-破甲：+60物理穿透 裝備 1124 1124",
+      "href": "/items#item-1124",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1124.png"
+    },
+    {
+      "type": "item",
+      "id": "1125",
+      "title": "御魔斬",
+      "text": "御魔斬 攻擊 +60物理攻擊 +25%攻擊速度 +180魔法防禦 唯一被動-御魔守衛：在生命值低於40%時產生一個吸收（500+英雄等級*100）點魔法傷害的護盾，並且在2秒內額外獲得25%韌性和30%移動額度。護盾持續5秒，冷卻時間75秒。 唯一被動-激進：普通攻擊會增加自身10%移動速度 裝備 1125 1125",
+      "href": "/items#item-1125",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1125.png"
+    },
+    {
+      "type": "item",
+      "id": "1126",
+      "title": "龍骨劍",
+      "text": "龍骨劍 攻擊 +60物理攻擊 +30%攻擊速度 +10%物理吸血 唯一被動-龍息：普通攻擊附帶目標當前生命8%的<color=#f18d00>物理傷害</color>（0.3秒冷卻時間） 裝備 1126 1126",
+      "href": "/items#item-1126",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1126.png"
+    },
+    {
+      "type": "item",
+      "id": "1127",
+      "title": "天叢雲之刃",
+      "text": "天叢雲之刃 攻擊 +75物理攻擊 +10%冷卻縮減 唯一被動-穿刺：+45%物理穿透 裝備 1127 1127",
+      "href": "/items#item-1127",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1127.png"
+    },
+    {
+      "type": "item",
+      "id": "1128",
+      "title": "冬日戰斧",
+      "text": "冬日戰斧 防禦 +100物理防禦 +100魔法防禦 +1200最大生命 唯一被動-刺骨：普通攻擊會減少目標25%移動速度，自己提高跑速10%，持續2秒 裝備 1128 1128",
+      "href": "/items#item-1128",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1128.png"
+    },
+    {
+      "type": "item",
+      "id": "1129",
+      "title": "手裡劍",
+      "text": "手裡劍 攻擊 +20%攻擊速度 唯一被動-要害：普攻附帶20+英雄等級*1（近戰）/40+英雄等級*2（遠程）<color=#f18d00>物理傷害</color>（0.3秒冷卻時間） 裝備 1129 1129",
+      "href": "/items#item-1129",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1129.png"
+    },
+    {
+      "type": "item",
+      "id": "1132",
+      "title": "撒旦之鋒",
+      "text": "撒旦之鋒 攻擊 +100物理攻擊 唯一被動-吸血：+25%吸血率 裝備 1132 1132",
+      "href": "/items#item-1132",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1132.png"
+    },
+    {
+      "type": "item",
+      "id": "1133",
+      "title": "聖劍",
+      "text": "聖劍 攻擊 +100物理攻擊 唯一被動-聖靈之賜：暴擊後提升自身（3-45）點移動速度，持續1.5秒（僅遠程有效） 唯一被動：+25%暴擊率 唯一被動：暴擊傷害提升40% 裝備 1133 1133",
+      "href": "/items#item-1133",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1133.png"
+    },
+    {
+      "type": "item",
+      "id": "1134",
+      "title": "全能武器",
+      "text": "全能武器 攻擊 +70物理攻擊 +15%攻擊速度 +8%物理吸血 +10%冷卻縮減 +400最大生命 唯一被動-元素之力：使用技能後，5秒內的下次普通攻擊造成額外100%物理加成的<color=#f18d00>物理傷害</color>，這個效果有2秒的冷卻時間 唯一被動-激進：普通攻擊會增加自身10%移動速度 裝備 1134 1134",
+      "href": "/items#item-1134",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1134.png"
+    },
+    {
+      "type": "item",
+      "id": "1136",
+      "title": "颶風雙刀",
+      "text": "颶風雙刀 攻擊 +35%攻擊速度 +25%暴擊率 +7%跑速 唯一被動-風佑：暴擊後提升自身35%韌性，持續2秒(無法與聖騎士戰靴疊加) 裝備 1136 1136",
+      "href": "/items#item-1136",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1136.png"
+    },
+    {
+      "type": "item",
+      "id": "1137",
+      "title": "鋼鐵長槍",
+      "text": "鋼鐵長槍 攻擊 +80物理攻擊 +15%冷卻縮減 +500最大生命 唯一被動-碎甲：造成傷害減少目標60點物防，最多疊加4層，持續5秒 裝備 1137 1137",
+      "href": "/items#item-1137",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1137.png"
+    },
+    {
+      "type": "item",
+      "id": "1138",
+      "title": "王者之劍",
+      "text": "王者之劍 攻擊 +200物理攻擊 唯一被動-破軍：目標生命低於50%時，傷害提高30% 裝備 1138 1138",
+      "href": "/items#item-1138",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1138.png"
+    },
+    {
+      "type": "item",
+      "id": "1135",
+      "title": "雷電戟",
+      "text": "雷電戟 攻擊 +50物理攻擊 +35%攻擊速度 +5%跑速 唯一被動-閃電鏈：每過4秒，下次普攻附帶觸發連鎖閃電，造成102（每升一級+7）<color=#8e91fd>魔法傷害</color>，遠程效果翻倍。每次普攻命中後降低1秒冷卻時間。 裝備 1135 1135",
+      "href": "/items#item-1135",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1135.png"
+    },
+    {
+      "type": "item",
+      "id": "1144",
+      "title": "破陣戰矛",
+      "text": "破陣戰矛 攻擊 +110物理攻擊 唯一被動-疾風步：脫戰後增加10%的移動速度 唯一被動-破陣：增加（80+英雄等級*8）點物理穿透 裝備 1144 1144",
+      "href": "/items#item-1144",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1144.png"
+    },
+    {
+      "type": "item",
+      "id": "1145",
+      "title": "嗜血弓",
+      "text": "嗜血弓 攻擊 +100物理攻擊 +15%暴擊率 +15%物理吸血 裝備 1145 1145",
+      "href": "/items#item-1145",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1145.png"
+    },
+    {
+      "type": "item",
+      "id": "1211",
+      "title": "魔法書",
+      "text": "魔法書 魔法 +40魔法攻擊 裝備 1211 1211",
+      "href": "/items#item-1211",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1211.png"
+    },
+    {
+      "type": "item",
+      "id": "1212",
+      "title": "法力指環",
+      "text": "法力指環 魔法 +300最大魔力 裝備 1212 1212",
+      "href": "/items#item-1212",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1212.png"
+    },
+    {
+      "type": "item",
+      "id": "1213",
+      "title": "清醒吊墜",
+      "text": "清醒吊墜 魔法 +10每5秒回魔 裝備 1213 1213",
+      "href": "/items#item-1213",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1213.png"
+    },
+    {
+      "type": "item",
+      "id": "1214",
+      "title": "神喻書",
+      "text": "神喻書 魔法 +80魔法攻擊 +20每5秒回魔 裝備 1214 1214",
+      "href": "/items#item-1214",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1214.png"
+    },
+    {
+      "type": "item",
+      "id": "1215",
+      "title": "魔力手鐲",
+      "text": "魔力手鐲 魔法 唯一被動：+10%冷卻縮減 裝備 1215 1215",
+      "href": "/items#item-1215",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1215.png"
+    },
+    {
+      "type": "item",
+      "id": "1221",
+      "title": "法力卷軸",
+      "text": "法力卷軸 魔法 +120魔法攻擊 裝備 1221 1221",
+      "href": "/items#item-1221",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1221.png"
+    },
+    {
+      "type": "item",
+      "id": "1222",
+      "title": "嗜血法杖",
+      "text": "嗜血法杖 魔法 +90魔法攻擊 唯一被動-噬魂：增加15%魔法吸血 裝備 1222 1222",
+      "href": "/items#item-1222",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1222.png"
+    },
+    {
+      "type": "item",
+      "id": "1223",
+      "title": "元素之刃",
+      "text": "元素之刃 魔法 +60魔法攻擊 +10%冷卻縮減 唯一被動-元素之力：使用技能後，下一次普通攻擊附加<color=#8e91fd>魔法傷害</color>，這個效果有3秒的冷卻時間 裝備 1223 1223",
+      "href": "/items#item-1223",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1223.png"
+    },
+    {
+      "type": "item",
+      "id": "1224",
+      "title": "鬼魂的呢喃",
+      "text": "鬼魂的呢喃 魔法 +100魔法攻擊 唯一被動-滅神：+75魔法穿透 裝備 1224 1224",
+      "href": "/items#item-1224",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1224.png"
+    },
+    {
+      "type": "item",
+      "id": "1225",
+      "title": "日光護符",
+      "text": "日光護符 魔法 +60魔法攻擊 唯一被動-太陽神的祝福：升級後在3秒內回復10%魔力值以及20%生命值 裝備 1225 1225",
+      "href": "/items#item-1225",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1225.png"
+    },
+    {
+      "type": "item",
+      "id": "1226",
+      "title": "賢者手鐲",
+      "text": "賢者手鐲 魔法 +60魔法攻擊 +5%冷卻縮減 +20每5秒回魔 裝備 1226 1226",
+      "href": "/items#item-1226",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1226.png"
+    },
+    {
+      "type": "item",
+      "id": "1227",
+      "title": "生命法杖",
+      "text": "生命法杖 魔法 +140魔法攻擊 +10%冷卻縮減 唯一被動-生命護盾：生命低於40%時，獲得一個吸收（450+英雄等級*50）<color=#7FFFD4>（+40%魔法加成）</color>傷害的護盾，持續4秒，這個效果有75秒冷卻時間 唯一被動-嗜血：增加25%魔法吸血 裝備 1227 1227",
+      "href": "/items#item-1227",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1227.png"
+    },
+    {
+      "type": "item",
+      "id": "1228",
+      "title": "暮光之刃",
+      "text": "暮光之刃 魔法 +180魔法攻擊 +400最大魔力 +8%跑速 唯一被動-急刃：普攻命中後獲得50%攻速加成，持續4秒，CD10秒 唯一被動-暮光：普通攻擊造成基於自身魔法攻擊20%的魔法傷害 裝備 1228 1228",
+      "href": "/items#item-1228",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1228.png"
+    },
+    {
+      "type": "item",
+      "id": "1231",
+      "title": "混沌法杖",
+      "text": "混沌法杖 魔法 +180魔法攻擊 +10%冷卻縮減 唯一被動-鎮靈： +40%魔法穿透 裝備 1231 1231",
+      "href": "/items#item-1231",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1231.png"
+    },
+    {
+      "type": "item",
+      "id": "1232",
+      "title": "巫妖皇冠",
+      "text": "巫妖皇冠 魔法 +240魔法攻擊 唯一被動-巫妖：魔攻提升35% 裝備 1232 1232",
+      "href": "/items#item-1232",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1232.png"
+    },
+    {
+      "type": "item",
+      "id": "1233",
+      "title": "爆裂法杖",
+      "text": "爆裂法杖 魔法 +240魔法攻擊 +30每5秒回魔 唯一被動-爆裂：技能命中會觸發小範圍爆炸造成100<color=#7FFFD4>（+40%魔法加成）</color><color=#8e91fd>魔法傷害</color>這個效果有5秒冷卻 裝備 1233 1233",
+      "href": "/items#item-1233",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1233.png"
+    },
+    {
+      "type": "item",
+      "id": "1234",
+      "title": "寒心法杖",
+      "text": "寒心法杖 魔法 +140魔法攻擊 +850最大生命 +5%跑速 唯一被動-寒心：英雄技能造成傷害會附帶20%的減速效果，持續2秒 裝備 1234 1234",
+      "href": "/items#item-1234",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1234.png"
+    },
+    {
+      "type": "item",
+      "id": "1235",
+      "title": "惡魔的微笑",
+      "text": "惡魔的微笑 魔法 +140魔法攻擊 +10%冷卻縮減 +30每5秒回魔 +225物理防禦 唯一被動-痛苦灼燒：技能傷害會每秒造成（目標當前生命值2%+60）的<color=#8e91fd>魔法傷害</color>，持續3秒。（對野怪傷害上限：80） 裝備 1235 1235",
+      "href": "/items#item-1235",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1235.png"
+    },
+    {
+      "type": "item",
+      "id": "1236",
+      "title": "秘咒之刃",
+      "text": "秘咒之刃 魔法 +200魔法攻擊 +10%冷卻縮減 +30每5秒回魔 唯一被動-元素之力：使用技能後，下一次普通攻擊附加30%物理攻擊<color=#7FFFD4>（+80%魔法加成）</color>的<color=#8e91fd>魔法傷害</color>，這個效果有2秒的冷卻時間 裝備 1236 1236",
+      "href": "/items#item-1236",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1236.png"
+    },
+    {
+      "type": "item",
+      "id": "1237",
+      "title": "能量法球",
+      "text": "能量法球 魔法 +140魔法攻擊 +10%冷卻縮減 唯一被動-充能：每30秒獲得12點魔法攻擊和110點生命，最多疊加10層 唯一被動-太陽神的祝福：升級後在3秒內回復10%魔力值以及20%生命值 裝備 1237 1237",
+      "href": "/items#item-1237",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1237.png"
+    },
+    {
+      "type": "item",
+      "id": "1238",
+      "title": "神聖法典",
+      "text": "神聖法典 魔法 +400魔法攻擊 唯一被動-戒律：增加1400點最大生命 裝備 1238 1238",
+      "href": "/items#item-1238",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1238.png"
+    },
+    {
+      "type": "item",
+      "id": "1239",
+      "title": "賢者領域",
+      "text": "賢者領域 魔法 +140魔法攻擊 +1050最大生命 唯一被動-結界：減少附近8m範圍內敵人（75+英雄等級*5）點魔法防禦 裝備 1239 1239",
+      "href": "/items#item-1239",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1239.png"
+    },
+    {
+      "type": "item",
+      "id": "1244",
+      "title": "邪靈秘錄",
+      "text": "邪靈秘錄 魔法 +120魔法攻擊 +10%冷卻縮減 +500最大生命 唯一被動-滅神：+150魔法穿透 裝備 1244 1244",
+      "href": "/items#item-1244",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1244.png"
+    },
+    {
+      "type": "item",
+      "id": "1242",
+      "title": "凝霜寶珠",
+      "text": "凝霜寶珠 魔法 +220魔法攻擊 裝備 1242 1242",
+      "href": "/items#item-1242",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1242.png"
+    },
+    {
+      "type": "item",
+      "id": "1311",
+      "title": "生命寶石",
+      "text": "生命寶石 防禦 +300最大生命 裝備 1311 1311",
+      "href": "/items#item-1311",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1311.png"
+    },
+    {
+      "type": "item",
+      "id": "1312",
+      "title": "鐵甲",
+      "text": "鐵甲 防禦 +90物理防禦 裝備 1312 1312",
+      "href": "/items#item-1312",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1312.png"
+    },
+    {
+      "type": "item",
+      "id": "1313",
+      "title": "勇士護腕",
+      "text": "勇士護腕 防禦 +90魔法防禦 裝備 1313 1313",
+      "href": "/items#item-1313",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1313.png"
+    },
+    {
+      "type": "item",
+      "id": "1314",
+      "title": "力量護符",
+      "text": "力量護符 防禦 +30每5秒回血 裝備 1314 1314",
+      "href": "/items#item-1314",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1314.png"
+    },
+    {
+      "type": "item",
+      "id": "1315",
+      "title": "生命項鍊",
+      "text": "生命項鍊 防禦 +600最大生命 裝備 1315 1315",
+      "href": "/items#item-1315",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1315.png"
+    },
+    {
+      "type": "item",
+      "id": "1321",
+      "title": "生命護脛",
+      "text": "生命護脛 防禦 +1000最大生命 裝備 1321 1321",
+      "href": "/items#item-1321",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1321.png"
+    },
+    {
+      "type": "item",
+      "id": "1322",
+      "title": "炎魔之心",
+      "text": "炎魔之心 防禦 +150物理防禦 唯一被動-灼燒：每秒對身邊的敵軍造成50點魔法傷害，每升一級增加2點傷害（對小兵和野怪的傷害增加50%） 裝備 1322 1322",
+      "href": "/items#item-1322",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1322.png"
+    },
+    {
+      "type": "item",
+      "id": "1323",
+      "title": "御魔腰帶",
+      "text": "御魔腰帶 防禦 +110魔法防禦 +700最大生命 唯一被動-恢復：受到傷害會在2秒內回復4%的生命，這個效果有15秒冷卻時間 裝備 1323 1323",
+      "href": "/items#item-1323",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1323.png"
+    },
+    {
+      "type": "item",
+      "id": "1324",
+      "title": "銀輝護腕",
+      "text": "銀輝護腕 防禦 +10%冷卻縮減 +110物理防禦 裝備 1324 1324",
+      "href": "/items#item-1324",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1324.png"
+    },
+    {
+      "type": "item",
+      "id": "1325",
+      "title": "騎士板甲",
+      "text": "騎士板甲 防禦 +210物理防禦 唯一被動-守護：受到攻擊會減少攻擊者20%攻擊速度 裝備 1325 1325",
+      "href": "/items#item-1325",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1325.png"
+    },
+    {
+      "type": "item",
+      "id": "1327",
+      "title": "尖刺甲胄",
+      "text": "尖刺甲胄 防禦 +300物理防禦 +1200最大生命 唯一被動-反噬：受到<color=#f18d00>物理傷害</color>時，會將傷害量的15%以<color=#8e91fd>魔法傷害</color>的形式反彈給對方（按照計算傷害減免之前的初始傷害值計算） 裝備 1327 1327",
+      "href": "/items#item-1327",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1327.png"
+    },
+    {
+      "type": "item",
+      "id": "1328",
+      "title": "狂暴之手",
+      "text": "狂暴之手 防禦 +80物理攻擊 +180物理防禦 唯一被動-狂暴：生命低於40%時獲得血怒，增加20%物理吸血與800+英雄等級*80護盾持續8秒，效果有60秒冷卻（吸血效果僅近戰有效） 裝備 1328 1328",
+      "href": "/items#item-1328",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1328.png"
+    },
+    {
+      "type": "item",
+      "id": "1331",
+      "title": "炎魔戰甲",
+      "text": "炎魔戰甲 防禦 +200物理防禦 +1000最大生命 +60每5秒回血 唯一被動-灼燒：每秒對身邊的敵軍造成自身2%最大生命<color=#8e91fd>魔法傷害</color>。（對小兵和野怪的傷害增加50%） 裝備 1331 1331",
+      "href": "/items#item-1331",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1331.png"
+    },
+    {
+      "type": "item",
+      "id": "1333",
+      "title": "聖騎戰盾",
+      "text": "聖騎戰盾 防禦 +20%冷卻縮減 +400最大魔力 +360物理防禦 唯一被動-守護：受到攻擊會減少攻擊者30%攻擊速度與15%移動速度，持續3秒 裝備 1333 1333",
+      "href": "/items#item-1333",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1333.png"
+    },
+    {
+      "type": "item",
+      "id": "1334",
+      "title": "德魯伊戰甲",
+      "text": "德魯伊戰甲 防禦 +240魔法防禦 +1200最大生命 +5%跑速 唯一被動-恢復：受到傷害會在2秒內回復8%的生命，這個效果有10秒CD 裝備 1334 1334",
+      "href": "/items#item-1334",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1334.png"
+    },
+    {
+      "type": "item",
+      "id": "1335",
+      "title": "仙靈吊墜",
+      "text": "仙靈吊墜 防禦 +10%冷卻縮減 +360魔法防禦 +1000最大生命 唯一被動-仙靈：每18秒獲得一個吸收（300+英雄等級*50）點<color=#8e91fd>魔法傷害</color>的護盾 裝備 1335 1335",
+      "href": "/items#item-1335",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1335.png"
+    },
+    {
+      "type": "item",
+      "id": "1336",
+      "title": "護衛軍戰盾",
+      "text": "護衛軍戰盾 防禦 +360物理防禦 +1200最大生命 唯一被動-強化守護：減少附近敵人30%攻速 裝備 1336 1336",
+      "href": "/items#item-1336",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1336.png"
+    },
+    {
+      "type": "item",
+      "id": "1337",
+      "title": "涅槃之刃",
+      "text": "涅槃之刃 防禦 +120物理防禦 唯一被動-涅槃：死亡後2秒原地復活，並獲得2000+（英雄等級*100）點血量，這個效果有150秒CD。（該技能單局內最多生效2次） 唯一被動-戰意:增加自身10%傷害。 裝備 1337 1337",
+      "href": "/items#item-1337",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1337.png"
+    },
+    {
+      "type": "item",
+      "id": "1338",
+      "title": "衝鋒戰甲",
+      "text": "衝鋒戰甲 移動 +200物理防禦 +1200最大生命 唯一被動-衝鋒：受到傷害獲得1層增益，每層提供2%跑速和2%傷害輸出率，最高5層 裝備 1338 1338",
+      "href": "/items#item-1338",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1338.png"
+    },
+    {
+      "type": "item",
+      "id": "1339",
+      "title": "長生護符",
+      "text": "長生護符 移動 +100物理防禦 +2000最大生命 唯一被動-長生：脫戰後每秒回4%最大生命值 裝備 1339 1339",
+      "href": "/items#item-1339",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1339.png"
+    },
+    {
+      "type": "item",
+      "id": "1340",
+      "title": "岩盾",
+      "text": "岩盾 移動 +180物理防禦 +180魔法防禦 +1200最大生命 裝備 1340 1340",
+      "href": "/items#item-1340",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1340.png"
+    },
+    {
+      "type": "item",
+      "id": "1411",
+      "title": "皮靴",
+      "text": "皮靴 移動 唯一被動-加速：+30跑速 裝備 1411 1411",
+      "href": "/items#item-1411",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1411.png"
+    },
+    {
+      "type": "item",
+      "id": "1421",
+      "title": "守衛軍戰靴",
+      "text": "守衛軍戰靴 移動 +110物理防禦 唯一被動-加速：+60跑速 唯一被動：減少15%受到普通攻擊的傷害 裝備 1421 1421",
+      "href": "/items#item-1421",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1421.png"
+    },
+    {
+      "type": "item",
+      "id": "1422",
+      "title": "聖騎士戰靴",
+      "text": "聖騎士戰靴 移動 +110魔法防禦 唯一被動-加速：+60跑速 唯一被動：+35%韌性 裝備 1422 1422",
+      "href": "/items#item-1422",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1422.png"
+    },
+    {
+      "type": "item",
+      "id": "1423",
+      "title": "吟遊之靴",
+      "text": "吟遊之靴 打野 +15%冷卻縮減 唯一被動-加速：+60跑速 裝備 1423 1423",
+      "href": "/items#item-1423",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1423.png"
+    },
+    {
+      "type": "item",
+      "id": "1424",
+      "title": "術士短靴",
+      "text": "術士短靴 打野 唯一被動-加速：+60跑速 唯一被動：+75魔法穿透 裝備 1424 1424",
+      "href": "/items#item-1424",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1424.png"
+    },
+    {
+      "type": "item",
+      "id": "1425",
+      "title": "騎士長靴",
+      "text": "騎士長靴 打野 +25%攻擊速度 唯一被動-加速：+60跑速 裝備 1425 1425",
+      "href": "/items#item-1425",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1425.png"
+    },
+    {
+      "type": "item",
+      "id": "1426",
+      "title": "遊蕩者之靴",
+      "text": "遊蕩者之靴 打野 唯一被動-迅捷：脫離戰鬥後增加60跑速 唯一被動-加速：+60跑速 裝備 1426 1426",
+      "href": "/items#item-1426",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1426.png"
+    },
+    {
+      "type": "item",
+      "id": "1511",
+      "title": "獵刀",
+      "text": "獵刀 打野 （獵刀升級後將制裁技能替換為寒冰制裁，寒冰制裁可對英雄使用，造成傷害和減速效果） 唯一被動-狩獵：增加20%對野怪的傷害，擊殺野怪獲得經驗提升20% 裝備 1511 1511",
+      "href": "/items#item-1511",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1511.png"
+    },
+    {
+      "type": "item",
+      "id": "1521",
+      "title": "巫毒之刃",
+      "text": "巫毒之刃 打野 （獲得寒冰制裁效果） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身6點魔攻和30點魔力，最多疊加20層 裝備 1521 1521",
+      "href": "/items#item-1521",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1521.png"
+    },
+    {
+      "type": "item",
+      "id": "1522",
+      "title": "野人戰斧",
+      "text": "野人戰斧 打野 （獲得寒冰制裁效果） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身50點最大生命，最多疊加20層 裝備 1522 1522",
+      "href": "/items#item-1522",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1522.png"
+    },
+    {
+      "type": "item",
+      "id": "1523",
+      "title": "獵魂短刀",
+      "text": "獵魂短刀 打野 （獲得寒冰制裁效果） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身2點物攻，最多疊加20層 裝備 1523 1523",
+      "href": "/items#item-1523",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1523.png"
+    },
+    {
+      "type": "item",
+      "id": "1524",
+      "title": "風息長弓",
+      "text": "風息長弓 打野 （獲得寒冰制裁效果） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身1.5%攻擊速度，最多疊加20層 裝備 1524 1524",
+      "href": "/items#item-1524",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1524.png"
+    },
+    {
+      "type": "item",
+      "id": "1531",
+      "title": "詛咒之刃",
+      "text": "詛咒之刃 打野 +120魔法攻擊 +10%冷卻縮減 （獲得寒冰制裁效果） 唯一被動-元素之力：使用技能強化下一次普攻，額外造成35%物理攻擊<color=#7FFFD4>（+60%魔法加成）</color>的<color=#8e91fd>魔法傷害</color>，冷卻時間2秒。 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身6點魔攻和30點魔力上限，最多疊加30層 裝備 1531 1",
+      "href": "/items#item-1531",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1531.png"
+    },
+    {
+      "type": "item",
+      "id": "1532",
+      "title": "炎魔戰斧",
+      "text": "炎魔戰斧 打野 +300物理防禦 （獲得寒冰制裁效果） 唯一被動-灼燒：每秒對附近敵人造成自身2%最大生命值魔法傷害。（對小兵和野怪的傷害增加100%） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身50點最大生命，最多疊加30層 裝備 1532 1532",
+      "href": "/items#item-1532",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1532.png"
+    },
+    {
+      "type": "item",
+      "id": "1533",
+      "title": "狩魂之劍",
+      "text": "狩魂之劍 打野 +60物理攻擊 +6%物理吸血 （獲得寒冰制裁效果） 唯一被動-魂狩：下一次對英雄的技能或者普攻造成額外（225+英雄等級*15）點魔法傷害，並在3秒內對英雄的傷害增加5%（僅近戰生效）（25秒冷卻時間）。 唯一被動：+15%冷卻縮減 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身2點物攻，最多疊加30層 裝備 1533 1533",
+      "href": "/items#item-1533",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1533.png"
+    },
+    {
+      "type": "item",
+      "id": "1534",
+      "title": "風炎神弓",
+      "text": "風炎神弓 +15物理攻擊 +15%攻擊速度 +10%物理吸血 （獲得寒冰制裁效果） 唯一被動-風炎:普攻會標記目標，每層標記額外造成15（每升3級成長1點）點<color=#8e91fd>魔法傷害</color>，最多疊加6層。（0.3秒冷卻時間） 唯一被動-狩獵：增加30%對野怪的傷害，擊殺野怪獲得經驗提升35% 唯一被動-獵殺：擊殺野怪增加自身1.5%攻擊速度，最多疊加30層 裝備 1534 1534",
+      "href": "/items#item-1534",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1534.png"
+    },
+    {
+      "type": "item",
+      "id": "1611",
+      "title": "元素寶石",
+      "text": "元素寶石 +5%跑速 被動-元素聚合: 自帶一塊元素結晶，此後每隔40秒獲得1塊元素結晶，最多累積10塊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 1611 1611",
+      "href": "/items#item-1611",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1611.png"
+    },
+    {
+      "type": "item",
+      "id": "1621",
+      "title": "土之寶石",
+      "text": "土之寶石 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 1621 1621",
+      "href": "/items#item-1621",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1621.png"
+    },
+    {
+      "type": "item",
+      "id": "1622",
+      "title": "水之寶石",
+      "text": "水之寶石 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 1622 1622",
+      "href": "/items#item-1622",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1622.png"
+    },
+    {
+      "type": "item",
+      "id": "1623",
+      "title": "火之寶石",
+      "text": "火之寶石 +30物理攻擊 +10%冷卻縮減 +5%跑速 被動-火魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為5點物理攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 1623 1623",
+      "href": "/items#item-1623",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1623.png"
+    },
+    {
+      "type": "item",
+      "id": "11210",
+      "title": "拘魂刀",
+      "text": "拘魂刀 攻擊 +100物理攻擊 +10%冷卻縮減 +150物理防禦 唯一被動-拘魂：造成傷害使得目標的生命恢復效果減少50%，持續1.5秒（如果該傷害由普攻觸發，則持續時間延長至3秒） 裝備 11210 11210",
+      "href": "/items#item-11210",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/11210.png"
+    },
+    {
+      "type": "item",
+      "id": "11271",
+      "title": "死神鐮刀",
+      "text": "死神鐮刀 攻擊 +60物理攻擊 +5%冷卻縮減 唯一被動-死神：免疫致命傷並免疫傷害、增加20%移動速度持續1秒，90秒冷卻 裝備 11271 11271",
+      "href": "/items#item-11271",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/11271.png"
+    },
+    {
+      "type": "item",
+      "id": "11361",
+      "title": "炎怒之爪",
+      "text": "炎怒之爪 攻擊 +30%攻擊速度 +20%暴擊率 +5%跑速 唯一被動-炎怒：普攻命中後提高自身攻擊速度10%，持續2秒，最高可以疊5層 裝備 11361 11361",
+      "href": "/items#item-11361",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/11361.png"
+    },
+    {
+      "type": "item",
+      "id": "12211",
+      "title": "拘魂錄",
+      "text": "拘魂錄 魔法 +220魔法攻擊 +10%冷卻縮減 +20每5秒回魔 +300最大生命 唯一被動-拘魂：造成傷害使得目標的生命恢復效果減少50%，持續1.5秒（如果該傷害由普攻觸發，則持續時間延長至3秒） 裝備 12211 12211",
+      "href": "/items#item-12211",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/12211.png"
+    },
+    {
+      "type": "item",
+      "id": "13310",
+      "title": "冰霜長袍",
+      "text": "冰霜長袍 移動 +10%冷卻縮減 +200物理防禦 +800最大生命 唯一被動-元素之力：使用技能後，下次普攻造成範圍30%減速與150點<color=#f18d00>物理傷害</color>(每升1級增加20點)，這個效果有3秒的冷卻時間 裝備 13310 13310",
+      "href": "/items#item-13310",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/13310.png"
+    },
+    {
+      "type": "item",
+      "id": "16211",
+      "title": "大地·壁障",
+      "text": "大地·壁障 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16211 1621",
+      "href": "/items#item-16211",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16211.png"
+    },
+    {
+      "type": "item",
+      "id": "16212",
+      "title": "大地·魔眼",
+      "text": "大地·魔眼 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16212 1621",
+      "href": "/items#item-16212",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16212.png"
+    },
+    {
+      "type": "item",
+      "id": "16213",
+      "title": "大地·滅絕",
+      "text": "大地·滅絕 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16213 1621",
+      "href": "/items#item-16213",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16213.png"
+    },
+    {
+      "type": "item",
+      "id": "16214",
+      "title": "大地·清心",
+      "text": "大地·清心 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16214 1621",
+      "href": "/items#item-16214",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16214.png"
+    },
+    {
+      "type": "item",
+      "id": "16215",
+      "title": "大地·元力",
+      "text": "大地·元力 +10%冷卻縮減 +400最大生命 +5%跑速 被動-土魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為80點生命值。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16215 1621",
+      "href": "/items#item-16215",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16215.png"
+    },
+    {
+      "type": "item",
+      "id": "16221",
+      "title": "潮汐·壁障",
+      "text": "潮汐·壁障 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16221 16221",
+      "href": "/items#item-16221",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16221.png"
+    },
+    {
+      "type": "item",
+      "id": "16222",
+      "title": "潮汐·魔眼",
+      "text": "潮汐·魔眼 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16222 16222",
+      "href": "/items#item-16222",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16222.png"
+    },
+    {
+      "type": "item",
+      "id": "16223",
+      "title": "潮汐·滅絕",
+      "text": "潮汐·滅絕 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16223 16223",
+      "href": "/items#item-16223",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16223.png"
+    },
+    {
+      "type": "item",
+      "id": "16224",
+      "title": "潮汐·清心",
+      "text": "潮汐·清心 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16224 16224",
+      "href": "/items#item-16224",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16224.png"
+    },
+    {
+      "type": "item",
+      "id": "16225",
+      "title": "潮汐·元力",
+      "text": "潮汐·元力 +40魔法攻擊 +10%冷卻縮減 +5%跑速 被動-水魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為9點魔法攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16225 16225",
+      "href": "/items#item-16225",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16225.png"
+    },
+    {
+      "type": "item",
+      "id": "16231",
+      "title": "烈焰·壁障",
+      "text": "烈焰·壁障 +30物理攻擊 +10%冷卻縮減 +5%跑速 被動-火魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為5點物理攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16231 16231",
+      "href": "/items#item-16231",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16231.png"
+    },
+    {
+      "type": "item",
+      "id": "16232",
+      "title": "烈焰·魔眼",
+      "text": "烈焰·魔眼 +30物理攻擊 +10%冷卻縮減 +5%跑速 被動-火魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為5點物理攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16232 16232",
+      "href": "/items#item-16232",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16232.png"
+    },
+    {
+      "type": "item",
+      "id": "16233",
+      "title": "烈焰·滅絕",
+      "text": "烈焰·滅絕 +30物理攻擊 +10%冷卻縮減 +5%跑速 被動-火魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為5點物理攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16233 16233",
+      "href": "/items#item-16233",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16233.png"
+    },
+    {
+      "type": "item",
+      "id": "16234",
+      "title": "烈焰·清心",
+      "text": "烈焰·清心 +30物理攻擊 +10%冷卻縮減 +5%跑速 被動-火魂：每隔40秒獲得1塊元素結晶，最多累積10塊。將每塊元素結晶轉化為5點物理攻擊。 被動-後起之秀：如果經濟或經驗為全隊的倒數前2名，則每3秒增加8點金幣或經驗 被動-謙讓：當身邊有友方英雄時，友方英雄可以從小兵和野怪獲得全額經濟和經驗，自己獲得40%金幣和經驗。這個效果在遊戲8分鐘時失效。 被動-軍功：參與擊殺時獲得額外30%的經驗和金幣。 裝備 16234 16234",
+      "href": "/items#item-16234",
+      "image": "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/16234.png"
+    },
+    {
+      "type": "page",
+      "id": "player",
+      "title": "選手數據",
+      "text": "選手數據 player htw0702aov 歷史戰績 配裝 對戰資料",
+      "href": "/player",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "heroes",
+      "title": "英雄",
+      "text": "英雄 heroes 名單 造型 技能",
+      "href": "/heroes",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "items",
+      "title": "裝備",
+      "text": "裝備 items 出裝 道具",
+      "href": "/items",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "modes",
+      "title": "模式",
+      "text": "模式 modes 排位賽",
+      "href": "/modes",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "activities",
+      "title": "官方活動",
+      "text": "活動 公告 賽事 activities",
+      "href": "/activities",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "roster",
+      "title": "成員",
+      "text": "成員 roster 選手",
+      "href": "/roster",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "about",
+      "title": "戰隊",
+      "text": "戰隊 about 暮霞 MOS MOOHSIA",
+      "href": "/about",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "apply",
+      "title": "加入申請",
+      "text": "加入申請 apply 招募",
+      "href": "/apply",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "news",
+      "title": "動態",
+      "text": "動態 news 公告",
+      "href": "/news",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "contact",
+      "title": "聯絡",
+      "text": "聯絡 contact Info@moohsia.com",
+      "href": "/contact",
+      "image": ""
+    }
   ]
 }

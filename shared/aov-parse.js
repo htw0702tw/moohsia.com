@@ -1,5 +1,7 @@
 /** Parse public Garena TW Arena of Valor pages. No login, no private API. */
 
+import { buildSearchIndex } from "./aov-assets.js";
+
 export const HERO_LIST_URL = "https://moba.garena.tw/game/heroes/";
 export const PROPS_URL = "https://moba.garena.tw/game/props";
 
@@ -364,9 +366,10 @@ export function parseHeroDetail(html) {
   for (let index = 0; index < count && skins.length < 16; index += 1) {
     const image = banners[index] || thumbs[index];
     if (!image) continue;
+    const named = "";
     skins.push({
       id: String(index),
-      name: { zh: "", en: "" },
+      name: { zh: named, en: "" },
       image,
       thumb: thumbs[index] || image,
       kind: index === 0 && !/\/skin\//.test(image) ? "default" : "skin",
@@ -379,8 +382,22 @@ export function parseHeroDetail(html) {
   };
 }
 
+async function mapPool(items, size, fn) {
+  const out = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(size, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      out[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
 export function assembleCatalog({ heroes, modes, activities = [], items = [], fetchedAt }) {
-  return {
+  const payload = {
     source: "official-snapshot",
     fetchedAt,
     attribution: {
@@ -398,6 +415,8 @@ export function assembleCatalog({ heroes, modes, activities = [], items = [], fe
     modes,
     activities,
   };
+  payload.search = buildSearchIndex(payload);
+  return payload;
 }
 
 /**
@@ -437,17 +456,17 @@ export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toI
     for (let index = 0; index < Math.min(detailLimit, heroes.length); index += 1) {
       chosen.push((offset + index) % heroes.length);
     }
-    for (const index of chosen) {
+    await mapPool(chosen, 6, async (index) => {
       const hero = heroes[index];
       try {
         const response = await fetchImpl(hero.pageUrl, { headers });
-        if (!response.ok) continue;
+        if (!response.ok) return;
         const detail = parseHeroDetail(await response.text());
         heroes[index] = { ...hero, ...detail, skillsUrl: hero.pageUrl };
       } catch {
         /* keep the list row if one public hero page fails */
       }
-    }
+    });
   }
   const modes = [];
   const seenUrls = new Map();

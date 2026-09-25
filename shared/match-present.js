@@ -1,19 +1,14 @@
 /** Display helpers for in-game match rows. Farm and healing stay different fields. */
 
-export const ITEM_ICON_BASE =
-  "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/";
+import { itemIconUrl, resolveItem } from "./aov-assets.js";
 
 export function itemIdFromToken(value) {
   const text = String(value ?? "").trim();
-  const fromPath = /\/image\/item\/(\d{1,6})\./i.exec(text);
+  const fromPath = /\/(?:image\/item|BattleEquip)\/(\d{1,6})\./i.exec(text);
   if (fromPath) return fromPath[1];
   const labeled = /^(?:裝備\s*)?(\d{3,6})$/.exec(text);
   if (labeled) return labeled[1];
   return "";
-}
-
-export function itemIconUrl(id) {
-  return id ? `${ITEM_ICON_BASE}${id}.png` : "";
 }
 
 /** Always six slots. Empty slots stay so a build is never shortened. */
@@ -23,13 +18,12 @@ export function itemSlots(items, catalogItems = []) {
   return Array.from({ length: 6 }, (_, index) => {
     const raw = String(list[index] ?? "").trim();
     const id = itemIdFromToken(raw);
-    const found = id ? known.find((item) => String(item?.id) === id) : null;
-    const name = found?.name?.zh || found?.name?.en || "";
+    const resolved = resolveItem(id || raw, known);
     return {
-      id,
-      label: name || raw,
-      src: found?.image || itemIconUrl(id),
-      description: found?.description || "",
+      id: resolved.id || id,
+      label: resolved.name || resolved.label || raw,
+      src: resolved.image || itemIconUrl(id),
+      description: resolved.description || "",
     };
   });
 }

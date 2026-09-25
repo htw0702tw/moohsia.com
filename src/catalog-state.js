@@ -11,8 +11,8 @@ const empty = {
 
 let catalog = empty;
 let role = "all";
-let activityKind = "all";
 let itemCategory = "all";
+let activityKind = "all";
 
 export function getCatalog() {
   return catalog;
@@ -41,6 +41,14 @@ export function getRoleFilter() {
 
 export function setRoleFilter(next) {
   role = typeof next === "string" && next ? next : "all";
+}
+
+export function getItemFilter() {
+  return itemCategory;
+}
+
+export function setItemFilter(next) {
+  itemCategory = typeof next === "string" && next ? next : "all";
 }
 
 export function getActivityFilter() {

@@ -2,6 +2,7 @@ import { getCatalog } from "./catalog-state.js";
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
 import { getPlayerView } from "./player-view.js";
+import { resolveHero } from "../shared/aov-assets.js";
 import { derivedKda, matchRecency } from "../shared/player.js";
 import {
   controlEffect,
@@ -70,8 +71,7 @@ function ownerStats(match) {
 }
 
 function heroImage(name) {
-  const hero = getCatalog().heroes.find((item) => item.name?.zh === name || item.name?.en === name);
-  return hero?.image || "";
+  return resolveHero(name, getCatalog().heroes).image || "";
 }
 
 function portrait(name, score) {

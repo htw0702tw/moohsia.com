@@ -1,7 +1,7 @@
 import { SITE_URL } from "../shared/brand.js";
 import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
-import { setActivityFilter, setCatalog, setItemCategory, setRoleFilter } from "./catalog-state.js";
+import { getCatalog, setActivityFilter, setCatalog, setItemCategory, setItemFilter, setRoleFilter } from "./catalog-state.js";
 import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
@@ -27,6 +27,21 @@ const ROUTES = {
   "/apply": "apply",
   "/contact": "contact",
 };
+
+const searchState = { q: "", results: [], open: false, seq: 0 };
+
+function resolveRoute(path) {
+  const roster = /^\/roster\/([A-Za-z0-9_-]{1,40})$/.exec(path);
+  if (roster) return { name: "member", id: "", key: roster[1] };
+  const hero = /^\/heroes\/(\d{1,6})$/.exec(path);
+  if (hero) return { name: "hero", id: hero[1], key: "" };
+  const item = /^\/items\/(\d{3,6})$/.exec(path);
+  if (item) return { name: "item", id: item[1], key: "" };
+  const mode = /^\/modes\/([a-z0-9-]{1,40})$/.exec(path);
+  if (mode) return { name: "mode", id: mode[1], key: "" };
+  if (ROUTES[path]) return { name: ROUTES[path], id: "", key: "" };
+  return { name: "notFound", id: "", key: "" };
+}
 
 const state = {
   lang: "zh",
@@ -115,6 +130,11 @@ function shell() {
       </a>
       <nav class="nav-links" aria-label="Primary">${links}</nav>
       <div class="nav-tools">
+        <form class="site-search" role="search" data-site-search>
+          <label class="sr-only" for="site-q">${esc(text.search.label)}</label>
+          <input id="site-q" type="search" name="q" autocomplete="off" enterkeyhint="search" placeholder="${esc(text.search.placeholder)}" value="${esc(searchState.q)}">
+          <div class="search-results" data-search-results ${searchState.open ? "" : "hidden"}>${searchResults(text)}</div>
+        </form>
         <p class="sys"><i></i><span>${esc(text.nav.sys)}</span></p>
         <p class="nav-chip">${esc(text.nav.recruitChip)}</p>
         <button class="lang" type="button" data-lang aria-label="${esc(text.nav.lang)}">${esc(text.nav.langShort)}</button>
@@ -154,16 +174,18 @@ function shell() {
   `;
 }
 
-function resolvePath(path) {
-  const roster = /^\/roster\/([A-Za-z0-9_-]{1,40})$/.exec(path);
-  if (roster) return { name: "member", key: roster[1] };
-  const hero = /^\/heroes\/(\d{1,6})$/.exec(path);
-  if (hero) return { name: "hero", id: hero[1] };
-  const item = /^\/items\/(\d{3,6})$/.exec(path);
-  if (item) return { name: "item", id: item[1] };
-  const mode = /^\/modes\/([a-z0-9-]{1,40})$/.exec(path);
-  if (mode) return { name: "mode", id: mode[1] };
-  return { name: ROUTES[path] || "notFound" };
+function searchResults(text) {
+  if (!searchState.q.trim()) return "";
+  if (!searchState.results.length) return `<p>${esc(text.search.empty)}</p>`;
+  return searchState.results
+    .map((result) => {
+      const kind = text.search[result.type] || result.type;
+      const image = result.image
+        ? `<img src="${esc(result.image)}" alt="" width="32" height="32" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+        : "";
+      return `<a href="${esc(result.href)}" data-nav>${image}<span><b>${esc(result.title)}</b><small>${esc(kind)}</small></span></a>`;
+    })
+    .join("");
 }
 
 function setActive() {
@@ -179,13 +201,17 @@ function setActive() {
 function setMeta() {
   const text = copy();
   const path = currentPath();
-  const route = resolvePath(path);
-  const name = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
-  const page = text[name] || text.notFound;
-  const title = path === "/" ? text.meta.homeTitle : `${page.title} — ${text.meta.titleSuffix}`;
+  const route = resolveRoute(path);
+  const pageKey = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
+  const page = text[pageKey] || text.notFound;
+  const hero = route.name === "hero" ? getCatalog().heroes.find((entry) => String(entry.id) === route.id) : null;
+  const item = route.name === "item" ? getCatalog().items.find((entry) => String(entry.id) === route.id) : null;
+  const heroName = hero?.name?.zh || "";
+  const itemName = item?.name?.zh || "";
+  const title = path === "/" ? text.meta.homeTitle : `${heroName || itemName || page.title} — ${text.meta.titleSuffix}`;
   document.title = title;
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
-  const description = path === "/" ? text.meta.homeDescription : page.lead || text.meta.homeDescription;
+  const description = path === "/" ? text.meta.homeDescription : hero?.blurb || item?.description || page.lead || text.meta.homeDescription;
   const meta = document.querySelector('meta[name="description"]');
   if (meta) meta.setAttribute("content", description);
   const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -259,7 +285,7 @@ function paint() {
       path = target;
     }
   }
-  const route = resolvePath(path);
+  const route = resolveRoute(path);
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
   app.innerHTML = shell();
   const main = document.getElementById("main");
@@ -269,16 +295,25 @@ function paint() {
   mountMotion(main);
   mountChrome();
   restoreMenu();
+  const hash = window.location.hash;
+  if (hash) {
+    const anchor = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (anchor) anchor.scrollIntoView({ block: "start" });
+  }
 }
 
 function navigate(href, { push = true } = {}) {
   const url = new URL(href, window.location.origin);
   const next = normalize(url.pathname);
-  if (push && next !== currentPath()) history.pushState({}, "", next);
+  const hash = url.hash;
+  if (push) history.pushState({}, "", `${next}${hash}`);
   closeMenu(false);
+  searchState.open = false;
   paint();
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  const target = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+  if (target) target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
   const main = document.getElementById("main");
   if (main) main.focus({ preventScroll: true });
 }
@@ -332,15 +367,20 @@ function mountIntro() {
 }
 
 function onClick(event) {
+  if (!event.target.closest("[data-site-search]") && searchState.open) {
+    searchState.open = false;
+    paintSearchResults();
+  }
   const role = event.target.closest("[data-role-filter]");
   if (role) {
     setRoleFilter(role.getAttribute("data-role-filter"));
     paint();
     return;
   }
-  const itemCategory = event.target.closest("[data-item-category]");
+  const itemCategory = event.target.closest("[data-item-category], [data-item-filter]");
   if (itemCategory) {
-    setItemCategory(itemCategory.getAttribute("data-item-category"));
+    setItemCategory(itemCategory.getAttribute("data-item-category") || itemCategory.getAttribute("data-item-filter"));
+    setItemFilter(itemCategory.getAttribute("data-item-filter") || itemCategory.getAttribute("data-item-category"));
     paint();
     return;
   }
@@ -440,6 +480,12 @@ function showApplyError(code, field) {
 
 async function onSubmit(event) {
   const form = event.target;
+  if (form instanceof HTMLFormElement && form.hasAttribute("data-site-search")) {
+    event.preventDefault();
+    window.clearTimeout(searchTimer);
+    void runSearch();
+    return;
+  }
   if (!(form instanceof HTMLFormElement) || form.id !== "apply-form") return;
   event.preventDefault();
   const payload = readApply(form);
@@ -516,9 +562,45 @@ async function loadCatalog() {
     const data = await response.json();
     if (!data || data.ok !== true) return;
     setCatalog(data);
+    if (painted) paint();
   } catch {
     /* catalog pages show the empty state */
   }
+}
+
+let searchTimer = 0;
+
+async function runSearch() {
+  const query = searchState.q.trim();
+  const seq = searchState.seq + 1;
+  searchState.seq = seq;
+  if (!query) {
+    searchState.results = [];
+    searchState.open = false;
+    paintSearchResults();
+    return;
+  }
+  try {
+    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    if (!response.ok || seq !== searchState.seq) return;
+    const data = await response.json();
+    if (seq !== searchState.seq) return;
+    searchState.results = Array.isArray(data.results) ? data.results : [];
+    searchState.open = true;
+    paintSearchResults();
+  } catch {
+    if (seq !== searchState.seq) return;
+    searchState.results = [];
+    searchState.open = true;
+    paintSearchResults();
+  }
+}
+
+function paintSearchResults() {
+  const box = document.querySelector("[data-search-results]");
+  if (!box) return;
+  box.innerHTML = searchResults(copy());
+  box.hidden = !searchState.open;
 }
 
 async function boot() {
@@ -526,6 +608,14 @@ async function boot() {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce || introSeen()) document.body.classList.add("is-ready");
   document.addEventListener("click", onClick);
+  document.addEventListener("input", (event) => {
+    if (event.target?.id !== "site-q") return;
+    searchState.q = event.target.value;
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(() => {
+      void runSearch();
+    }, 180);
+  });
   document.addEventListener("keydown", onKeydown);
   document.addEventListener("submit", onSubmit);
   window.addEventListener("popstate", () => {

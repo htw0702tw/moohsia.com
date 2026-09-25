@@ -50,6 +50,18 @@ test("official catalog snapshot has heroes, roles, and named modes", async () =>
   assert.ok(catalog.heroes.some((hero) => hero.name.zh === "薇菈" && hero.role === "master"));
   assert.ok(catalog.roles.some((role) => role.zh === "坦克" && role.id === "tank"));
   assert.ok(catalog.modes.some((mode) => mode.name.zh === "5V5經典競技"));
+  assert.ok(catalog.items.length >= 80);
+  const boots = catalog.items.find((item) => item.id === "1423");
+  assert.equal(boots.name.zh, "吟遊之靴");
+  assert.match(boots.description, /冷卻縮減/);
+  assert.match(boots.image, /BattleEquip\/1423\.png$/);
+  const marksman = catalog.heroes.find((hero) => hero.name.zh === "勇");
+  assert.ok(marksman.skills.some((skill) => skill.name === "怒射"));
+  assert.ok(marksman.skins.length >= 2);
+  assert.match(marksman.skins[1].image, /\/skin\//);
+  const sword = await (await handleApi(new Request("https://moohsia.com/api/search?q=短劍"))).json();
+  assert.equal(sword.results[0].type, "item");
+  assert.equal(sword.results[0].title, "短劍");
   assert.equal(catalog.attribution.heroes, "https://moba.garena.tw/game/heroes/");
   for (const hero of catalog.heroes) {
     assert.match(hero.image, /^https:\/\/cdngarenanow-a\.akamaihd\.net\//);

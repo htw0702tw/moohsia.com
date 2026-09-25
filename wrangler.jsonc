@@ -48,10 +48,11 @@
       "bucket_name": "moohsia-media"
     }
   ],
-  // Daily 18:15 UTC (02:15 Taipei). Pulls Notion into the CMS draft and
-  // refreshes the official hero/mode catalog in D1/KV. It does not publish.
+  // 0 * * * * hourly: refresh htw0702aov fight history into the CMS player.
+  // 15 18 * * * daily (02:15 Taipei): Notion draft sync and official catalog refresh.
+  // The hourly job publishes only the merged player record. It does not publish other drafts.
   "triggers": {
-    "crons": ["15 18 * * *"]
+    "crons": ["0 * * * *", "15 18 * * *"]
   }
   // Custom domains are attached in the Cloudflare dashboard (or by uncommenting
   // after the moohsia.com zone is on this account). Do not route this Worker

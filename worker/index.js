@@ -1,5 +1,6 @@
 import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
+import { syncOwnerFightHistory } from "../shared/aov-sync.js";
 import { refreshCatalog } from "../shared/catalog-store.js";
 import { isAdminHost } from "../shared/hosts.js";
 import { logFailure } from "../shared/log.js";
@@ -183,8 +184,15 @@ export default {
     }
   },
 
-  /** Draft-only Notion sync and official catalog refresh. Does not publish the site. */
-  async scheduled(_controller, env, ctx) {
+  /**
+   * Hourly: merge htw0702aov fight history and publish that player record only.
+   * Daily 18:15 UTC: Notion draft sync and official catalog refresh. That job does not publish drafts.
+   */
+  async scheduled(controller, env, ctx) {
+    if (controller?.cron === "0 * * * *") {
+      ctx.waitUntil(syncOwnerFightHistory(env));
+      return;
+    }
     ctx.waitUntil(runScheduled(env));
   },
 };

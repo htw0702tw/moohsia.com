@@ -1,4 +1,5 @@
 import snapshot from "../data/aov-catalog.json" with { type: "json" };
+import { buildSearchIndex } from "./aov-assets.js";
 import { buildOfficialCatalog } from "./aov-parse.js";
 import { logFailure } from "./log.js";
 
@@ -34,7 +35,7 @@ function richerHero(fallback, primary) {
   };
 }
 
-/** Keep skins and items when a later fetch has not filled them yet. */
+/** Fill missing skins, skills, and items from the other copy, then rebuild search. */
 export function mergeCatalog(primary, fallback) {
   const next = withActivities(primary || {});
   const prev = withActivities(fallback || {});
@@ -48,16 +49,21 @@ export function mergeCatalog(primary, fallback) {
   for (const hero of prev.heroes || []) {
     if (!seen.has(String(hero.id))) heroes.push(hero);
   }
-  return {
+  const items = next.items.length ? next.items : prev.items;
+  const modes = Array.isArray(next.modes) && next.modes.length ? next.modes : prev.modes || [];
+  const activities = next.activities.length ? next.activities : prev.activities;
+  const merged = {
     ...prev,
     ...next,
     heroes,
-    items: next.items.length ? next.items : prev.items,
-    modes: Array.isArray(next.modes) && next.modes.length ? next.modes : prev.modes || [],
-    activities: next.activities.length ? next.activities : prev.activities,
+    items,
+    modes,
+    activities,
     attribution: next.attribution || prev.attribution || null,
     roles: Array.isArray(next.roles) && next.roles.length ? next.roles : prev.roles || [],
   };
+  merged.search = buildSearchIndex(merged);
+  return merged;
 }
 
 async function readStoredCatalog(env) {
@@ -86,12 +92,16 @@ async function readStoredCatalog(env) {
   return null;
 }
 
-/** Public catalog. Stored D1/KV wins; the snapshot fills any missing skins or items. */
+/** Public catalog. Stored D1/KV wins, then the committed snapshot fills any missing skins or items. */
 export async function loadCatalog(env) {
-  const bundled = { ...withActivities(bundledCatalog()), source: "snapshot" };
+  const bundled = ensureSearch({ ...withActivities(bundledCatalog()), source: "snapshot" });
   const stored = await readStoredCatalog(env);
   if (!stored) return bundled;
-  return { ...mergeCatalog(stored, bundled), source: "stored" };
+  return ensureSearch({ ...mergeCatalog(stored, bundled), source: "stored" });
+}
+
+function ensureSearch(catalog) {
+  return { ...catalog, search: buildSearchIndex(catalog) };
 }
 
 export async function storeCatalog(env, payload) {
@@ -127,7 +137,7 @@ export async function refreshCatalog(env) {
   try {
     const previous = await loadCatalog(env);
     const offset = Number(previous?.detailCursor) || 0;
-    const detailLimit = Number(env?.CATALOG_DETAIL_LIMIT) || 8;
+    const detailLimit = Number(env?.CATALOG_DETAIL_LIMIT) || 12;
     const payload = await buildOfficialCatalog(fetchImpl, new Date().toISOString(), {
       detailLimit,
       detailOffset: offset,
