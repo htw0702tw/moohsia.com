@@ -43,6 +43,13 @@ async function adminEnv() {
   };
 }
 
+function sessionPayload(setCookie) {
+  const token = (setCookie || "").split(";")[0].slice("mos_admin=".length);
+  const body = token.slice(0, token.lastIndexOf("."));
+  const padded = body.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(body.length / 4) * 4, "=");
+  return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+}
+
 function loginRequest(password, ip = "203.0.113.10") {
   return new Request("https://admin.moohsia.com/api/admin/login", {
     method: "POST",
@@ -87,14 +94,22 @@ test("public content falls back to defaults and hides admin routes", async () =>
 test("login cookie, csrf, draft publish, and public projection", async () => {
   const env = await adminEnv();
   const denied = await handleAdmin(loginRequest("wrong-password"), env);
+  const deniedBody = await denied.json();
   assert.equal(denied.status, 401);
-  assert.equal((await denied.json()).code, "invalid_login");
+  assert.equal(deniedBody.code, "invalid_login");
+  assert.equal(denied.headers.get("cache-control"), "no-store");
+  assert.equal(JSON.stringify(deniedBody).includes(PASSWORD), false);
+  assert.equal(JSON.stringify(deniedBody).includes("htw0702"), false);
 
   const loggedIn = await handleAdmin(loginRequest(PASSWORD), env);
   const session = await loggedIn.json();
   const cookie = loggedIn.headers.get("set-cookie") || "";
   assert.equal(loggedIn.status, 200);
-  assert.equal(session.username, "htw0702");
+  assert.equal(loggedIn.headers.get("cache-control"), "no-store");
+  assert.equal(Object.hasOwn(session, "username"), false);
+  assert.equal(JSON.stringify(session).includes("htw0702"), false);
+  assert.equal(typeof session.csrf, "string");
+  assert.equal(sessionPayload(cookie).u, "htw0702");
   assert.match(cookie, /mos_admin=/);
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /Secure/i);
@@ -102,6 +117,13 @@ test("login cookie, csrf, draft publish, and public projection", async () => {
   assert.equal(cookie.includes(PASSWORD), false);
 
   const token = cookie.split(";")[0];
+  const who = await handleAdmin(new Request("https://admin.moohsia.com/api/admin/session", { headers: { cookie: token } }), env);
+  const whoBody = await who.json();
+  assert.equal(who.status, 200);
+  assert.equal(who.headers.get("cache-control"), "no-store");
+  assert.equal(Object.hasOwn(whoBody, "username"), false);
+  assert.equal(whoBody.csrf, session.csrf);
+
   const draft = sanitizeDocument(getDefaultDocument());
   draft.copy.zh.home.tagline = "已發布標語";
   draft.contactEmail = "Info@moohsia.com";
@@ -371,6 +393,7 @@ test("admin host serves the admin shell and public host does not", async () => {
   const loginPage = await worker.fetch(new Request("https://admin.moohsia.com/login"), env);
   assert.equal(await loginPage.text(), "admin-shell");
   assert.equal(loginPage.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.equal(loginPage.headers.get("cache-control"), "no-store");
 
   const root = await worker.fetch(new Request("https://admin.moohsia.com/"), env);
   assert.equal(root.status, 302);

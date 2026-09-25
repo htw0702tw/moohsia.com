@@ -1,5 +1,6 @@
 import { getDefaultDocument } from "../src/content.js";
 import { storeFromEnv } from "./cms-store.js";
+import { logFailure } from "./log.js";
 import { projectDefault, sanitizeDocument, toPublicDocument } from "./site-document.js";
 
 function nowIso() {
@@ -24,12 +25,7 @@ export async function loadPublicPayload(env) {
     const doc = sanitizeDocument(JSON.parse(row.published_json));
     return { ok: true, source: "published", ...toPublicDocument(doc) };
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        message: "cms_read_failed",
-        name: error instanceof Error ? error.name : "Error",
-      }),
-    );
+    logFailure("cms_read_failed", error);
     return projectDefault();
   }
 }

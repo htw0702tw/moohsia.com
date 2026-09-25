@@ -3,6 +3,7 @@ import { handleAdmin } from "./shared/admin-api.js";
 import { handleApi } from "./shared/api.js";
 import { createMemoryStore } from "./shared/cms-store.js";
 import { isAdminHost } from "./shared/hosts.js";
+import { logFailure } from "./shared/log.js";
 
 function readDevVars() {
   if (!existsSync(".dev.vars")) return {};
@@ -102,7 +103,7 @@ export function apiDevPlugin() {
         res.statusCode = 500;
         res.setHeader("content-type", "application/json; charset=utf-8");
         res.end(JSON.stringify({ ok: false, code: "server_error" }));
-        console.error(error instanceof Error ? error.name : "Error");
+        logFailure("dev_api_failed", error);
       }
     });
   };
