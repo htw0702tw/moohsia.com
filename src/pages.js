@@ -12,6 +12,7 @@ import {
 } from "./content.js";
 import { esc } from "./html.js";
 import { renderPlayerBody } from "./player-page.js";
+import { findRosterMember, memberSlug, playerMemberPath } from "../shared/match-present.js";
 
 export function brandMark() {
   return `
@@ -112,7 +113,7 @@ function rosterCards(copy) {
       .map((member, index) => {
         const name = (member.name?.[lang] || member.name?.zh || "").trim();
         const role = (member.role?.[lang] || member.role?.zh || "").trim() || roster.rolePending;
-        return slotCard(index, name, role, roster.stampLive, false);
+        return slotCard(index, name, role, roster.stampLive, false, memberSlug(member) ? `/roster/${memberSlug(member)}` : "");
       })
       .join("");
   }
@@ -121,18 +122,18 @@ function rosterCards(copy) {
   ).join("");
 }
 
-function slotCard(index, name, meta, stamp, empty) {
-  return `
-    <article class="slot${empty ? " is-empty" : ""} reveal">
+function slotCard(index, name, meta, stamp, empty, href = "") {
+  const body = `
       <div class="slot-top">
         <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
         <p class="stamp">${esc(stamp)}</p>
       </div>
       <div class="silhouette" aria-hidden="true"><span></span></div>
       <h3>${esc(name)}</h3>
-      <p>${esc(meta)}</p>
-    </article>
-  `;
+      <p>${esc(meta)}</p>`;
+  const klass = `slot${empty ? " is-empty" : ""} reveal`;
+  if (href) return `<a class="${klass}" href="${esc(href)}" data-nav>${body}</a>`;
+  return `<article class="${klass}">${body}</article>`;
 }
 
 function newsBody(copy, compact) {
@@ -331,7 +332,7 @@ export function renderHome(copy) {
             <h2>${esc(home.playerTitle)}</h2>
             <p class="section-note">${esc(getPlayer() ? home.playerLead : home.playerEmpty)}</p>
           </div>
-          <a class="btn btn-ghost" href="/player" data-nav>${esc(home.playerCta)}</a>
+          <a class="btn btn-ghost" href="${esc(playerMemberPath(getRosterMembers(), getPlayer()) || "/roster")}" data-nav>${esc(home.playerCta)}</a>
         </div>
         ${renderPlayerBody(copy, true)}
       </section>
@@ -464,17 +465,6 @@ export function renderRoster(copy) {
         </div>
       </section>
       <section class="section wrap">
-        <div class="section-head section-head-row">
-          <div>
-            <p class="section-kicker">${esc(copy.player.kicker)}</p>
-            <h2>${esc(copy.player.title)}</h2>
-            <p class="section-note">${esc(getPlayer() ? copy.player.lead : copy.player.emptyBody)}</p>
-          </div>
-          <a class="btn btn-ghost" href="/player" data-nav>${esc(copy.home.playerCta)}</a>
-        </div>
-        ${renderPlayerBody(copy, true)}
-      </section>
-      <section class="section wrap">
         <div class="plate reveal">
           ${seal(copy.nav.recruitChip)}
           <div>
@@ -570,16 +560,40 @@ function heroCard(hero, copy) {
   const role = bi(hero.roleLabel) || "";
   return `
     <article class="hero-card reveal">
-      <a href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">
+      <a href="/heroes/${esc(hero.id)}" data-nav>
         <span class="hero-portrait">
           <img src="${esc(hero.image || "")}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
         </span>
         <span class="hero-meta">
           <strong>${esc(name)}</strong>
           <em>${esc(role)}</em>
-          <small>${esc(copy.heroes.open)}</small>
+          <small>${esc(copy.nav.skins)}</small>
         </span>
       </a>
+    </article>`;
+}
+
+export function renderMember(copy, key) {
+  const member = findRosterMember(getRosterMembers(), key);
+  const player = getPlayer();
+  if (!member) return renderNotFound(copy);
+  const name = bi(member.name) || copy.player.pending;
+  const role = member ? bi(member.role) : "";
+  return `
+    <article class="page subpage member-page">
+      <header class="mast wrap">
+        <p class="crumbs"><a href="/roster" data-nav>${esc(copy.nav.roster)}</a><span aria-hidden="true">/</span><span>${esc(copy.player.title)}</span></p>
+        <p class="kicker">${esc(copy.player.title)}</p>
+        <h1>${esc(name)}</h1>
+        <p class="lead">${esc(player ? copy.player.lead : copy.player.emptyBody)}</p>
+        ${role ? `<p class="stamp">${esc(role)}</p>` : ""}
+        <p class="aov-jumps">
+          <a href="/skins" data-nav>${esc(copy.nav.skins)}</a>
+          <a href="/items" data-nav>${esc(copy.nav.items)}</a>
+          <a href="/modes" data-nav>${esc(copy.nav.modes)}</a>
+        </p>
+      </header>
+      <section class="section wrap">${renderPlayerBody(copy, false)}</section>
     </article>`;
 }
 
@@ -631,7 +645,17 @@ export function renderHeroes(copy) {
 
 export function renderModes(copy) {
   const page = copy.modes;
-  const modes = getCatalog().modes;
+  const classic = getCatalog().modes.find((mode) => mode.id === "classic-5v5");
+  const modes = [
+    {
+      id: "ranked",
+      name: { zh: "排位賽", en: "Ranked" },
+      players: "5V5",
+      excerpt: page.rankedNote,
+      sourceUrl: classic?.sourceUrl || "",
+    },
+    ...getCatalog().modes,
+  ];
   const cards = modes.length
     ? `<div class="mode-grid">${modes
         .map((mode, index) => {
@@ -639,10 +663,10 @@ export function renderModes(copy) {
           return `
             <article class="mode-card glass tilt frame reveal" data-tilt>
               <p class="index">${esc(String(index + 1).padStart(2, "0"))}</p>
-              <h2>${esc(bi(mode.name) || mode.name?.zh || "")}</h2>
+              <h2><a href="/modes/${esc(mode.id)}" data-nav>${esc(bi(mode.name) || mode.name?.zh || "")}</a></h2>
               ${players}
               ${mode.excerpt ? `<p>${esc(mode.excerpt)}</p>` : ""}
-              <a class="text-link" href="${esc(mode.sourceUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(copy.heroes.open)}</a>
+              <a class="text-link" href="/modes/${esc(mode.id)}" data-nav>${esc(page.detail || copy.heroes.open)}</a>
             </article>`;
         })
         .join("")}</div>`

@@ -17,11 +17,50 @@ function withActivities(payload) {
   return {
     ...payload,
     activities: Array.isArray(payload.activities) ? payload.activities : [],
+    items: Array.isArray(payload.items) ? payload.items : [],
   };
 }
 
-/** Public catalog. Live D1/KV wins; the committed snapshot is the fallback. */
-export async function loadCatalog(env) {
+function richerHero(fallback, primary) {
+  const base = fallback && typeof fallback === "object" ? fallback : {};
+  const next = primary && typeof primary === "object" ? primary : {};
+  return {
+    ...base,
+    ...next,
+    blurb: next.blurb || base.blurb || "",
+    skills: Array.isArray(next.skills) && next.skills.length ? next.skills : base.skills || [],
+    skins: Array.isArray(next.skins) && next.skins.length ? next.skins : base.skins || [],
+    skillsUrl: next.skillsUrl || base.skillsUrl || next.pageUrl || base.pageUrl || "",
+  };
+}
+
+/** Keep skins and items when a later fetch has not filled them yet. */
+export function mergeCatalog(primary, fallback) {
+  const next = withActivities(primary || {});
+  const prev = withActivities(fallback || {});
+  const previousHeroes = new Map((prev.heroes || []).map((hero) => [String(hero.id), hero]));
+  const seen = new Set();
+  const heroes = [];
+  for (const hero of next.heroes || []) {
+    seen.add(String(hero.id));
+    heroes.push(richerHero(previousHeroes.get(String(hero.id)), hero));
+  }
+  for (const hero of prev.heroes || []) {
+    if (!seen.has(String(hero.id))) heroes.push(hero);
+  }
+  return {
+    ...prev,
+    ...next,
+    heroes,
+    items: next.items.length ? next.items : prev.items,
+    modes: Array.isArray(next.modes) && next.modes.length ? next.modes : prev.modes || [],
+    activities: next.activities.length ? next.activities : prev.activities,
+    attribution: next.attribution || prev.attribution || null,
+    roles: Array.isArray(next.roles) && next.roles.length ? next.roles : prev.roles || [],
+  };
+}
+
+async function readStoredCatalog(env) {
   try {
     if (env?.CMS_KV && typeof env.CMS_KV.get === "function") {
       const cached = await env.CMS_KV.get(KV_KEY, "json");
@@ -44,7 +83,15 @@ export async function loadCatalog(env) {
   } catch (error) {
     logFailure("catalog_d1_failed", error);
   }
-  return { ...withActivities(bundledCatalog()), source: "snapshot" };
+  return null;
+}
+
+/** Public catalog. Stored D1/KV wins; the snapshot fills any missing skins or items. */
+export async function loadCatalog(env) {
+  const bundled = { ...withActivities(bundledCatalog()), source: "snapshot" };
+  const stored = await readStoredCatalog(env);
+  if (!stored) return bundled;
+  return { ...mergeCatalog(stored, bundled), source: "stored" };
 }
 
 export async function storeCatalog(env, payload) {
@@ -78,15 +125,26 @@ export async function storeCatalog(env, payload) {
 export async function refreshCatalog(env) {
   const fetchImpl = typeof env?.CATALOG_FETCH === "function" ? env.CATALOG_FETCH : fetch;
   try {
-    const payload = await buildOfficialCatalog(fetchImpl);
-    payload.source = "live";
-    const stored = await storeCatalog(env, payload);
+    const previous = await loadCatalog(env);
+    const offset = Number(previous?.detailCursor) || 0;
+    const detailLimit = Number(env?.CATALOG_DETAIL_LIMIT) || 8;
+    const payload = await buildOfficialCatalog(fetchImpl, new Date().toISOString(), {
+      detailLimit,
+      detailOffset: offset,
+    });
+    const merged = mergeCatalog(payload, previous);
+    merged.source = "live";
+    merged.detailCursor = merged.heroes.length ? (offset + detailLimit) % merged.heroes.length : 0;
+    const stored = await storeCatalog(env, merged);
+    const skins = merged.heroes.reduce((sum, hero) => sum + (hero.skins?.length || 0), 0);
     return {
       ok: true,
       stored,
-      heroes: payload.heroes.length,
-      modes: payload.modes.length,
-      fetchedAt: payload.fetchedAt,
+      heroes: merged.heroes.length,
+      items: merged.items.length,
+      skins,
+      modes: merged.modes.length,
+      fetchedAt: merged.fetchedAt,
     };
   } catch (error) {
     logFailure("catalog_refresh_failed", error);

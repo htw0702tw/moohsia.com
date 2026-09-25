@@ -118,6 +118,8 @@ export function emptyBoardPlayer() {
     gpm: "",
     level: "",
     minions: "",
+    lastHits: "",
+    jungleGold: "",
     control: "",
     tower: "",
     rankDelta: "",
@@ -149,6 +151,10 @@ export function emptyMatch() {
     damage: "",
     taken: "",
     minions: "",
+    lastHits: "",
+    jungleGold: "",
+    damageRatio: "",
+    takenPer: "",
     control: "",
     healing: "",
     tower: "",
@@ -220,8 +226,13 @@ export function emptyHeroCard() {
     deaths: "",
     assists: "",
     mvp: "",
+    power: "",
     note: { zh: "", en: "" },
   };
+}
+
+export function emptySkin() {
+  return { id: "", hero: "", heroId: "", name: "" };
 }
 
 export function emptyHonor() {
@@ -267,6 +278,7 @@ export function emptyPlayer() {
     championships: [],
     honorTitles: [],
     builds: [],
+    skins: [],
     matches: [],
     aov: { syncedAt: "", count: "", keyword: "", server: "" },
   };
@@ -360,7 +372,9 @@ function cleanBoardPlayer(value) {
     takenPer: whole(source.takenPer, 9),
     gpm: whole(source.gpm, 6),
     level: whole(source.level, 3),
-    minions: whole(source.minions, 6),
+    minions: whole(source.lastHits, 6) || whole(source.minions, 6),
+    lastHits: whole(source.lastHits, 6) || whole(source.minions, 6),
+    jungleGold: whole(source.jungleGold, 9),
     control: decimal(source.control, 6, 3),
     healing: whole(source.healing, 9),
     tower: whole(source.tower, 9),
@@ -381,6 +395,9 @@ function boardFilled(row) {
       row.gold ||
       row.heroDamage ||
       row.healing ||
+      row.minions ||
+      row.lastHits ||
+      row.jungleGold ||
       row.score ||
       row.skin ||
       row.items.some(Boolean),
@@ -440,7 +457,11 @@ function cleanMatch(item) {
     gold: whole(source.gold, 9),
     damage: whole(source.damage, 9),
     taken: whole(source.taken, 9),
-    minions: whole(source.minions, 6),
+    minions: whole(source.lastHits, 6) || whole(source.minions, 6),
+    lastHits: whole(source.lastHits, 6) || whole(source.minions, 6),
+    jungleGold: whole(source.jungleGold, 9),
+    damageRatio: decimal(source.damageRatio, 4, 2),
+    takenPer: whole(source.takenPer, 9),
     control: decimal(source.control, 6, 3),
     healing: whole(source.healing, 9),
     tower: whole(source.tower, 9),
@@ -479,6 +500,8 @@ function matchFilled(match) {
       match.gold ||
       match.damage ||
       match.minions ||
+      match.lastHits ||
+      match.jungleGold ||
       match.healing ||
       match.tower ||
       match.externalMatchId ||
@@ -575,7 +598,18 @@ function cleanHeroCard(item) {
     deaths: whole(source.deaths, 9),
     assists: whole(source.assists, 9),
     mvp: whole(source.mvp),
+    power: whole(source.power, 6),
     note: bilingual(source.note, 160),
+  };
+}
+
+function cleanSkin(item) {
+  const source = item && typeof item === "object" ? item : {};
+  return {
+    id: matchId(source.id || source.name || source.hero),
+    hero: clip(source.hero, 40),
+    heroId: heroId(source.heroId),
+    name: clip(source.name, 80),
   };
 }
 
@@ -657,7 +691,7 @@ export function cleanPlayer(input) {
   if (Array.isArray(source.heroPool)) {
     for (const item of source.heroPool.slice(0, 16)) {
       const card = cleanHeroCard(item);
-      if (card.hero || card.matches || card.winRate || card.kills || card.deaths || card.assists || card.mvp || card.note.zh || card.note.en) heroPool.push(card);
+      if (card.hero || card.matches || card.winRate || card.kills || card.deaths || card.assists || card.mvp || card.power || card.note.zh || card.note.en) heroPool.push(card);
     }
   }
   const championships = [];
@@ -672,6 +706,13 @@ export function cleanPlayer(input) {
     for (const item of source.builds.slice(0, 24)) {
       const build = cleanBuild(item);
       if (buildFilled(build)) builds.push(build);
+    }
+  }
+  const skins = [];
+  if (Array.isArray(source.skins)) {
+    for (const item of source.skins.slice(0, 24)) {
+      const skin = cleanSkin(item);
+      if (skin.hero || skin.name) skins.push(skin);
     }
   }
   const honorTitles = [];
@@ -716,6 +757,7 @@ export function cleanPlayer(input) {
     championships,
     honorTitles,
     builds,
+    skins,
     matches,
     aov: cleanAov(source.aov),
   };
@@ -770,6 +812,10 @@ function publicMatch(match) {
     damage: match.damage,
     taken: match.taken,
     minions: match.minions,
+    lastHits: match.lastHits || match.minions,
+    jungleGold: match.jungleGold,
+    damageRatio: match.damageRatio,
+    takenPer: match.takenPer,
     control: match.control,
     healing: match.healing,
     tower: match.tower,
@@ -819,6 +865,7 @@ function publicHero(card) {
     deaths: card.deaths,
     assists: card.assists,
     mvp: card.mvp,
+    power: card.power,
     note: card.note,
     kda: derivedKda(card.kills, card.deaths, card.assists),
   };
@@ -855,6 +902,7 @@ export function toPublicPlayer(player) {
     heroPool: player.heroPool.map(publicHero),
     championships: player.championships,
     honorTitles: player.honorTitles,
+    skins: player.skins,
     builds: player.builds.map(publicBuild),
     matches: player.matches.filter((match) => match.publish).map(publicMatch),
   };

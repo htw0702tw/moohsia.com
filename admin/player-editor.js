@@ -495,6 +495,8 @@ function boardRow(matchIndex, row, rowIndex, text, choice) {
       ${field("承受傷害", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="taken"`, row.taken, text), "例如：98447。", problem(row.taken, "int"))}
       ${field("承傷占比", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="takenPct"`, row.takenPct, text), "例如：34.0。", problem(row.takenPct, "radar"))}
       ${field("補兵", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="minions"`, row.minions, text), "補兵，不是治療。例如：30。", problem(row.minions, "int"))}
+      ${field("補刀數", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="lastHits"`, row.lastHits, text), "遊戲內補刀數。留空時跟補兵同一格。", problem(row.lastHits, "int"))}
+      ${field("野怪經濟", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="jungleGold"`, row.jungleGold, text), "例如：160。", problem(row.jungleGold, "int"))}
       ${field("控場", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="control"`, row.control, text), "例如：8.382。")}
       ${field("治療", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="healing"`, row.healing, text), "治療量，不是補兵。例如：7964。", problem(row.healing, "int"))}
       ${field("塔傷", textInput(`data-board="${matchIndex}" data-row="${rowIndex}" data-field="tower"`, row.tower, text), "例如：2743。", problem(row.tower, "int"))}
@@ -548,7 +550,9 @@ function matchCard(match, index, open, text, choice) {
         field("經濟", textInput(`data-match="${index}" data-field="gold"`, match.gold, text), "例如：10079。", problem(match.gold, "int")) +
           field("英雄傷害", textInput(`data-match="${index}" data-field="damage"`, match.damage, text), "例如：165385。", problem(match.damage, "int")) +
           field("承受傷害", textInput(`data-match="${index}" data-field="taken"`, match.taken, text), "例如：98447。", problem(match.taken, "int")) +
-          field("補兵", textInput(`data-match="${index}" data-field="minions"`, match.minions, text), "補兵，不是治療。例如：30。", problem(match.minions, "int")),
+          field("補兵", textInput(`data-match="${index}" data-field="minions"`, match.minions, text), "補兵，不是治療。例如：30。", problem(match.minions, "int")) +
+          field("補刀數", textInput(`data-match="${index}" data-field="lastHits"`, match.lastHits, text), "遊戲內補刀數。例如：34。", problem(match.lastHits, "int")) +
+          field("野怪經濟", textInput(`data-match="${index}" data-field="jungleGold"`, match.jungleGold, text), "例如：160。", problem(match.jungleGold, "int")),
       )}
       ${pair(
         field("控場", textInput(`data-match="${index}" data-field="control"`, match.control, text), "例如：8.382。") +
@@ -606,7 +610,8 @@ function heroesTab(player, text) {
         field("英雄", textInput(`data-hero-card="${index}" data-field="hero" list="hero-choices"`, card.hero, text), "例如：娜塔亞。") +
           field("場次", textInput(`data-hero-card="${index}" data-field="matches"`, card.matches, text), "例如：42。", problem(card.matches, "int")) +
           field("勝率", textInput(`data-hero-card="${index}" data-field="winRate"`, card.winRate, text), "例如：61.9。", problem(card.winRate, "rate")) +
-          field("MVP 次數", textInput(`data-hero-card="${index}" data-field="mvp"`, card.mvp, text), "例如：6。", problem(card.mvp, "int")),
+          field("MVP 次數", textInput(`data-hero-card="${index}" data-field="mvp"`, card.mvp, text), "例如：6。", problem(card.mvp, "int")) +
+          field("傳說戰力", textInput(`data-hero-card="${index}" data-field="power"`, card.power, text), "例如：2984。", problem(card.power, "int")),
       )}
       <p class="hint">K、D、A 是這個英雄的累計或場均，跟遊戲內常用英雄頁同一套拆法。</p>
       <div class="pair">

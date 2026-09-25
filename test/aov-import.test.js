@@ -906,3 +906,72 @@ test("admin API crashes return a JSON code and do not log the error text", async
   assert.equal(blob.includes("boom-secret"), false);
   assert.match(blob, /worker_error/);
 });
+
+test("in-game 補刀數 and 治療量 stay different columns, including the Natalya ground truth", () => {
+  const html = `<div class="accordion-item player-match-item">
+    <button class="accordion-button"><span class="badge bg-success">勝利</span>
+      <img alt="娜塔亞" />
+      <span>KDA: 8 / 6 / 4 | 地圖: 經典競技 | 15分 17秒</span>
+      <small>對局時間：2026-09-25 22:59:00</small>
+    </button>
+    <div class="accordion-body">
+      <p>對局ID：natalya-2259</p>
+      <p>藍方 (勝利)</p>
+      <table>
+        <tr><th>玩家名稱</th><th>K / D / A</th><th>裝備</th><th>總經濟</th><th>野怪經濟</th><th>治療量</th><th>補刀數</th><th>控制效果</th><th>對塔傷害</th><th>傷害轉化比</th><th>輸出</th><th>承受傷害</th><th>每次承傷</th></tr>
+        <tr class="table-warning">
+          <td><img alt="娜塔亞" /><strong>htw0702aov</strong></td>
+          <td>8 / 6 / 4</td>
+          <td><img src="/image/item/1423.png" alt="裝備 1423" /><img alt="裝備 1324" /><img alt="裝備 1227" /><img alt="裝備 1224" /><img alt="裝備 1249" /><img alt="裝備 1242" /></td>
+          <td>9819</td><td>160</td><td>6077</td><td>34</td><td>6534</td><td>2089</td><td>1.51</td><td>125875</td><td>113770</td><td>18961</td>
+        </tr>
+      </table>
+    </div>
+  </div>`;
+  const match = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0];
+  const owner = match.board.find((row) => row.owner);
+  assert.equal(match.mode, "排位賽");
+  assert.equal(match.lastHits, "34");
+  assert.equal(match.minions, "34");
+  assert.equal(match.healing, "6077");
+  assert.notEqual(match.lastHits, match.healing);
+  assert.equal(match.jungleGold, "160");
+  assert.equal(match.gold, "9819");
+  assert.equal(match.damage, "125875");
+  assert.equal(match.taken, "113770");
+  assert.equal(match.damageRatio, "1.51");
+  assert.equal(owner.lastHits, "34");
+  assert.equal(owner.healing, "6077");
+  assert.notEqual(owner.lastHits, owner.healing);
+  assert.equal(owner.items.length, 6);
+  assert.equal(owner.items[0], "裝備 1423");
+  assert.equal(owner.items[5], "裝備 1242");
+  assert.equal(owner.jungleGold, "160");
+  assert.equal(owner.control, "6534");
+  assert.equal(owner.tower, "2089");
+  assert.equal(owner.takenPer, "18961");
+});
+
+test("pipe farm cell keeps 補刀 before 治療", () => {
+  const html = `<div class="accordion-item">
+    <button class="accordion-button"><span class="badge bg-success">勝利</span><img alt="娜塔亞" />
+      <span>KDA: 8 / 6 / 4 | 地圖: 經典競技 | 15分 17秒</span>
+      <small>對局時間：2026-09-25 22:59:00</small>
+    </button>
+    <div class="accordion-body"><p>藍方 (勝利)</p>
+      <table>
+        <tr><th>玩家名稱</th><th>K / D / A</th><th>總經濟 | 野怪經濟 | 補刀數</th><th>補刀數 | 控制效果 | 治療量 | 對塔傷害</th></tr>
+        <tr class="table-warning"><td><img alt="娜塔亞" /><strong>htw0702aov</strong></td><td>8 / 6 / 4</td>
+          <td>9819 160 34</td><td>34 12.5 秒 6077 2089</td></tr>
+      </table>
+    </div>
+  </div>`;
+  const owner = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0].board.find((row) => row.owner);
+  assert.equal(owner.gold, "9819");
+  assert.equal(owner.jungleGold, "160");
+  assert.equal(owner.minions, "34");
+  assert.equal(owner.lastHits, "34");
+  assert.equal(owner.healing, "6077");
+  assert.notEqual(owner.lastHits, owner.healing);
+  assert.equal(owner.tower, "2089");
+});

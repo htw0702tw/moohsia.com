@@ -1,12 +1,14 @@
 import { SITE_URL } from "../shared/brand.js";
 import { previewApplication } from "../shared/apply.js";
 import { applyDraft } from "./apply-state.js";
-import { setActivityFilter, setCatalog, setRoleFilter } from "./catalog-state.js";
-import { setPlayerMatch, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
+import { setActivityFilter, setCatalog, setItemCategory, setRoleFilter } from "./catalog-state.js";
+import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
-import { brandMark, renderPage } from "./pages.js";
+import { playerMemberPath } from "../shared/match-present.js";
+import { renderHeroDetail, renderItemDetail, renderItems, renderModeDetail, renderSkins } from "./catalog-pages.js";
+import { brandMark, renderMember, renderPage } from "./pages.js";
 import "./styles.css";
 
 document.documentElement.classList.add("js");
@@ -17,6 +19,8 @@ const ROUTES = {
   "/roster": "roster",
   "/player": "player",
   "/heroes": "heroes",
+  "/skins": "skins",
+  "/items": "items",
   "/modes": "modes",
   "/activities": "activities",
   "/news": "news",
@@ -150,11 +154,24 @@ function shell() {
   `;
 }
 
+function resolvePath(path) {
+  const roster = /^\/roster\/([A-Za-z0-9_-]{1,40})$/.exec(path);
+  if (roster) return { name: "member", key: roster[1] };
+  const hero = /^\/heroes\/(\d{1,6})$/.exec(path);
+  if (hero) return { name: "hero", id: hero[1] };
+  const item = /^\/items\/(\d{3,6})$/.exec(path);
+  if (item) return { name: "item", id: item[1] };
+  const mode = /^\/modes\/([a-z0-9-]{1,40})$/.exec(path);
+  if (mode) return { name: "mode", id: mode[1] };
+  return { name: ROUTES[path] || "notFound" };
+}
+
 function setActive() {
   const path = currentPath();
   document.querySelectorAll("[data-nav]").forEach((link) => {
     const href = link.getAttribute("href");
-    if (href === path) link.setAttribute("aria-current", "page");
+    const on = href === path || (href && href !== "/" && (path === href || path.startsWith(`${href}/`)));
+    if (on) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
 }
@@ -162,7 +179,8 @@ function setActive() {
 function setMeta() {
   const text = copy();
   const path = currentPath();
-  const name = ROUTES[path] || "notFound";
+  const route = resolvePath(path);
+  const name = route.name === "member" ? "player" : route.name === "hero" ? "heroes" : route.name === "item" ? "items" : route.name === "mode" ? "modes" : route.name;
   const page = text[name] || text.notFound;
   const title = path === "/" ? text.meta.homeTitle : `${page.title} — ${text.meta.titleSuffix}`;
   document.title = title;
@@ -221,14 +239,31 @@ function restoreMenu() {
   }
 }
 
+function renderRoute(route, text) {
+  if (route.name === "member") return renderMember(text, route.key);
+  if (route.name === "skins") return renderSkins(text);
+  if (route.name === "items") return renderItems(text);
+  if (route.name === "hero") return renderHeroDetail(text, route.id);
+  if (route.name === "item") return renderItemDetail(text, route.id);
+  if (route.name === "mode") return renderModeDetail(text, route.id);
+  return renderPage(route.name, text);
+}
+
 function paint() {
   if (!app) return;
-  const path = currentPath();
-  const name = ROUTES[path] || "notFound";
+  let path = currentPath();
+  if (path === "/player") {
+    const target = playerMemberPath(getRosterMembers(), getPlayer());
+    if (target) {
+      history.replaceState({}, "", `${target}${window.location.search}${window.location.hash}`);
+      path = target;
+    }
+  }
+  const route = resolvePath(path);
   document.documentElement.lang = state.lang === "en" ? "en" : "zh-Hant";
   app.innerHTML = shell();
   const main = document.getElementById("main");
-  if (main) main.innerHTML = renderPage(name, copy());
+  if (main) main.innerHTML = renderRoute(route, copy());
   setActive();
   setMeta();
   mountMotion(main);
@@ -300,6 +335,18 @@ function onClick(event) {
   const role = event.target.closest("[data-role-filter]");
   if (role) {
     setRoleFilter(role.getAttribute("data-role-filter"));
+    paint();
+    return;
+  }
+  const itemCategory = event.target.closest("[data-item-category]");
+  if (itemCategory) {
+    setItemCategory(itemCategory.getAttribute("data-item-category"));
+    paint();
+    return;
+  }
+  const queue = event.target.closest("[data-queue]");
+  if (queue) {
+    setPlayerQueue(queue.getAttribute("data-queue"));
     paint();
     return;
   }
@@ -488,12 +535,26 @@ async function boot() {
   window.addEventListener("resize", () => {
     if (window.innerWidth > 860 && state.menuOpen) closeMenu(false);
   });
-  await Promise.race([
-    Promise.all([loadPublished(), loadCatalog()]),
-    new Promise((resolve) => {
-      window.setTimeout(resolve, 500);
-    }),
-  ]);
+  const pending = Promise.all([loadPublished(), loadCatalog()]);
+  if (import.meta.env.DEV) {
+    await pending;
+    if (new URLSearchParams(window.location.search).has("preview")) {
+      document.body.classList.add("is-ready");
+      const { applyPreview } = await import("../shared/preview-player.js");
+      applyPreview();
+      const target = playerMemberPath(getRosterMembers(), getPlayer());
+      if (target && (currentPath() === "/" || currentPath() === "/player")) {
+        history.replaceState({}, "", `${target}${window.location.search}`);
+      }
+    }
+  } else {
+    await Promise.race([
+      pending,
+      new Promise((resolve) => {
+        window.setTimeout(resolve, 500);
+      }),
+    ]);
+  }
   paint();
   painted = true;
   if (!document.body.classList.contains("is-ready")) {

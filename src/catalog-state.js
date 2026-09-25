@@ -1,5 +1,6 @@
 const empty = {
   heroes: [],
+  items: [],
   modes: [],
   roles: [],
   activities: [],
@@ -11,6 +12,7 @@ const empty = {
 let catalog = empty;
 let role = "all";
 let activityKind = "all";
+let itemCategory = "all";
 
 export function getCatalog() {
   return catalog;
@@ -23,6 +25,7 @@ export function setCatalog(next) {
   }
   catalog = {
     heroes: next.heroes,
+    items: Array.isArray(next.items) ? next.items : [],
     modes: Array.isArray(next.modes) ? next.modes : [],
     roles: Array.isArray(next.roles) ? next.roles : [],
     activities: Array.isArray(next.activities) ? next.activities : [],
@@ -46,4 +49,12 @@ export function getActivityFilter() {
 
 export function setActivityFilter(next) {
   activityKind = typeof next === "string" && next ? next : "all";
+}
+
+export function getItemCategory() {
+  return itemCategory;
+}
+
+export function setItemCategory(next) {
+  itemCategory = typeof next === "string" && next ? next : "all";
 }
