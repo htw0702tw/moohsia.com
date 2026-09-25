@@ -1,0 +1,55 @@
+<!--
+  Header-only AOVRanking fight history. Production list HTML includes accordion
+  headers (result, hero, KDA, map, time) while every accordion-body stays empty
+  until the match is expanded. The summary average must not be read as a KDA.
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>歷史戰績 - AOVRanking</title>
+</head>
+<body>
+  <main>
+    <h2>歷史戰績</h2>
+    <section class="summary">
+      <p>常用英雄：</p>
+      <div><img alt="娜塔亞" /> 娜塔亞 (44 場，勝率 61%)<br />K/D/A：8.2 / 4.9 / 5.0</div>
+      <h3>近 2 場對戰統計</h3>
+      <p>勝場：1</p>
+      <p>敗場：1</p>
+      <div class="donut">50%</div>
+    </section>
+    <div class="accordion" id="history">
+      <div class="accordion-item player-match-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button">
+            <span class="badge bg-danger">失敗</span>
+            <img alt="娜塔亞" />
+            KDA: 7 / 10 / 5 | 地圖: 經典競技 | 17分 30秒
+            <span>對局時間: 2026-09-25 13:20:58</span>
+            <span>對局ID：1790313541-5675</span>
+          </button>
+        </h2>
+        <div class="accordion-collapse collapse">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+      <div class="accordion-item player-match-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button">
+            <span class="badge bg-success">勝利</span>
+            <img alt="克里希" />
+            KDA: 14 / 6 / 4 | 地圖: 排位賽 | 12分 16秒
+            <span>對局時間: 2026-09-25 12:25:00</span>
+            <span>對局ID：1790313000-1001</span>
+          </button>
+        </h2>
+        <div class="accordion-collapse collapse">
+          <div class="accordion-body"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

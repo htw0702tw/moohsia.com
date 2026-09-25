@@ -56,6 +56,17 @@ function text(status, body, headers = {}) {
   });
 }
 
+function jsonError(status, code) {
+  return new Response(JSON.stringify({ ok: false, code }), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+    },
+  });
+}
+
 function redirect(pathname) {
   return new Response(null, {
     status: 302,
@@ -110,7 +121,7 @@ async function serveAdmin(request, env) {
   if (path === "/api" || path.startsWith("/api/")) {
     if (path === "/api/admin" || path.startsWith("/api/admin/")) return handleAdmin(request, env);
     if (path === "/api/health" || path === "/api/content" || path === "/api/catalog") return handleApi(request, env);
-    return text(404, "Not found");
+    return jsonError(404, "not_found");
   }
 
   if (path === "/robots.txt") {
@@ -167,6 +178,7 @@ export default {
       return await servePublic(request, env);
     } catch (error) {
       logFailure("worker_error", error);
+      if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return jsonError(500, "server_error");
       return text(500, "Service unavailable");
     }
   },

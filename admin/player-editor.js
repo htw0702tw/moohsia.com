@@ -73,7 +73,7 @@ const ARCANA_COLORS = [
 
 const LANES = ["對抗路", "中路", "發育路", "打野", "輔助"];
 const RANKS = ["黃金", "白金", "鑽石", "星耀", "永恆傳說"];
-const MODE_EXTRAS = ["排位賽", "巔峰對決", "5V5經典競技", "混沌大亂鬥", "三人對決"];
+const MODE_EXTRAS = ["排位賽", "巔峰對決", "冠軍賽", "5V5經典競技", "混沌大亂鬥", "三人對決"];
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 const MEDIA_ACCEPT = `${IMAGE_ACCEPT},video/mp4,video/webm`;
 

@@ -6,7 +6,7 @@ import { logFailure } from "./log.js";
 import { readStoredMedia, storeHighlight } from "./media.js";
 import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { verifyPassword } from "./password.js";
-import { fetchFightHistory, parseFightHistory } from "./aov-import.js";
+import { fetchFightHistory, pastedFightHistory } from "./aov-import.js";
 import { clearLoginFailures, clientIp, loginBlocked, overLimit, recordLoginFailure } from "./rate-limit.js";
 import {
   SESSION_COOKIE,
@@ -345,8 +345,14 @@ async function importAov(request, env) {
   const keyword = typeof body.keyword === "string" ? body.keyword.trim().slice(0, 100) : "";
   const server = body.server === "1011" ? "1011" : "1012";
   if (html.trim()) {
-    const result = parseFightHistory(html, { keyword });
-    if (!result.matches.length) return json(422, { ok: false, code: "aov_empty" });
+    let result;
+    try {
+      result = pastedFightHistory(html, { keyword });
+    } catch (error) {
+      logFailure("aov_parse_failed", error);
+      return json(422, { ok: false, code: "aov_empty" });
+    }
+    if (!result.ok) return json(422, { ok: false, code: result.code || "aov_empty" });
     return ok(request, env, session, {
       ok: true,
       fetched: false,
@@ -365,7 +371,7 @@ async function importAov(request, env) {
   }
   const fetched = await fetchFightHistory(env, { searchType, keyword, server });
   if (!fetched.ok) {
-    const status = fetched.code === "aov_rate_limited" ? 429 : fetched.code === "aov_invalid" ? 400 : fetched.code === "aov_empty" ? 422 : 502;
+    const status = fetched.code === "aov_rate_limited" ? 429 : fetched.code === "aov_invalid" ? 400 : fetched.code === "aov_empty" || fetched.code === "aov_shell" ? 422 : 502;
     return json(status, { ok: false, code: fetched.code });
   }
   return ok(request, env, session, {

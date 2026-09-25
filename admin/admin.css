@@ -135,6 +135,18 @@ textarea { min-height: 4.5rem; resize: vertical; }
 
 .hint { margin: 0; line-height: 1.5; }
 
+a.btn { display: inline-block; }
+
+.aov-steps { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.2rem; }
+
+.aov-import.is-paste textarea { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+
+.aov-import textarea { min-height: 16rem; }
+
+.aov-paste-label { font-size: 1rem; color: var(--ink); }
+
+.aov-saved:not(:empty) { color: var(--amber); font-weight: 700; margin: 0; }
+
 details summary { cursor: pointer; color: var(--amber); margin: 0.2rem 0 0.6rem; }
 
 .error { color: var(--danger); }
