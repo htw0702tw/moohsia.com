@@ -1,6 +1,9 @@
 /** Parse public Garena TW Arena of Valor pages. No login, no private API. */
 
+import { buildSearchIndex } from "./aov-assets.js";
+
 export const HERO_LIST_URL = "https://moba.garena.tw/game/heroes/";
+export const PROPS_URL = "https://moba.garena.tw/game/props";
 
 export const ROLE_LABELS = {
   tank: { zh: "坦克", en: "Tank" },
@@ -296,30 +299,133 @@ export function parseActivityList(html, source, now = new Date()) {
   return [...found.values()].slice(0, 24);
 }
 
-export function assembleCatalog({ heroes, modes, activities = [], fetchedAt }) {
+function absCdn(value) {
+  let image = String(value || "").trim().replace(/^['"]|['"]$/g, "");
+  if (image.startsWith("//")) image = `https:${image}`;
+  if (!image.startsWith("https://")) return "";
+  try {
+    const host = new URL(image).hostname.toLowerCase();
+    if (host.endsWith(".akamaihd.net") || host.endsWith(".garenanow.com")) return image;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+function plainTip(html) {
+  return htmlToText(String(html || "").replace(/&lt;\s*br\s*\/?\s*&gt;/gi, " ").replace(/<br\s*\/?>/gi, " "));
+}
+
+const ITEM_BOX_RE = /<div class="p_box" data-tags="([^"]*)" data-filter="([^"]*)">([\s\S]*?)<div class="p_b_text">/gi;
+
+/** Official equipment list: id, name, icon, and the public tooltip text. */
+export function parseItemList(html) {
+  const items = [];
+  const seen = new Set();
+  for (const match of String(html || "").matchAll(ITEM_BOX_RE)) {
+    const box = match[3];
+    const image = absCdn(/<img src="([^"]+)"/i.exec(box)?.[1] || "");
+    const id = /\/(\d{3,6})\.png/.exec(image)?.[1] || "";
+    const name = plainTip(/class="tooltip-name">([\s\S]*?)<\/div>/i.exec(box)?.[1] || match[2]).slice(0, 40);
+    if (!id || !name || seen.has(id) || !image) continue;
+    const desc = plainTip(/class="tooltip-desc">([\s\S]*?)<\/div>/i.exec(box)?.[1] || "");
+    const tip = plainTip(/class="tooltip-tip">([\s\S]*?)<\/div>/i.exec(box)?.[1] || "");
+    const category = plainTip(match[1]);
+    seen.add(id);
+    items.push({
+      id,
+      name: { zh: name, en: "" },
+      category: category && category !== "None" ? category.slice(0, 16) : "",
+      description: [desc, tip].filter(Boolean).join(" ").slice(0, 360),
+      image,
+      pageUrl: PROPS_URL,
+    });
+  }
+  return items;
+}
+
+const SKILL_RE =
+  /<div class="h_skill"><img src="([^"]+)"[\s\S]*?<div class="h_c_title">([\s\S]*?)<\/div>\s*<div class="h_c_text">([\s\S]*?)<\/div>/gi;
+
+/** Hero page: skill text and skin art. Skin names are kept only when the page prints them. */
+export function parseHeroDetail(html) {
+  const page = String(html || "");
+  const skills = [];
+  for (const match of page.matchAll(SKILL_RE)) {
+    const name = htmlToText(match[2]).slice(0, 40);
+    const text = htmlToText(match[3]).slice(0, 220);
+    const image = absCdn(match[1]);
+    if (!name || !text) continue;
+    skills.push({ name, text, image });
+    if (skills.length === 6) break;
+  }
+  const banners = [...page.matchAll(/hero_banner-list__item-img" src="([^"]+)"/gi)].map((match) => absCdn(match[1]));
+  const thumbs = [...page.matchAll(/J-hero_banner-pg-a"><img src="([^"]+)"/gi)].map((match) => absCdn(match[1]));
+  const skins = [];
+  const count = Math.max(banners.length, thumbs.length);
+  for (let index = 0; index < count && skins.length < 16; index += 1) {
+    const image = banners[index] || thumbs[index];
+    if (!image) continue;
+    const named = "";
+    skins.push({
+      id: String(index),
+      name: { zh: named, en: "" },
+      image,
+      thumb: thumbs[index] || image,
+      kind: index === 0 && !/\/skin\//.test(image) ? "default" : "skin",
+    });
+  }
   return {
+    blurb: skills[0]?.text?.slice(0, 180) || "",
+    skills,
+    skins,
+  };
+}
+
+async function mapPool(items, size, fn) {
+  const out = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(size, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      out[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
+export function assembleCatalog({ heroes, modes, activities = [], items = [], fetchedAt }) {
+  const payload = {
     source: "official-snapshot",
     fetchedAt,
     attribution: {
       heroes: HERO_LIST_URL,
+      items: PROPS_URL,
       images: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/",
+      itemImages: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/",
       publisher: "Garena Online",
       activities: ACTIVITY_LISTS.map((item) => item.url),
-      note: "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API.",
+      note: "Hero names, role tags, portraits, skill text, and skin art come from public Garena Traditional Chinese pages. Equipment names, icons, and descriptions come from the public equipment list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API. Skin art is shown when the hero page publishes it; the page often has no skin name.",
     },
     roles: roleCatalog(),
     heroes,
+    items,
     modes,
     activities,
   };
+  payload.search = buildSearchIndex(payload);
+  return payload;
 }
 
 /**
  * @param {typeof fetch} fetchImpl
  * @param {string} [fetchedAt]
  */
-export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toISOString()) {
-  const heroesResponse = await fetchImpl(HERO_LIST_URL, { headers: { "user-agent": "moohsia-com-catalog" } });
+export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toISOString(), options = {}) {
+  const headers = { "user-agent": "moohsia-com-catalog" };
+  const heroesResponse = await fetchImpl(HERO_LIST_URL, { headers });
   if (!heroesResponse.ok) {
     const error = new Error("CatalogFetch");
     error.name = "CatalogFetch";
@@ -330,6 +436,37 @@ export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toI
     const error = new Error("CatalogShort");
     error.name = "CatalogShort";
     throw error;
+  }
+  const propsResponse = await fetchImpl(PROPS_URL, { headers });
+  if (!propsResponse.ok) {
+    const error = new Error("CatalogItems");
+    error.name = "CatalogItems";
+    throw error;
+  }
+  const items = parseItemList(await propsResponse.text());
+  if (items.length < 40) {
+    const error = new Error("CatalogItems");
+    error.name = "CatalogItems";
+    throw error;
+  }
+  const detailLimit = options.detailLimit == null ? 0 : options.detailLimit;
+  if (detailLimit > 0 && heroes.length) {
+    const offset = Math.max(0, Number(options.detailOffset) || 0) % heroes.length;
+    const chosen = [];
+    for (let index = 0; index < Math.min(detailLimit, heroes.length); index += 1) {
+      chosen.push((offset + index) % heroes.length);
+    }
+    await mapPool(chosen, 6, async (index) => {
+      const hero = heroes[index];
+      try {
+        const response = await fetchImpl(hero.pageUrl, { headers });
+        if (!response.ok) return;
+        const detail = parseHeroDetail(await response.text());
+        heroes[index] = { ...hero, ...detail, skillsUrl: hero.pageUrl };
+      } catch {
+        /* keep the list row if one public hero page fails */
+      }
+    });
   }
   const modes = [];
   const seenUrls = new Map();
@@ -364,5 +501,5 @@ export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toI
       /* keep heroes and modes if a public list is temporarily unreadable */
     }
   }
-  return assembleCatalog({ heroes, modes, activities: activities.slice(0, 36), fetchedAt });
+  return assembleCatalog({ heroes, modes, activities: activities.slice(0, 36), items, fetchedAt });
 }

@@ -127,7 +127,8 @@ export function emptyBoardPlayer() {
   };
 }
 
-export const PLAYER_MATCH_LIMIT = 80;
+/** Career history stays past AOVRanking's rolling page of about 50. */
+export const PLAYER_MATCH_LIMIT = 160;
 
 export function emptyMatch() {
   return {

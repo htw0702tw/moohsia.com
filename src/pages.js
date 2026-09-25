@@ -1,6 +1,6 @@
 import { AGE_BANDS, GENDERS, POSITIONS, RANKS } from "../shared/apply.js";
 import { applyDraft, applyErrorText } from "./apply-state.js";
-import { getActivityFilter, getCatalog, getRoleFilter } from "./catalog-state.js";
+import { getActivityFilter, getCatalog, getItemFilter, getRoleFilter } from "./catalog-state.js";
 import {
   getContactEmail,
   getMailto,
@@ -569,17 +569,105 @@ function heroCard(hero, copy) {
   const name = bi(hero.name) || hero.name?.zh || "";
   const role = bi(hero.roleLabel) || "";
   return `
-    <article class="hero-card reveal">
-      <a href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">
+    <article class="hero-card reveal" id="hero-${esc(hero.id)}">
+      <a href="/heroes/${esc(hero.id)}" data-nav>
         <span class="hero-portrait">
           <img src="${esc(hero.image || "")}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
         </span>
         <span class="hero-meta">
           <strong>${esc(name)}</strong>
           <em>${esc(role)}</em>
-          <small>${esc(copy.heroes.open)}</small>
+          <small>${esc(copy.heroes.skins || "")}</small>
         </span>
       </a>
+    </article>`;
+}
+
+export function renderHeroDetail(copy, id) {
+  const page = copy.heroes;
+  const hero = getCatalog().heroes.find((item) => item.id === id);
+  if (!hero) return renderNotFound(copy);
+  const name = bi(hero.name) || hero.name?.zh || "";
+  const role = bi(hero.roleLabel) || "";
+  const skills = (hero.skills || [])
+    .map(
+      (skill) => `<article class="mode-card glass frame">
+        ${skill.image ? `<img class="skill-icon" src="${esc(skill.image)}" alt="" width="64" height="64" loading="lazy" referrerpolicy="no-referrer">` : ""}
+        <h2>${esc(skill.name)}</h2>
+        <p>${esc(skill.text)}</p>
+      </article>`,
+    )
+    .join("");
+  const skins = (hero.skins || [])
+    .map((skin) => {
+      const label = bi(skin.name) || (skin.kind === "default" ? page.defaultSkin : page.unnamedSkin);
+      return `<figure class="skin-card" id="skin-${esc(hero.id)}-${esc(skin.id)}">
+        <img src="${esc(skin.image || skin.thumb || "")}" alt="${esc(name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <figcaption>${esc(label)}</figcaption>
+      </figure>`;
+    })
+    .join("");
+  return `
+    <article class="page subpage">
+      <header class="mast catalog-mast wrap" data-hero>
+        <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><a href="/heroes" data-nav>${esc(page.title)}</a><span aria-hidden="true">/</span><span>${esc(name)}</span></p>
+        <p class="kicker">${esc(role)}</p>
+        <h1>${esc(name)}</h1>
+        ${hero.blurb ? `<p class="lead">${esc(hero.blurb)}</p>` : ""}
+        <p><a class="text-link" href="${esc(hero.pageUrl || "#")}" target="_blank" rel="noopener noreferrer">${esc(page.open)}</a></p>
+      </header>
+      <section class="section wrap hero-detail">
+        <img class="hero-detail-portrait" src="${esc(hero.image || "")}" alt="" width="180" height="180" loading="lazy" referrerpolicy="no-referrer">
+        ${skins ? `<h2>${esc(page.skins)}</h2><div class="skin-grid">${skins}</div>` : ""}
+        ${skills ? `<h2>${esc(page.skills)}</h2><div class="mode-grid">${skills}</div>` : ""}
+        <p><a class="text-link" href="/heroes" data-nav>${esc(page.back)}</a></p>
+        <p class="section-note">${esc(page.source)}</p>
+      </section>
+    </article>`;
+}
+
+export function renderItems(copy) {
+  const page = copy.items;
+  const catalog = getCatalog();
+  const filter = getItemFilter();
+  const categories = [...new Set(catalog.items.map((item) => item.category).filter(Boolean))];
+  const items = catalog.items.filter((item) => filter === "all" || item.category === filter);
+  const chips = [`<button type="button" class="chip${filter === "all" ? " is-on" : ""}" data-item-filter="all">${esc(page.all)}</button>`]
+    .concat(
+      categories.map(
+        (category) =>
+          `<button type="button" class="chip${filter === category ? " is-on" : ""}" data-item-filter="${esc(category)}">${esc(category)}</button>`,
+      ),
+    )
+    .join("");
+  const body = items.length
+    ? `<div class="item-catalog">${items
+        .map(
+          (item) => `<article class="item-card reveal" id="item-${esc(item.id)}">
+            <img src="${esc(item.image || "")}" alt="" width="64" height="64" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            <div>
+              <h2>${esc(bi(item.name) || item.name?.zh || "")}</h2>
+              ${item.category ? `<p class="stamp">${esc(item.category)}</p>` : ""}
+              ${item.description ? `<p>${esc(item.description)}</p>` : ""}
+            </div>
+          </article>`,
+        )
+        .join("")}</div>`
+    : `<div class="console reveal"><div class="console-body"><div><h3>${esc(page.emptyTitle)}</h3><p>${esc(page.emptyBody)}</p></div></div></div>`;
+  return `
+    <article class="page subpage">
+      <header class="mast catalog-mast wrap" data-hero>
+        <p class="crumbs"><a href="/" data-nav>${esc(copy.nav.home)}</a><span aria-hidden="true">/</span><span>${esc(page.title)}</span></p>
+        <p class="kicker">${esc(page.kicker)}</p>
+        <h1>${esc(page.title)}</h1>
+        <p class="lead">${esc(page.lead)}</p>
+        <p class="hud-readout"><span>ITEMS // ${esc(String(catalog.items.length))}</span><span>${esc(page.count)}</span></p>
+        <div class="role-filters" role="toolbar" aria-label="${esc(page.title)}">${chips}</div>
+      </header>
+      <section class="section wrap">
+        ${body}
+        <p class="section-note">${esc(page.source)}</p>
+      </section>
     </article>`;
 }
 
@@ -749,7 +837,7 @@ export function renderApply(copy) {
   </article>`;
 }
 
-export function renderPage(name, copy) {
+export function renderPage(name, copy, extra = {}) {
   switch (name) {
     case "home":
       return renderHome(copy);
@@ -761,6 +849,10 @@ export function renderPage(name, copy) {
       return renderPlayer(copy);
     case "heroes":
       return renderHeroes(copy);
+    case "hero":
+      return renderHeroDetail(copy, extra.id);
+    case "items":
+      return renderItems(copy);
     case "modes":
       return renderModes(copy);
     case "activities":

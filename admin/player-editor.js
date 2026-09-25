@@ -443,7 +443,7 @@ function buildCard(build, index, text, choice, total) {
     <h3>技能升級順序</h3>
     <div class="pair">${skills}</div>
     <h3>六件裝備</h3>
-    <p class="hint">官方目錄沒有裝備表。請照遊戲內六格打名稱。鞋子與附魔另外填，不要佔掉這六格，除非你的出裝就是這樣排。</p>
+    <p class="hint">可填官方裝備名稱，或戰績裡的裝備編號。公開頁會對上 Garena 裝備圖與說明。鞋子與附魔另外填，不要佔掉這六格，除非你的出裝就是這樣排。</p>
     <div class="slots">${items}</div>
     ${pair(
       field("鞋子", textInput(`data-build="${index}" data-field="boots"`, build.boots, text), "例如：聖者戰靴。") +

@@ -878,6 +878,38 @@ test("admin paste box does not write stored HTML back into the page", () => {
   assert.doesNotMatch(ui, /<textarea data-aov="html"[^>]*>\$\{/);
 });
 
+test("import keeps matches older than the rolling fifty", () => {
+  const older = Array.from({ length: 40 }, (_, index) => ({
+    id: `old-${index}`,
+    externalMatchId: `old-${index}`,
+    hero: "舊場",
+    playedAt: "2025-01-01 12:00:00",
+    publish: true,
+  }));
+  const window = Array.from({ length: 50 }, (_, index) => ({
+    id: `new-${index}`,
+    externalMatchId: `new-${index}`,
+    hero: "新場",
+    playedAt: "2026-09-25 12:00:00",
+    result: "勝",
+    publish: true,
+  }));
+  const player = {
+    ...emptyPlayer(),
+    publish: true,
+    handle: "htw0702aov",
+    matches: [...window.slice(0, 10), ...older],
+  };
+  const next = applyAovImport(player, { matches: window, summary: {} }, { publish: true, keyword: "htw0702aov", server: "1012" });
+  const ids = new Set(next.matches.map((match) => match.externalMatchId));
+  assert.equal(next.matches.length, 90);
+  assert.equal(ids.has("new-49"), true);
+  assert.equal(ids.has("old-0"), true);
+  assert.equal(ids.has("old-39"), true);
+  const kept = next.matches.find((match) => match.externalMatchId === "new-0");
+  assert.equal(kept.hero, "新場");
+});
+
 test("admin API crashes return a JSON code and do not log the error text", async () => {
   const logs = [];
   const original = console.error;

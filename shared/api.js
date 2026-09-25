@@ -1,5 +1,6 @@
 import { submitApplication } from "./applications.js";
 import { CONTACT_EMAIL, WORKER_NAME } from "./brand.js";
+import { querySearch } from "./aov-assets.js";
 import { loadCatalog } from "./catalog-store.js";
 import { highlightKeysFromPublic, readPublishedMedia } from "./media.js";
 import { syncNotionDraft } from "./notion-sync.js";
@@ -149,11 +150,25 @@ export async function handleApi(request, env = {}) {
         attribution: catalog.attribution,
         roles: catalog.roles,
         heroes: catalog.heroes,
+        items: catalog.items || [],
         modes: catalog.modes,
         activities: catalog.activities || [],
       },
       { "cache-control": "public, max-age=300" },
     );
+  }
+
+  if (path === "/api/search") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    const query = (url.searchParams.get("q") || "").trim().slice(0, 40);
+    if (request.method === "HEAD") {
+      return new Response(null, { status: 200, headers: { "cache-control": "no-store" } });
+    }
+    const catalog = await loadCatalog(env);
+    const index = Array.isArray(catalog.search) && catalog.search.length ? catalog.search : [];
+    return json(200, { ok: true, query, results: querySearch(index, query) }, { "cache-control": "no-store" });
   }
 
   if (path === "/api/notion/webhook") {
