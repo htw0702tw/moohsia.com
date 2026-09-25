@@ -170,7 +170,9 @@ function imageFacts(html) {
 }
 
 function portraitName(cell) {
-  const labels = cell?.labels?.length ? cell.labels : cell?.alts || [];
+  const alt = cell?.alts?.[0] || "";
+  if (alt && !isItemId(alt) && !isStatIcon(alt)) return alt;
+  const labels = cell?.labels || [];
   return labels.find((label) => label && !isItemId(label) && !isStatIcon(label)) || "";
 }
 
@@ -261,17 +263,15 @@ const CATALOG_MODES = new Set([
   "單人對戰",
   "幻化之戰",
   "雙人飛車賽",
-  "冠軍賽",
 ]);
 
 /**
  * AOVRanking 地圖 labels are not the same strings as the site catalog.
- * 經典競技 / 競賽模式 are this owner's ranked games.
+ * This owner's 經典競技 / 競賽模式 / 冠軍賽 games are ranked.
  */
 const MODE_RULES = [
   [/傳說之巔|巔峰/, "巔峰對決"],
-  [/冠軍賽/, "冠軍賽"],
-  [/經典競技|競賽模式/, "排位賽"],
+  [/經典競技|競賽模式|冠軍賽/, "排位賽"],
   [/5\s*v\s*5/i, "5V5經典競技"],
   [/大亂鬥|混沌/, "混沌大亂鬥"],
   [/三人/, "三人對決"],
@@ -378,6 +378,26 @@ function materialize(row) {
   };
 }
 
+function splitPipeValues(labels, text) {
+  const raw = String(text || "");
+  const lines = raw
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length >= labels.length) return lines.slice(0, labels.length);
+  const flat = raw.replace(/\s+/g, " ").trim();
+  const joined = labels.join("");
+  if (/輸出/.test(joined) && /承傷/.test(joined)) {
+    const bits = [...flat.matchAll(/\d[\d,]*(?:\.\d+)?(?:\s*\([^)]*%\))?/g)].map((item) => item[0].trim());
+    if (bits.length >= labels.length) return bits.slice(0, labels.length);
+  }
+  if (/補兵/.test(joined) && /控場/.test(joined)) {
+    const match = /^(\d+)\s+(\d+(?:\.\d+)?)\s*秒?\s+(\d+)\s+(\d+)/.exec(flat);
+    if (match && labels.length >= 4) return [match[1], match[2], match[3], match[4]];
+  }
+  return lines;
+}
+
 function assignHeaderCell(cells, headerText, cell) {
   if (!cell) return;
   const parts = String(headerText || "")
@@ -385,14 +405,11 @@ function assignHeaderCell(cells, headerText, cell) {
     .map((part) => part.trim())
     .filter(Boolean);
   if (parts.length > 1) {
-    const lines = String(cell.text || "")
-      .split(/\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
+    const values = splitPipeValues(parts, cell.text || "");
     parts.forEach((label, index) => {
       const key = columnKey(label);
       if (!key || cells[key]) return;
-      cells[key] = { text: lines[index] || "", alts: [], mvp: false };
+      cells[key] = { text: values[index] || "", alts: [], mvp: false };
     });
     return;
   }
@@ -433,16 +450,19 @@ function teamSide(name) {
   return name === "紅方" || name === "敵方隊伍" ? "red" : "blue";
 }
 
-/** Each scoreboard table takes the nearest preceding 藍方 / 紅方 heading, including `藍方 (勝利)`. */
-function tablesBySide(chunk) {
-  const headingRe = /<(?:h[1-6]|div|span|p|th)\b[^>]*>\s*(藍方|紅方|我方隊伍|敵方隊伍)/gi;
-  const headings = [];
-  let heading;
-  while ((heading = headingRe.exec(chunk))) headings.push({ index: heading.index, name: heading[1] });
-  const sided = headings.some((item) => item.name === "藍方" || item.name === "紅方");
-  const marks = headings.filter((item) =>
-    sided ? item.name === "藍方" || item.name === "紅方" : item.name === "我方隊伍" || item.name === "敵方隊伍",
-  );
+function teamMarks(chunk) {
+  const found = [];
+  const re = /藍方|紅方|我方隊伍|敵方隊伍/g;
+  let match;
+  while ((match = re.exec(chunk))) found.push({ index: match.index, name: match[0] });
+  const sided = found.some((item) => item.name === "藍方" || item.name === "紅方");
+  return found.filter((item) => (sided ? item.name === "藍方" || item.name === "紅方" : item.name === "我方隊伍" || item.name === "敵方隊伍"));
+}
+
+/** Split scoreboard HTML by 藍方 / 紅方. Returns null only when those labels are absent. */
+function teamHtml(chunk) {
+  const marks = teamMarks(chunk);
+  if (!marks.length) return null;
   const grouped = { blue: "", red: "" };
   const tableRe = /<table\b[\s\S]*?<\/table>/gi;
   let table;
@@ -453,7 +473,14 @@ function tablesBySide(chunk) {
     sidedTables += 1;
     grouped[teamSide(prior.name)] += table[0];
   }
-  return sidedTables ? grouped : null;
+  if (sidedTables) return grouped;
+  const ordered = [...marks].sort((a, b) => a.index - b.index);
+  for (let index = 0; index < ordered.length; index += 1) {
+    const start = ordered[index].index;
+    const end = ordered[index + 1]?.index ?? chunk.length;
+    grouped[teamSide(ordered[index].name)] += chunk.slice(start, end);
+  }
+  return grouped;
 }
 
 function durationFrom(text) {
@@ -486,15 +513,17 @@ function resultFrom(source) {
 }
 
 function headerHtml(chunk) {
-  const cut = String(chunk).search(/<table\b|我方隊伍|敵方隊伍|藍方|紅方|accordion-body/i);
-  return cut < 0 ? String(chunk) : String(chunk).slice(0, cut);
+  const source = String(chunk);
+  const bodyAt = source.search(/accordion-body/i);
+  const cut = bodyAt >= 0 ? bodyAt : source.search(/<table\b|我方隊伍|敵方隊伍|藍方|紅方/i);
+  return cut < 0 ? source : source.slice(0, cut);
 }
 
-function headerResult(chunk, text) {
+function headerResult(chunk) {
   const head = headerHtml(chunk);
   const badges = [...head.matchAll(/<span\b[^>]*badge[^>]*>([\s\S]*?)<\/span>/gi)];
   if (badges.length) return resultFrom(stripTags(badges[badges.length - 1][1]));
-  return resultFrom(String(text).split(/對局時間/)[0]);
+  return resultFrom(stripTags(head).split(/對局時間/)[0]);
 }
 
 function headerKda(text) {
@@ -604,7 +633,7 @@ function parseChunk(chunk, keyword, index) {
   const head = headerHtml(chunk);
   const headText = stripTags(head);
   const text = stripTags(chunk);
-  const header = headerResult(chunk, headText);
+  const header = headerResult(chunk);
   const kda = headerKda(headText);
   const playedAt = playedAtFrom(text);
   const mapped = catalogMode(headerMode(headText));
@@ -612,7 +641,7 @@ function parseChunk(chunk, keyword, index) {
   const alts = headerAlts(head);
   const hero = alts[alts.length - 1] || "";
   if (!kda.kills && !playedAt && !external && !hero) return null;
-  const sections = tablesBySide(chunk);
+  const sections = teamHtml(chunk);
   const blue = sections ? rowsFromHtml(sections.blue, "blue") : rowsFromHtml(chunk, "blue");
   const red = sections ? rowsFromHtml(sections.red, "red") : [];
   const board = [...blue, ...red].slice(0, 10);

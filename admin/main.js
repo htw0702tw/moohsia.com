@@ -546,7 +546,7 @@ function aovImportPanel() {
       <li>等畫面上出現戰績後，用 F12 → 元素 → 複製 html 的 outerHTML 貼上，或上傳已載入完成的 .html。檢視原始碼看不到對局</li>
       <li>按「用貼上的頁面匯入」</li>
     </ol>
-    <p class="hint">標題列有結果、KDA 與地圖。地圖「經典競技」和「競賽模式」會存成排位賽，「傳說之巔」存成巔峰對決。結果會存成勝或敗。每一場的藍方、紅方記分板要等該場展開後才寫進頁面；英雄取玩家名稱旁的圖片，自己在哪一隊看名稱是否對上關鍵字。沒展開的場次，記分板只填自己的 KDA。若這次只展開了第一場，請再展開其餘場次，或上傳已展開記分板的 .html。</p>
+    <p class="hint">標題列有結果、KDA 與地圖。地圖「經典競技」、「競賽模式」和「冠軍賽」會存成排位賽，「傳說之巔」存成巔峰對決。結果會存成勝或敗。每一場的藍方、紅方記分板要等該場展開後才寫進頁面；英雄取玩家名稱旁的圖片，自己在哪一隊看名稱是否對上關鍵字。沒展開的場次，記分板只填自己的 KDA。若這次只展開了第一場，請再展開其餘場次，或上傳已展開記分板的 .html。</p>
     <div class="pair">
       <label>遊戲名稱<input data-aov="keyword" value="${esc(form.keyword)}" ${CMS_TEXT}></label>
       <label>UID<input data-aov="uid" value="${esc(form.uid)}" inputmode="numeric" ${CMS_TEXT}></label>

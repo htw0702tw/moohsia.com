@@ -276,7 +276,8 @@ test("AOVRanking map labels map onto catalog modes", () => {
   assert.equal(parseFightHistory(page("經典競技"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
   assert.equal(parseFightHistory(page("競賽模式"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
   assert.equal(parseFightHistory(page("傳說之巔"), { keyword: "htw0702aov" }).matches[0].mode, "巔峰對決");
-  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].mode, "冠軍賽");
+  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
+  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].map, "冠軍賽");
   assert.equal(parseFightHistory(page("5V5經典競技"), { keyword: "htw0702aov" }).matches[0].mode, "5V5經典競技");
   const radar = parseFightHistory(
     `<p>雷達 輸出 82 KDA 71 發育 64 團戰 58 生存 49</p>${page("經典競技")}`,
@@ -724,6 +725,71 @@ test("藍方 (勝利) and 紅方 (失敗) keep separate sides, and item titles b
   assert.equal(owner.assists, "5");
   assert.deepEqual(owner.items.slice(0, 2), ["噬神之書", "抵抗之靴"]);
   assert.equal(owner.level, "15");
+});
+
+test("expanded 藍方/紅方 tables keep sides, header result, and single-line columns", () => {
+  const html = `<div class="accordion-item">
+    <h3 class="accordion-header"><button class="accordion-button">
+      <span class="badge bg-danger">失敗</span>
+      <img alt="娜塔亞" src="https://dl.ops.kgtw.garenanow.com/CHT/HeroHeadPath/301420head.jpg" />
+      <span>KDA: 7 / 10 / 5 | 地圖: 冠軍賽 | 17分 30秒</span>
+      <small>對局時間：2026-09-25 13:20:58</small>
+    </button></h3>
+    <div class="accordion-body">
+      <p>對局ID：1790313541-5675</p>
+      <p>藍方 (勝利)</p>
+      <table>
+        <tr><th>玩家名稱</th><th>評分(名次)</th><th>K / D / A</th><th>裝備</th><th>戰力變化</th><th>戰力變化詳情</th><th>輸出 | 承傷 | 經濟</th><th>補兵 | 控場 | 治療 | 塔傷</th><th>排位積分變化</th></tr>
+        <tr>
+          <td><img alt="弗洛倫" src="https://dl.ops.kgtw.garenanow.com/CHT/HeroHeadPath/305210head.jpg" /><strong>藍方一</strong></td>
+          <td>8.2 (No.4)</td><td>4 / 5 / 13</td><td><img alt="裝備 1422" /></td><td>100 (+1)</td><td></td>
+          <td>1000 (10%) 2000 (20%) 3000 (30%)</td>
+          <td>1 1.5 秒 2 3</td>
+          <td>排位分：1</td>
+        </tr>
+      </table>
+      <p>紅方 (失敗) 這段勝利文字不該改結果</p>
+      <table>
+        <tr><th>玩家名稱</th><th>評分(名次)</th><th>K / D / A</th><th>裝備</th><th>戰力變化</th><th>戰力變化詳情</th><th>輸出 | 承傷 | 經濟</th><th>補兵 | 控場 | 治療 | 塔傷</th><th>排位積分變化</th></tr>
+        <tr class="table-warning">
+          <td><img alt="娜塔亞" src="https://dl.ops.kgtw.garenanow.com/CHT/HeroHeadPath/301420head.jpg" /><strong>htw0702aov</strong> Lv.15</td>
+          <td>8.7 (No.2)</td><td>7 / 10 / 5</td><td><img alt="裝備 1423" /></td><td>2274 (-18)</td><td>勝場分：1946 (-6)</td>
+          <td>125580 (27.4%) 117292 (27.9%) 9412 (19.2%)</td>
+          <td>30 8.382 秒 7964 2743</td>
+          <td>排位分：-100 排位分(額外)：1 分路(系統判定)：中路 信譽分：100</td>
+        </tr>
+      </table>
+    </div>
+  </div>`;
+  const match = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0];
+  assert.equal(match.result, "敗");
+  assert.equal(match.mode, "排位賽");
+  assert.equal(match.map, "冠軍賽");
+  assert.equal(match.kda, "7 / 10 / 5");
+  assert.equal(match.ownerSide, "red");
+  assert.equal(match.winner, "blue");
+  assert.equal(match.board.filter((row) => row.side === "blue").length, 1);
+  assert.equal(match.board.filter((row) => row.side === "red").length, 1);
+  assert.equal(match.board[0].hero, "弗洛倫");
+  assert.equal(match.board[0].side, "blue");
+  const owner = match.board.find((row) => row.owner);
+  assert.equal(owner.hero, "娜塔亞");
+  assert.equal(owner.side, "red");
+  assert.equal(owner.heroDamage, "125580");
+  assert.equal(owner.heroDamagePct, "27.4");
+  assert.equal(owner.taken, "117292");
+  assert.equal(owner.takenPct, "27.9");
+  assert.equal(owner.gold, "9412");
+  assert.equal(owner.minions, "30");
+  assert.equal(owner.control, "8.382");
+  assert.equal(owner.healing, "7964");
+  assert.equal(owner.tower, "2743");
+  assert.equal(owner.lane, "中路");
+  assert.equal(owner.reputation, "100");
+  assert.equal(owner.rankDelta, "-100");
+  assert.equal(owner.powerDelta, "-18");
+  assert.equal(match.damage, "125580");
+  assert.equal(match.lane, "中路");
 });
 
 test("pasted challenge page and view-source shell are distinct errors", async () => {
