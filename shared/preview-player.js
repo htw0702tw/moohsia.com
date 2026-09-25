@@ -37,6 +37,7 @@ export function applyPreview() {
         hidden: false,
         name: { zh: "htw0702aov", en: "htw0702aov" },
         role: { zh: "隊長", en: "Captain" },
+        team: "moohsia",
       },
     ],
     player: {

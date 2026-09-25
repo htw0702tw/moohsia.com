@@ -11719,9 +11719,25 @@
     {
       "type": "page",
       "id": "about",
-      "title": "戰隊",
-      "text": "戰隊 about 暮霞 MOS MOOHSIA",
+      "title": "公會",
+      "text": "公會 about 暮霞 MOS MOOHSIA guild",
       "href": "/about",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "teams",
+      "title": "戰隊名單",
+      "text": "戰隊 teams 名單 MOOHSIA 暮霞",
+      "href": "/teams",
+      "image": ""
+    },
+    {
+      "type": "page",
+      "id": "ultimates",
+      "title": "奧義",
+      "text": "奧義 ultimates 大招 技能",
+      "href": "/ultimates",
       "image": ""
     },
     {

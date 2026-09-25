@@ -1,6 +1,8 @@
 import { getDefaultDocument } from "../src/content.js";
 import { CONTACT_EMAIL } from "./brand.js";
+import { upgradeLegacyCopy } from "./copy-upgrade.js";
 import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
+import { DEFAULT_TEAM_SLUG, teamSlug } from "./teams.js";
 
 const TEXT_MAX = 2000;
 const LONG_MAX = 5000;
@@ -99,7 +101,48 @@ function cleanRoster(list) {
       id: cleanId(item.id),
       name: bilingual(item.name, 80),
       role: bilingual(item.role, 80),
+      team: teamSlug(item.team) || DEFAULT_TEAM_SLUG,
       hidden: item.hidden === true,
+    });
+  }
+  return out;
+}
+
+function cleanRequirements(list) {
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const item of list.slice(0, 12)) {
+    if (typeof item === "string") {
+      const text = clip(item, 400);
+      if (text) out.push({ zh: text, en: "" });
+      continue;
+    }
+    const row = bilingual(item, 400);
+    if (row.zh || row.en) out.push(row);
+  }
+  return out;
+}
+
+function cleanTeams(list, fallback) {
+  const base = Array.isArray(fallback) ? fallback : [];
+  if (!Array.isArray(list)) return base;
+  const out = [];
+  const seen = new Set();
+  for (const item of list.slice(0, 24)) {
+    if (!item || typeof item !== "object") continue;
+    const slug = teamSlug(item.slug || item.id);
+    if (!slug || seen.has(slug)) continue;
+    const name = bilingual(item.name, 80);
+    const aka = bilingual(item.aka, 80);
+    if (!name.zh && !name.en && !aka.zh && !aka.en) continue;
+    seen.add(slug);
+    out.push({
+      id: slug,
+      slug,
+      name,
+      aka,
+      lead: bilingual(item.lead, 500),
+      requirements: cleanRequirements(item.requirements),
     });
   }
   return out;
@@ -193,6 +236,7 @@ export function sanitizeDocument(input) {
     contactEmail: cleanEmail(source.contactEmail, base.contactEmail),
     placeholderSlots: cleanSlots(source.placeholderSlots, base.placeholderSlots),
     profileFields: cleanProfile(source.profileFields, base.profileFields),
+    teams: cleanTeams(source.teams, base.teams),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
     player: cleanPlayer(source.player),
@@ -201,6 +245,7 @@ export function sanitizeDocument(input) {
       en: sanitizeBySchema(base.copy.en, copy.en),
     },
   };
+  upgradeLegacyCopy(doc.copy, base.copy);
   assertPublicSafe(doc);
   return doc;
 }
@@ -211,9 +256,10 @@ export function toPublicDocument(doc) {
     contactEmail: doc.contactEmail,
     placeholderSlots: doc.placeholderSlots,
     profileFields: doc.profileFields,
+    teams: doc.teams,
     rosterMembers: doc.rosterMembers
       .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
-      .map(({ id, name, role }) => ({ id, name, role })),
+      .map(({ id, name, role, team }) => ({ id, name, role, team })),
     newsPosts: doc.newsPosts
       .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
       .map(({ id, date, title, body }) => ({ id, date, title, body })),
