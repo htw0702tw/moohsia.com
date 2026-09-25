@@ -109,7 +109,7 @@ async function serveAdmin(request, env) {
 
   if (path === "/api" || path.startsWith("/api/")) {
     if (path === "/api/admin" || path.startsWith("/api/admin/")) return handleAdmin(request, env);
-    if (path === "/api/health" || path === "/api/content") return handleApi(request, env);
+    if (path === "/api/health" || path === "/api/content" || path === "/api/catalog") return handleApi(request, env);
     return text(404, "Not found");
   }
 

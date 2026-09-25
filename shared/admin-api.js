@@ -3,7 +3,7 @@ import { applicationsFromEnv, approveApplication, presentApplication, rejectAppl
 import { refreshCatalog } from "./catalog-store.js";
 import { storeFromEnv } from "./cms-store.js";
 import { logFailure } from "./log.js";
-import { storeHighlight } from "./media.js";
+import { readStoredMedia, storeHighlight } from "./media.js";
 import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { verifyPassword } from "./password.js";
 import { fetchFightHistory, parseFightHistory } from "./aov-import.js";
@@ -318,6 +318,13 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return uploadMedia(request, env);
   }
+  const mediaRead = /^\/api\/admin\/media\/([A-Za-z0-9_-]{8,64})$/.exec(path);
+  if (mediaRead) {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    return readAdminMedia(request, env, mediaRead[1]);
+  }
   if (path === "/api/admin/aov/import") {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return importAov(request, env);
@@ -423,6 +430,20 @@ async function reviewApplication(request, env, id, action) {
   const body = JSON.stringify(result);
   if (/discord\.gg\/|discord\.com\/invite\//i.test(body)) return json(500, { ok: false, code: "invalid_content" });
   return ok(request, env, session, result);
+}
+
+async function readAdminMedia(request, env, id) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const file = await readStoredMedia(env, id);
+  if (!file) return json(404, { ok: false, code: "not_found" });
+  const headers = {
+    "content-type": file.mime || "application/octet-stream",
+    "cache-control": "private, no-store",
+    "x-content-type-options": "nosniff",
+  };
+  if (request.method === "HEAD") return new Response(null, { status: 200, headers });
+  return new Response(file.bytes, { status: 200, headers });
 }
 
 async function uploadMedia(request, env) {
