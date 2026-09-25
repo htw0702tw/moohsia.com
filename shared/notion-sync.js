@@ -1,7 +1,7 @@
 import { getDefaultDocument } from "../src/content.js";
 import { storeFromEnv } from "./cms-store.js";
 import { logFailure } from "./log.js";
-import { emptyHighlight, emptyPlayer, emptySeason } from "./player.js";
+import { emptyBadges, emptyHighlight, emptyPlayer, emptySeason } from "./player.js";
 import { ContentRejected, sanitizeDocument } from "./site-document.js";
 
 const NOTION_VERSION = "2022-06-28";
@@ -210,6 +210,10 @@ export function applyNotionCollections(document, sections) {
     heroPool: doc.player.heroPool,
     championships: doc.player.championships,
     honorTitles: doc.player.honorTitles,
+    avatar: doc.player.avatar,
+    peakRank: doc.player.peakRank,
+    joinDate: doc.player.joinDate,
+    builds: doc.player.builds,
   };
   if (sections.player) {
     const published = sorted(sections.player).filter((page) => flag(page.properties, "Publish"));
@@ -251,6 +255,10 @@ export function applyNotionCollections(document, sections) {
           expMax: textProp(props, "Reputation Exp Max"),
           note: bilingual(textProp(props, "Reputation Note"), textProp(props, "Reputation Note EN")),
         },
+        avatar: kept.avatar || emptyHighlight(),
+        peakRank: kept.peakRank || { zh: "", en: "" },
+        joinDate: kept.joinDate || "",
+        builds: kept.builds || [],
         matches: kept.matches,
         seasons: kept.seasons,
         heroPool: kept.heroPool,
@@ -263,9 +271,13 @@ export function applyNotionCollections(document, sections) {
   }
   if (sections.matches) {
     if (!doc.player) doc.player = emptyPlayer();
-    const previous = new Map((kept.matches || []).map((match) => [match.id, match.highlight]));
+    const previous = new Map((kept.matches || []).map((match) => [match.id, match]));
     doc.player.matches = sorted(sections.matches).map((page, index) => {
       const id = pageId(page, index);
+      const prior = previous.get(id) || {};
+      const skin = textProp(page.properties, "Skin") || prior.skin || "";
+      const healing = textProp(page.properties, "Healing") || prior.healing || "";
+      const mapName = textProp(page.properties, "Map") || prior.map || "";
       return {
         id,
         label: titleText(page.properties),
@@ -273,7 +285,9 @@ export function applyNotionCollections(document, sections) {
         playedAt: textProp(page.properties, "Played At"),
         duration: textProp(page.properties, "Duration"),
         mode: textProp(page.properties, "Mode"),
+        map: mapName,
         hero: textProp(page.properties, "Hero"),
+        skin,
         result: textProp(page.properties, "Result"),
         kda: textProp(page.properties, "KDA"),
         kills: textProp(page.properties, "Kills"),
@@ -282,13 +296,16 @@ export function applyNotionCollections(document, sections) {
         gold: textProp(page.properties, "Gold"),
         damage: textProp(page.properties, "Damage"),
         taken: textProp(page.properties, "Taken"),
+        healing,
         blueScore: textProp(page.properties, "Blue"),
         redScore: textProp(page.properties, "Red"),
         winner: sideToken(textProp(page.properties, "Winner")),
         ownerSide: sideToken(textProp(page.properties, "Owner Side")),
+        mvp: prior.mvp === true,
+        badges: prior.badges || emptyBadges(),
         note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
         publish: flag(page.properties, "Publish"),
-        highlight: keptHighlight(previous.get(id), bilingual(textProp(page.properties, "Highlight"), textProp(page.properties, "Highlight EN"))),
+        highlight: keptHighlight(prior.highlight, bilingual(textProp(page.properties, "Highlight"), textProp(page.properties, "Highlight EN"))),
         board: scoreboard(textProp(page.properties, "Scoreboard")),
       };
     });
@@ -322,15 +339,25 @@ export function applyNotionCollections(document, sections) {
   }
   if (sections.heroes) {
     if (!doc.player) doc.player = emptyPlayer();
+    const priorHeroes = new Map((kept.heroPool || []).map((card) => [card.id, card]));
     doc.player.heroPool = sorted(sections.heroes)
       .filter((page) => flag(page.properties, "Publish"))
-      .map((page, index) => ({
-        id: pageId(page, index),
-        hero: titleText(page.properties),
-        matches: textProp(page.properties, "Played"),
-        winRate: textProp(page.properties, "Win Rate"),
-        note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
-      }));
+      .map((page, index) => {
+        const id = pageId(page, index);
+        const prior = priorHeroes.get(id) || {};
+        return {
+          id,
+          hero: titleText(page.properties),
+          heroId: prior.heroId || "",
+          matches: textProp(page.properties, "Played"),
+          winRate: textProp(page.properties, "Win Rate"),
+          kills: textProp(page.properties, "Kills") || prior.kills || "",
+          deaths: textProp(page.properties, "Deaths") || prior.deaths || "",
+          assists: textProp(page.properties, "Assists") || prior.assists || "",
+          mvp: textProp(page.properties, "MVP") || prior.mvp || "",
+          note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
+        };
+      });
   }
   return doc;
 }

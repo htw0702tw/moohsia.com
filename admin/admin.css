@@ -149,6 +149,35 @@ textarea { min-height: 4.5rem; resize: vertical; }
 
 .links a { text-align: center; }
 
+.editor-tabs, .slots { display: grid; gap: 0.45rem; }
+.editor-tabs { grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); }
+.editor-tab {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  padding: 0.45rem 0.7rem;
+  text-align: center;
+}
+.editor-tab.is-on { background: linear-gradient(90deg, var(--magenta), #c451ff); border-color: transparent; color: white; }
+.slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.field-error { color: var(--danger); }
+.match-card { border: 1px solid var(--line); border-radius: 16px; padding: 0.8rem; display: grid; gap: 0.7rem; }
+.match-card.is-win { border-color: rgba(88, 214, 141, 0.55); }
+.match-card.is-loss { border-color: rgba(255, 59, 134, 0.55); }
+.match-summary { flex: 1; text-align: left; background: transparent; border: 0; padding: 0.2rem 0; }
+.dropzone {
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.45rem;
+  background: rgba(9, 6, 12, 0.45);
+}
+.dropzone.is-hot { border-color: var(--amber); }
+.media-preview { width: min(100%, 280px); border-radius: 12px; }
+.player-editor h3 { margin: 0.2rem 0 0; font-size: 1rem; }
+.board-row { background: rgba(9, 6, 12, 0.35); }
+
 @media (max-width: 860px) {
   .admin { grid-template-columns: 1fr; }
   .side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
