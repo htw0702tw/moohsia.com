@@ -71,13 +71,12 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(loss.damage, "125580");
   assert.equal(loss.taken, "117292");
   assert.equal(loss.gold, "9412");
-  assert.equal(loss.rankingFarm, "30");
-  assert.equal(loss.rankingControl, "8.382");
-  assert.equal(loss.lastHits, "");
-  assert.equal(loss.control, "");
+  assert.equal(loss.minions, "30");
+  assert.equal(loss.lastHits, "30");
+  assert.equal(loss.control, "8.382");
   assert.equal(loss.healing, "7964");
   assert.equal(loss.tower, "2743");
-  assert.notEqual(loss.rankingFarm, loss.healing);
+  assert.notEqual(loss.minions, loss.healing);
   assert.equal(loss.lane, "中路");
   assert.equal(loss.rankDelta, "-9");
   assert.equal(loss.reputation, "2");
@@ -165,8 +164,8 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(merged.heroPool[0].matches, "44");
   assert.match(merged.heroPool[0].note.zh, /8\.2/);
   assert.equal(merged.matches[0].publish, false);
-  assert.equal(merged.matches[0].rankingControl, "8.382");
-  assert.equal(merged.matches[0].lastHits, "");
+  assert.equal(merged.matches[0].control, "8.382");
+  assert.equal(merged.matches[0].lastHits, "30");
   assert.equal(merged.stats.mvp, "1");
   assert.equal(merged.seasons.length, 1);
   assert.equal(merged.seasons[0].mode, "排位賽");
@@ -188,12 +187,11 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
       matches: merged.matches.map((match) => ({ ...match, publish: true })),
     }),
   );
-  assert.equal(shown.matches[0].minions, "");
-  assert.equal(shown.matches[0].lastHits, "");
-  assert.equal(shown.matches[0].control, "");
+  assert.equal(shown.matches[0].minions, "30");
+  assert.equal(shown.matches[0].lastHits, "30");
+  assert.equal(shown.matches[0].control, "8.382");
   assert.equal(shown.matches[0].healing, "7964");
   assert.equal(shown.matches[0].tower, "2743");
-  assert.equal(shown.matches[0].rankingFarm, undefined);
   assert.equal(shown.matches[0].rankDelta, "-9");
   assert.equal(shown.aov, undefined);
 
@@ -618,13 +616,12 @@ test("expanded accordion tables fill both teams and the owner row", () => {
   assert.equal(loss.gold, "9412");
   assert.equal(loss.damage, "125580");
   assert.equal(loss.taken, "117292");
-  assert.equal(loss.rankingFarm, "30");
-  assert.equal(loss.rankingControl, "8.382");
-  assert.equal(loss.rankingHealing, "7964");
-  assert.equal(loss.rankingTower, "2743");
-  assert.equal(loss.lastHits, "");
-  assert.equal(loss.healing, "");
-  assert.equal(loss.control, "");
+  assert.equal(loss.minions, "30");
+  assert.equal(loss.lastHits, "30");
+  assert.equal(loss.control, "8.382");
+  assert.equal(loss.healing, "7964");
+  assert.equal(loss.tower, "2743");
+  assert.notEqual(loss.minions, loss.healing);
   assert.equal(loss.lane, "中路");
   assert.equal(loss.rankDelta, "-100");
   assert.equal(loss.powerDelta, "-18");
@@ -649,14 +646,13 @@ test("expanded accordion tables fill both teams and the owner row", () => {
   assert.equal(owner.taken, "117292");
   assert.equal(owner.takenPct, "27.9");
   assert.equal(owner.gold, "9412");
-  assert.equal(owner.rankingFarm, "30");
-  assert.equal(owner.rankingControl, "8.382");
-  assert.equal(owner.rankingHealing, "7964");
-  assert.equal(owner.lastHits, "");
-  assert.equal(owner.healing, "");
-  assert.notEqual(owner.rankingHealing, "30");
-  assert.notEqual(owner.rankingFarm, "7964");
-  assert.equal(owner.rankingTower, "2743");
+  assert.equal(owner.minions, "30");
+  assert.equal(owner.lastHits, "30");
+  assert.equal(owner.control, "8.382");
+  assert.equal(owner.healing, "7964");
+  assert.notEqual(owner.healing, "30");
+  assert.notEqual(owner.minions, "7964");
+  assert.equal(owner.tower, "2743");
   assert.equal(owner.lane, "中路");
   assert.equal(owner.rankDelta, "-100");
   assert.equal(owner.powerDelta, "-18");
@@ -793,14 +789,13 @@ test("expanded 藍方/紅方 tables keep sides, header result, and single-line c
   assert.equal(owner.taken, "117292");
   assert.equal(owner.takenPct, "27.9");
   assert.equal(owner.gold, "9412");
-  assert.equal(owner.rankingFarm, "30");
-  assert.equal(owner.rankingControl, "8.382");
-  assert.equal(owner.rankingHealing, "7964");
-  assert.equal(owner.lastHits, "");
-  assert.equal(owner.healing, "");
-  assert.notEqual(owner.rankingHealing, "30");
-  assert.notEqual(owner.rankingFarm, "7964");
-  assert.equal(owner.rankingTower, "2743");
+  assert.equal(owner.minions, "30");
+  assert.equal(owner.lastHits, "30");
+  assert.equal(owner.control, "8.382");
+  assert.equal(owner.healing, "7964");
+  assert.notEqual(owner.healing, "30");
+  assert.notEqual(owner.minions, "7964");
+  assert.equal(owner.tower, "2743");
   assert.equal(owner.lane, "中路");
   assert.equal(owner.reputation, "100");
   assert.equal(owner.rankDelta, "-100");
@@ -920,6 +915,49 @@ test("admin API crashes return a JSON code and do not log the error text", async
   assert.match(blob, /worker_error/);
 });
 
+test("four farm divs map 補兵 控場 治療 塔傷 for the 22:59 Natalya row", () => {
+  const html = `<div class="accordion-item">
+    <h3 class="accordion-header"><button class="accordion-button" type="button">
+      <span class="badge bg-success">勝利</span>
+      <img alt="娜塔亞" />
+      <span>KDA: 8 / 6 / 4 | 地圖: 競賽模式 | 15分 17秒</span>
+      <small>對局時間：2026-09-25 22:59:28</small>
+    </button></h3>
+    <div class="accordion-collapse"><div class="accordion-body">
+      <small>對局ID：1790348182-3038</small>
+      <h5 class="text-danger">紅方 (勝利)</h5>
+      <table>
+        <tr><th>玩家名稱</th><th>K / D / A</th><th>裝備</th><th>輸出 | 承傷 | 經濟</th><th>補兵 | 控場 | 治療 | 塔傷</th></tr>
+        <tr class="table-warning">
+          <td><img alt="娜塔亞" /><strong>htw0702aov</strong></td>
+          <td>8 / 6 / 4</td>
+          <td><img src="/image/item/1423.png" alt="裝備 1423" /><img alt="裝備 1324" /><img alt="裝備 1227" /><img alt="裝備 1224" /><img alt="裝備 1249" /><img alt="裝備 1242" /></td>
+          <td><div>125875 (28.5%)</div><div>113770 (25.2%)</div><div>9819 (18.9%)</div></td>
+          <td><div>34</div><div>6.534 秒</div><div>6077</div><div>2089</div></td>
+        </tr>
+      </table>
+    </div></div>
+  </div>`;
+  const match = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0];
+  const owner = match.board.find((row) => row.owner);
+  assert.equal(match.playedAt, "2026-09-25 22:59:28");
+  assert.equal(match.mode, "排位賽");
+  assert.equal(match.minions, "34");
+  assert.equal(match.lastHits, "34");
+  assert.equal(match.control, "6.534");
+  assert.equal(match.healing, "6077");
+  assert.equal(match.tower, "2089");
+  assert.equal(match.gold, "9819");
+  assert.equal(match.damage, "125875");
+  assert.equal(match.taken, "113770");
+  assert.notEqual(match.minions, match.healing);
+  assert.equal(owner.minions, "34");
+  assert.equal(owner.control, "6.534");
+  assert.equal(owner.healing, "6077");
+  assert.equal(owner.tower, "2089");
+  assert.deepEqual(owner.items, ["裝備 1423", "裝備 1324", "裝備 1227", "裝備 1224", "裝備 1249", "裝備 1242"]);
+});
+
 test("in-game 補刀數 and 治療量 stay different columns, including the Natalya ground truth", () => {
   const html = `<div class="accordion-item player-match-item">
     <button class="accordion-button"><span class="badge bg-success">勝利</span>
@@ -945,10 +983,8 @@ test("in-game 補刀數 and 治療量 stay different columns, including the Nata
   const owner = match.board.find((row) => row.owner);
   assert.equal(match.mode, "排位賽");
   assert.equal(match.lastHits, "34");
-  assert.equal(match.minions, "");
+  assert.equal(match.minions, "34");
   assert.equal(match.healing, "6077");
-  assert.equal(match.farmValidated, true);
-  assert.equal(match.rankingFarm, "");
   assert.notEqual(match.lastHits, match.healing);
   assert.equal(match.jungleGold, "160");
   assert.equal(match.gold, "9819");
@@ -984,10 +1020,8 @@ test("pipe farm cell keeps 補刀 before 治療", () => {
   const owner = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0].board.find((row) => row.owner);
   assert.equal(owner.gold, "9819");
   assert.equal(owner.jungleGold, "160");
-  assert.equal(owner.minions, "");
+  assert.equal(owner.minions, "34");
   assert.equal(owner.lastHits, "34");
-  assert.equal(owner.farmValidated, true);
-  assert.equal(owner.rankingFarm, "");
   assert.equal(owner.healing, "6077");
   assert.notEqual(owner.lastHits, owner.healing);
   assert.equal(owner.tower, "2089");

@@ -1,10 +1,9 @@
 /**
  * Rewrite stored player matches without inventing games.
- * AOVRanking `補兵 | 控場 | 治療 | 塔傷` is not in-game 補刀數. cleanPlayer moves
- * that quartet onto ranking* fields when 控場 is seconds. A swapped in-game pair
- * is corrected only when last-hits are impossibly high and healing looks like a
- * creep count. The 2026-09-25 22:59 Natalya row is patched to the screenshot
- * when that match is already stored.
+ * 補兵 is 補刀數 and 治療 is 治療量. A swapped pair is corrected only when
+ * last-hits are impossibly high and healing looks like a creep count.
+ * The stored 2026-09-25 22:59 Natalya row is aligned to the screenshot
+ * (補刀 34, 控場 6.534 seconds, 治療 6077, 塔傷 2089) and nothing else is added.
  */
 import { normalizeQueueMode } from "./aov-import.js";
 import { cleanPlayer } from "./player.js";
@@ -53,21 +52,16 @@ function isNatalyaTruth(match) {
 
 function applyNatalyaTruth(match) {
   if (!isNatalyaTruth(match)) return match;
-  const previousFarm = String(match.rankingFarm || match.minions || match.lastHits || "");
+  const control = String(match.control || "") === "6534" ? "6534" : "6.534";
   const ownerPatch = {
     minions: "34",
     lastHits: "34",
     healing: "6077",
-    jungleGold: "160",
+    control,
+    tower: "2089",
     gold: "9819",
     heroDamage: "125875",
     taken: "113770",
-    control: "6534",
-    tower: "2089",
-    damageRatio: "1.51",
-    takenPer: "18961",
-    rankingFarm: previousFarm && previousFarm !== "34" ? previousFarm : match.rankingFarm || "",
-    farmValidated: true,
     mvp: true,
   };
   return {
@@ -75,24 +69,23 @@ function applyNatalyaTruth(match) {
     minions: "34",
     lastHits: "34",
     healing: "6077",
-    rankingFarm: ownerPatch.rankingFarm,
-    farmValidated: true,
-    jungleGold: "160",
-    gold: "9819",
-    damage: "125875",
-    taken: "113770",
-    control: "6534",
+    control,
     tower: "2089",
-    damageRatio: "1.51",
-    takenPer: "18961",
+    gold: match.gold || "9819",
+    damage: match.damage || "125875",
+    taken: match.taken || "113770",
     mvp: true,
-    mode: "排位賽",
-    result: match.result === "敗" ? "勝" : match.result || "勝",
-    rankDelta: match.rankDelta && match.rankDelta !== "100" && match.rankDelta !== "-100" ? match.rankDelta : "103",
-    powerDelta: "63",
-    blueScore: match.blueScore || "25",
-    redScore: match.redScore || "17",
-    board: (match.board || []).map((row) => (row?.owner ? { ...row, ...ownerPatch } : row)),
+    board: (match.board || []).map((row) =>
+      row?.owner
+        ? {
+            ...row,
+            ...ownerPatch,
+            gold: row.gold || "9819",
+            heroDamage: row.heroDamage || "125875",
+            taken: row.taken || "113770",
+          }
+        : row,
+    ),
   };
 }
 

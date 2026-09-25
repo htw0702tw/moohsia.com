@@ -15,12 +15,10 @@
  * file read by your own update command. Do not paste the document into the
  * shell history if it contains notes you do not want stored there.
  *
- * Re-import from AOVRanking still adds matches that are not in this file.
- * A direct FightHistory fetch is often blocked by the ranking site's challenge page,
- * so a newer 22:59 match is not invented here. Paste the expanded HTML in admin.
- * The rolling window is about 50 games; older games already stored are kept.
- * Rows whose 控場 value is seconds (for example 8.382) are stored as rankingFarm
- * and are not published as in-game 補刀數.
+ * The fresh import is 50 matches. This script does not add games.
+ * 補兵 is 補刀數. 控場 stays in seconds; the site shows seconds × 1000.
+ * A stored 2026-09-25 22:59 Natalya 8/6/4 row is aligned to 補刀 34,
+ * 控場 6.534, 治療 6077, and 塔傷 2089.
  */
 import { readFileSync } from "node:fs";
 import { rewriteSiteDocument } from "../shared/player-rewrite.js";

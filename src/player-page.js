@@ -4,6 +4,7 @@ import { esc } from "./html.js";
 import { getPlayerView } from "./player-view.js";
 import { derivedKda, matchRecency } from "../shared/player.js";
 import {
+  controlEffect,
   frequentBuilds,
   itemSlots,
   listedSkins,
@@ -50,9 +51,9 @@ function ownerStats(match) {
     assists: row?.assists || match.assists || "",
     gold: row?.gold || match.gold || "",
     jungleGold: row?.jungleGold || match.jungleGold || "",
-    lastHits: row?.lastHits || match.lastHits || "",
+    lastHits: row?.lastHits || row?.minions || match.lastHits || match.minions || "",
     healing: row?.healing || match.healing || "",
-    control: row?.control || match.control || "",
+    control: controlEffect(row?.control || match.control || ""),
     tower: row?.tower || match.tower || "",
     damage: row?.heroDamage || match.damage || "",
     taken: row?.taken || match.taken || "",
@@ -162,7 +163,7 @@ function pctBar(label, value, pct, tone) {
 function metricTrio(page, row, side, match, tab) {
   const tone = side === "red" ? "is-red" : "is-blue";
   const allies = sideRows(match, side);
-  const farm = row.lastHits || "";
+  const farm = row.lastHits || row.minions || "";
   const specs = {
     data: [
       [page.kills, row.kills, percentOf(row.kills, sumField(allies, "kills"))],
@@ -189,7 +190,7 @@ function metricTrio(page, row, side, match, tab) {
       [page.power, signedText(row.powerDelta), ""],
     ],
     team: [
-      [page.control, row.control, percentOf(row.control, sumField(allies, "control"))],
+      [page.control, controlEffect(row.control), percentOf(controlEffect(row.control), allies.reduce((sum, item) => sum + (Number(controlEffect(item.control)) || 0), 0))],
       [page.healing, row.healing, percentOf(row.healing, sumField(allies, "healing"))],
       [page.tower, row.tower, percentOf(row.tower, sumField(allies, "tower"))],
     ],
@@ -261,7 +262,7 @@ function historyList(copy, player, limit = 0) {
             <span class="aov-when"><b>${esc(match.mode || page.pending)}</b><small>${esc(whenLabel(match))}</small></span>
             <span class="aov-chevron" aria-hidden="true">›</span>
           </button>
-          ${open ? `<div class="aov-detail">${boardLine(match, page, view.tab)}${(view.tab === "farm" && !self.lastHits) || (view.tab === "team" && !self.healing && !self.control && !self.tower) ? `<p class="section-note">${esc(page.farmUnverified)}</p>` : ""}<div class="aov-tabs">${tabs}</div></div>` : ""}
+          ${open ? `<div class="aov-detail">${boardLine(match, page, view.tab)}<div class="aov-tabs">${tabs}</div></div>` : ""}
         </article>`;
       })
       .join("")}

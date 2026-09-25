@@ -298,52 +298,25 @@ function flag(value) {
   return value === true;
 }
 
-/** AOVRanking 控場 is a seconds value such as 8.382, not in-game 控制效果. */
-function rankingSeconds(value) {
-  return /^\d{1,4}\.\d{1,3}$/.test(String(value ?? "").trim());
-}
-
 /**
- * `補兵 | 控場 | 治療 | 塔傷` stays on ranking* fields.
- * In-game 補刀數, 控制效果, 治療量, and 對塔傷害 are kept when the row was
- * parsed from those labels, patched from a screenshot, or marked farmValidated.
- * A copied 補兵 (lastHits === minions next to 控場 seconds) is not shown as 補刀數.
+ * AOVRanking `補兵 | 控場 | 治療 | 塔傷` is the farm cell, four values in that order.
+ * 補兵 is 補刀數. 控場 is stored in seconds (6.534); the public page shows ×1000.
+ * 治療 is 治療量. 塔傷 is 對塔傷害. Empty lastHits falls back to minions.
  */
 function separateInGameStats(source) {
   const raw = source && typeof source === "object" ? source : {};
-  const validated = raw.farmValidated === true;
-  const creep = whole(raw.minions, 6);
-  const hits = whole(raw.lastHits, 6);
-  const controlRaw = decimal(raw.control, 6, 3);
-  const seconds = rankingSeconds(controlRaw);
-  const rankingControl = decimal(raw.rankingControl, 6, 3) || (seconds ? controlRaw : "");
-  let rankingFarm = whole(raw.rankingFarm, 6);
-  let lastHits = hits;
-  if ((seconds || rankingFarm) && !rankingFarm) rankingFarm = creep || (hits && hits === creep ? hits : "");
-  if (!validated && (seconds || rankingFarm) && lastHits && (lastHits === creep || lastHits === rankingFarm)) lastHits = "";
-  if (!validated && !seconds && !rankingFarm && !lastHits && creep) lastHits = creep;
-  if (validated) lastHits = hits || (!seconds && !rankingFarm ? creep : lastHits);
-  let rankingHealing = whole(raw.rankingHealing, 9);
-  let rankingTower = whole(raw.rankingTower, 9);
-  let healing = whole(raw.healing, 9);
-  let tower = whole(raw.tower, 9);
-  if (!validated && seconds) {
-    if (!rankingHealing) rankingHealing = healing;
-    if (!rankingTower) rankingTower = tower;
-    healing = "";
-    tower = "";
-  }
+  const hits = whole(raw.lastHits, 6) || whole(raw.minions, 6) || whole(raw.rankingFarm, 6);
   return {
-    farmValidated: validated,
-    lastHits,
-    minions: lastHits,
-    rankingFarm,
-    rankingControl,
-    rankingHealing,
-    rankingTower,
-    control: seconds ? "" : controlRaw,
-    healing,
-    tower,
+    farmValidated: raw.farmValidated === true,
+    lastHits: hits,
+    minions: hits,
+    rankingFarm: whole(raw.rankingFarm, 6),
+    rankingControl: decimal(raw.rankingControl, 6, 3),
+    rankingHealing: whole(raw.rankingHealing, 9),
+    rankingTower: whole(raw.rankingTower, 9),
+    control: decimal(raw.control, 6, 3) || decimal(raw.rankingControl, 6, 3),
+    healing: whole(raw.healing, 9) || whole(raw.rankingHealing, 9),
+    tower: whole(raw.tower, 9) || whole(raw.rankingTower, 9),
   };
 }
 

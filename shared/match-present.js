@@ -34,6 +34,18 @@ export function itemSlots(items, catalogItems = []) {
   });
 }
 
+/**
+ * AOVRanking 控場 is seconds. In-game 控制效果 is that value ×1000
+ * (6.534 → 6534). Integers already on the in-game scale stay as entered.
+ */
+export function controlEffect(value) {
+  const text = String(value ?? "").trim();
+  if (!/^\d{1,4}\.\d{1,3}$/.test(text)) return text;
+  const seconds = Number(text);
+  if (!Number.isFinite(seconds)) return text;
+  return String(Math.round(seconds * 1000));
+}
+
 export function resultWord(result) {
   const text = String(result ?? "").trim();
   if (!text) return "";
