@@ -1,6 +1,7 @@
 import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
 import { isAdminHost } from "../shared/hosts.js";
+import { logFailure } from "../shared/log.js";
 import { readCookie, readSession, SESSION_COOKIE } from "../shared/session.js";
 
 /**
@@ -122,12 +123,7 @@ export default {
       if (isAdminHost(url.hostname)) return await serveAdmin(request, env);
       return await servePublic(request, env);
     } catch (error) {
-      console.error(
-        JSON.stringify({
-          message: "worker_error",
-          name: error instanceof Error ? error.name : "Error",
-        }),
-      );
+      logFailure("worker_error", error);
       return text(500, "Service unavailable");
     }
   },

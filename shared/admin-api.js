@@ -1,5 +1,6 @@
 import { getDefaultDocument } from "../src/content.js";
 import { storeFromEnv } from "./cms-store.js";
+import { logFailure } from "./log.js";
 import { verifyPassword } from "./password.js";
 import { clearLoginFailures, clientIp, loginBlocked, recordLoginFailure } from "./rate-limit.js";
 import {
@@ -135,12 +136,7 @@ async function openStore(env) {
     if (!row?.draft_json) return { error: json(503, { ok: false, code: "storage_unavailable" }) };
     return { store, row };
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        message: "cms_store_failed",
-        name: error instanceof Error ? error.name : "Error",
-      }),
-    );
+    logFailure("cms_store_failed", error);
     return { error: json(503, { ok: false, code: "storage_unavailable" }) };
   }
 }
@@ -179,11 +175,7 @@ async function login(request, env) {
   await clearLoginFailures(env, ip);
   const csrf = csrfToken();
   const token = await issueSession(env.ADMIN_SESSION_SECRET, { username: ADMIN_USERNAME, csrf });
-  return json(
-    200,
-    { ok: true, username: ADMIN_USERNAME, csrf },
-    { "set-cookie": sessionCookie(request, token, SESSION_TTL_SECONDS) },
-  );
+  return json(200, { ok: true, csrf }, { "set-cookie": sessionCookie(request, token, SESSION_TTL_SECONDS) });
 }
 
 async function logout(request, env) {
@@ -198,7 +190,7 @@ async function sessionInfo(request, env) {
   if (!adminReady(env)) return json(503, { ok: false, code: "admin_not_configured" });
   const session = await currentSession(request, env);
   if (!session) return json(401, { ok: false, code: "unauthorized" });
-  return json(200, { ok: true, username: session.username, csrf: session.csrf });
+  return json(200, { ok: true, csrf: session.csrf });
 }
 
 async function readContent(request, env) {
@@ -236,12 +228,7 @@ async function writeContent(request, env, mode) {
     return json(200, editorPayload(row));
   } catch (error) {
     if (error instanceof ContentRejected) return json(400, { ok: false, code: error.code });
-    console.error(
-      JSON.stringify({
-        message: "cms_write_failed",
-        name: error instanceof Error ? error.name : "Error",
-      }),
-    );
+    logFailure("cms_write_failed", error);
     return json(503, { ok: false, code: "storage_unavailable" });
   }
 }

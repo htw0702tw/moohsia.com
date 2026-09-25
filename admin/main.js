@@ -157,7 +157,6 @@ const SAMPLES = {
 
 const state = {
   authed: false,
-  username: "",
   csrf: "",
   draft: null,
   publishedAt: "",
@@ -267,13 +266,13 @@ function applyPayload(data) {
 }
 
 /**
- * The login form stores username htw0702. Empty CMS boxes, especially a new
- * roster name, stay readonly until focus so the browser does not overwrite
- * them with that saved username. Autocomplete stays off, and the hidden sink
- * catches a password-manager fill before it lands in a content field.
+ * Empty CMS boxes stay readonly until focus so a password manager does not
+ * overwrite them. Autocomplete stays off, and the hidden sink catches a
+ * password-manager fill before it lands in a content field.
  */
-const CMS_TEXT = `data-cms autocomplete="off" autocapitalize="off" spellcheck="false" readonly`;
-const CMS_CHOICE = `data-cms autocomplete="off"`;
+const NO_SAVE = `autocomplete="off" data-1p-ignore="true" data-lpignore="true" data-form-type="other"`;
+const CMS_TEXT = `data-cms ${NO_SAVE} autocapitalize="off" spellcheck="false" readonly`;
+const CMS_CHOICE = `data-cms ${NO_SAVE}`;
 
 function fieldControl(path, lang, value) {
   const key = path.split(".").pop();
@@ -461,12 +460,12 @@ function pageBody() {
 }
 
 function loginView() {
-  return `<div class="login-wrap"><form class="login" id="login-form">
+  return `<div class="login-wrap"><form class="login" id="login-form" autocomplete="off">
     <p class="brand">暮霞｜MOS</p>
     <h1>管理登入</h1>
-    <p class="hint">帳號固定為 htw0702。密碼由管理員密鑰設定，不會寫在這個網站裡。</p>
-    <label>帳號<input name="username" autocomplete="username" value="htw0702" required></label>
-    <label>密碼<input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="hint">密碼由管理員密鑰設定，不會寫在這個網站裡。</p>
+    <label>帳號<input name="account" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore="true" data-lpignore="true" data-form-type="other" data-login readonly required></label>
+    <label>密碼<input name="secret" type="password" autocomplete="new-password" spellcheck="false" data-1p-ignore="true" data-lpignore="true" data-form-type="other" data-login readonly required></label>
     <button class="primary" type="submit">登入</button>
     <p class="error" data-error>${esc(state.error)}</p>
   </form></div>`;
@@ -484,7 +483,6 @@ function shell() {
     </div>
     <aside class="side">
       <p class="brand">暮霞｜MOS</p>
-      <p class="user">${esc(state.username)}</p>
       <nav aria-label="管理">${links}</nav>
       <button class="ghost logout" type="button" data-action="logout">登出</button>
     </aside>
@@ -710,9 +708,10 @@ async function onSubmit(event) {
   if (!(form instanceof HTMLFormElement) || form.id !== "login-form") return;
   event.preventDefault();
   state.error = "";
+  const { username, password } = takeLogin(form);
   const data = await api("/api/admin/login", {
     method: "POST",
-    body: JSON.stringify({ username: form.username.value, password: form.password.value }),
+    body: JSON.stringify({ username, password }),
   });
   if (!data.ok) {
     state.error = message(data.code);
@@ -720,7 +719,6 @@ async function onSubmit(event) {
     return;
   }
   state.authed = true;
-  state.username = data.username;
   state.csrf = data.csrf;
   const content = await api("/api/admin/content");
   if (!content.ok) {
@@ -734,24 +732,41 @@ async function onSubmit(event) {
   render();
 }
 
-function unlockCmsField(event) {
+function unlockField(event) {
   const target = event.target;
   if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
-  if (!target.hasAttribute("data-cms") || !target.readOnly) return;
+  if (!target.readOnly) return;
+  if (!target.hasAttribute("data-cms") && !target.hasAttribute("data-login")) return;
   target.readOnly = false;
+}
+
+function takeLogin(form) {
+  const account = form.elements.namedItem("account");
+  const secret = form.elements.namedItem("secret");
+  const username = account instanceof HTMLInputElement ? account.value : "";
+  const password = secret instanceof HTMLInputElement ? secret.value : "";
+  form.reset();
+  if (account instanceof HTMLInputElement) {
+    account.value = "";
+    account.readOnly = true;
+  }
+  if (secret instanceof HTMLInputElement) {
+    secret.value = "";
+    secret.readOnly = true;
+  }
+  return { username, password };
 }
 
 async function boot() {
   document.addEventListener("click", onClick);
   document.addEventListener("input", onInput);
   document.addEventListener("change", onInput);
-  document.addEventListener("focusin", unlockCmsField);
-  document.addEventListener("submit", onSubmit);
+  document.addEventListener("focusin", unlockField);
+  document.addEventListener("submit", onSubmit, true);
   window.addEventListener("popstate", () => render());
   const session = await api("/api/admin/session");
   if (session.ok) {
     state.authed = true;
-    state.username = session.username;
     state.csrf = session.csrf;
     const content = await api("/api/admin/content");
     if (content.ok) applyPayload(content);

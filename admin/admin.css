@@ -88,9 +88,7 @@ button, a { cursor: pointer; }
   color: white;
 }
 
-.user, .hint, .status, .key { color: var(--muted); }
-
-.user { margin-top: 0.4rem; }
+.hint, .status, .key { color: var(--muted); }
 
 .side .logout { margin-top: auto; }
 
