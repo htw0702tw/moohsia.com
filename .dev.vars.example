@@ -1,9 +1,8 @@
 # Copy to .dev.vars for local `wrangler dev` / `npm start`.
 # This file is an example. Do not put a real password or session secret in git.
-# Leave the invite empty until the owner supplies one.
-# Accepted shapes (never commit the real value):
-#   https://discord.gg/<code>
-#   https://discord.com/invite/<code>
+# Leave this empty. Do not store a Discord invite pool.
+# The owner pastes one invite in the admin approve form. It is emailed once
+# and is not written here, in git, or in D1.
 DISCORD_INVITE_URL=
 
 # Private admin at admin.localhost / admin.moohsia.com.
@@ -25,3 +24,14 @@ NOTION_COPY_DB=
 NOTION_PROFILE_DB=
 NOTION_PLAYER_DB=
 NOTION_MATCH_DB=
+NOTION_SEASON_DB=
+NOTION_HONOR_DB=
+NOTION_TITLE_DB=
+NOTION_HERO_DB=
+
+# Mail. Production: wrangler secret put RESEND_API_KEY
+# MAIL_FROM defaults to MOOHSIA <Info@moohsia.com> when blank.
+# APPLICATIONS_TO defaults to Info@moohsia.com when blank.
+RESEND_API_KEY=
+MAIL_FROM=
+APPLICATIONS_TO=

@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { handleAdmin } from "./shared/admin-api.js";
 import { handleApi } from "./shared/api.js";
+import { createMemoryApplications } from "./shared/applications.js";
 import { createMemoryStore } from "./shared/cms-store.js";
 import { isAdminHost } from "./shared/hosts.js";
 import { logFailure } from "./shared/log.js";
+import { createMemoryMedia } from "./shared/media.js";
 
 function readDevVars() {
   if (!existsSync(".dev.vars")) return {};
@@ -19,6 +21,8 @@ function readDevVars() {
 }
 
 const memoryStore = createMemoryStore();
+const applicationStore = createMemoryApplications();
+const mediaStore = createMemoryMedia();
 
 function envFromLocal() {
   const file = readDevVars();
@@ -36,7 +40,16 @@ function envFromLocal() {
     NOTION_PROFILE_DB: read("NOTION_PROFILE_DB"),
     NOTION_PLAYER_DB: read("NOTION_PLAYER_DB"),
     NOTION_MATCH_DB: read("NOTION_MATCH_DB"),
+    NOTION_SEASON_DB: read("NOTION_SEASON_DB"),
+    NOTION_HONOR_DB: read("NOTION_HONOR_DB"),
+    NOTION_TITLE_DB: read("NOTION_TITLE_DB"),
+    NOTION_HERO_DB: read("NOTION_HERO_DB"),
+    RESEND_API_KEY: read("RESEND_API_KEY"),
+    MAIL_FROM: read("MAIL_FROM"),
+    APPLICATIONS_TO: read("APPLICATIONS_TO"),
     CMS_STORE: memoryStore,
+    APP_STORE: applicationStore,
+    MEDIA_MEMORY: mediaStore,
   };
 }
 

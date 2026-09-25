@@ -21,7 +21,8 @@ test("invite flag accepts only https Discord URLs and never echoes them", async 
   assert.equal(response.status, 200);
   assert.equal(body.contactEmail, CONTACT_EMAIL);
   assert.equal(body.discord.inviteConfigured, true);
-  assert.equal(body.discord.access, "verification_required");
+  assert.equal(body.discord.access, "application_only");
+  assert.equal(body.discord.cta, "website");
   assert.equal(text.includes("should-not-leak"), false);
   assert.equal(text.includes("discord.gg"), false);
 });

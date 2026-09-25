@@ -1,7 +1,7 @@
 import { getDefaultDocument } from "../src/content.js";
 import { storeFromEnv } from "./cms-store.js";
 import { logFailure } from "./log.js";
-import { emptyPlayer } from "./player.js";
+import { emptyHighlight, emptyPlayer, emptySeason } from "./player.js";
 import { ContentRejected, sanitizeDocument } from "./site-document.js";
 
 const NOTION_VERSION = "2022-06-28";
@@ -13,6 +13,10 @@ const DATABASES = [
   ["profile", "NOTION_PROFILE_DB"],
   ["player", "NOTION_PLAYER_DB"],
   ["matches", "NOTION_MATCH_DB"],
+  ["seasons", "NOTION_SEASON_DB"],
+  ["honors", "NOTION_HONOR_DB"],
+  ["titles", "NOTION_TITLE_DB"],
+  ["heroes", "NOTION_HERO_DB"],
 ];
 
 function configuredId(env, name) {
@@ -87,6 +91,66 @@ function bilingual(zh, en) {
   return { zh: zh || "", en: en || "" };
 }
 
+function sideToken(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (text === "blue" || text === "藍" || text === "藍方") return "blue";
+  if (text === "red" || text === "紅" || text === "紅方") return "red";
+  return "";
+}
+
+function keptHighlight(previous, caption) {
+  const prior = previous && typeof previous === "object" ? previous : emptyHighlight();
+  const next = caption?.zh || caption?.en ? caption : prior.caption || { zh: "", en: "" };
+  return {
+    caption: next,
+    key: prior.key || "",
+    mime: prior.mime || "",
+    kind: prior.kind || "",
+  };
+}
+
+function scoreboard(text) {
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed.slice(0, 10) : [];
+  } catch {
+    return [];
+  }
+}
+
+function seasonFromPage(page, index) {
+  const props = page.properties;
+  const base = emptySeason();
+  return {
+    ...base,
+    id: pageId(page, index),
+    label: titleText(props),
+    mode: textProp(props, "Mode"),
+    radar: {
+      output: textProp(props, "Radar Output"),
+      kda: textProp(props, "Radar KDA"),
+      farm: textProp(props, "Radar Farm"),
+      teamfight: textProp(props, "Radar Teamfight"),
+      survival: textProp(props, "Radar Survival"),
+    },
+    played: textProp(props, "Played"),
+    wins: textProp(props, "Wins"),
+    winRate: textProp(props, "Win Rate"),
+    mvp: textProp(props, "MVP"),
+    medals: {
+      godlike: textProp(props, "超神"),
+      penta: textProp(props, "五殺"),
+      quadra: textProp(props, "四殺"),
+      triple: textProp(props, "三殺"),
+      supreme: textProp(props, "頂級"),
+      gold: textProp(props, "金牌"),
+      silver: textProp(props, "銀牌"),
+      loseMvp: textProp(props, "敗方MVP"),
+    },
+  };
+}
+
 export function applyNotionCollections(document, sections) {
   const doc = structuredClone(document);
   if (sections.roster) {
@@ -139,9 +203,16 @@ export function applyNotionCollections(document, sections) {
       }));
   }
   if (!doc.player) doc.player = emptyPlayer();
+  const kept = {
+    matches: doc.player.matches,
+    seasons: doc.player.seasons,
+    reputation: doc.player.reputation,
+    heroPool: doc.player.heroPool,
+    championships: doc.player.championships,
+    honorTitles: doc.player.honorTitles,
+  };
   if (sections.player) {
     const published = sorted(sections.player).filter((page) => flag(page.properties, "Publish"));
-    const matches = doc.player.matches;
     if (!published.length) {
       doc.player = emptyPlayer();
     } else {
@@ -150,6 +221,7 @@ export function applyNotionCollections(document, sections) {
         ...emptyPlayer(),
         publish: true,
         handle: titleText(props),
+        uid: textProp(props, "UID"),
         name: bilingual(textProp(props, "Name"), textProp(props, "Name EN")),
         role: bilingual(textProp(props, "Role"), textProp(props, "Role EN")),
         lane: bilingual(textProp(props, "Lane"), textProp(props, "Lane EN")),
@@ -165,25 +237,100 @@ export function applyNotionCollections(document, sections) {
           winRate: textProp(props, "Win Rate"),
           kda: textProp(props, "KDA"),
           mvp: textProp(props, "MVP"),
+          kills: textProp(props, "Kills"),
+          deaths: textProp(props, "Deaths"),
+          assists: textProp(props, "Assists"),
+          gold: textProp(props, "Gold"),
+          damage: textProp(props, "Damage"),
         },
-        matches,
+        reputation: {
+          ...emptyPlayer().reputation,
+          score: textProp(props, "Reputation"),
+          level: textProp(props, "Reputation Level"),
+          exp: textProp(props, "Reputation Exp"),
+          expMax: textProp(props, "Reputation Exp Max"),
+          note: bilingual(textProp(props, "Reputation Note"), textProp(props, "Reputation Note EN")),
+        },
+        matches: kept.matches,
+        seasons: kept.seasons,
+        heroPool: kept.heroPool,
+        championships: kept.championships,
+        honorTitles: kept.honorTitles,
       };
     }
-    if (!sections.matches) doc.player.matches = matches;
+    if (!sections.matches) doc.player.matches = kept.matches;
+    if (!sections.seasons) doc.player.seasons = kept.seasons;
   }
   if (sections.matches) {
     if (!doc.player) doc.player = emptyPlayer();
-    doc.player.matches = sorted(sections.matches).map((page, index) => ({
-      id: pageId(page, index),
-      label: titleText(page.properties),
-      date: textProp(page.properties, "Date").slice(0, 10),
-      mode: textProp(page.properties, "Mode"),
-      hero: textProp(page.properties, "Hero"),
-      result: textProp(page.properties, "Result"),
-      kda: textProp(page.properties, "KDA"),
-      note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
-      publish: flag(page.properties, "Publish"),
-    }));
+    const previous = new Map((kept.matches || []).map((match) => [match.id, match.highlight]));
+    doc.player.matches = sorted(sections.matches).map((page, index) => {
+      const id = pageId(page, index);
+      return {
+        id,
+        label: titleText(page.properties),
+        date: textProp(page.properties, "Date").slice(0, 10),
+        playedAt: textProp(page.properties, "Played At"),
+        duration: textProp(page.properties, "Duration"),
+        mode: textProp(page.properties, "Mode"),
+        hero: textProp(page.properties, "Hero"),
+        result: textProp(page.properties, "Result"),
+        kda: textProp(page.properties, "KDA"),
+        kills: textProp(page.properties, "Kills"),
+        deaths: textProp(page.properties, "Deaths"),
+        assists: textProp(page.properties, "Assists"),
+        gold: textProp(page.properties, "Gold"),
+        damage: textProp(page.properties, "Damage"),
+        taken: textProp(page.properties, "Taken"),
+        blueScore: textProp(page.properties, "Blue"),
+        redScore: textProp(page.properties, "Red"),
+        winner: sideToken(textProp(page.properties, "Winner")),
+        ownerSide: sideToken(textProp(page.properties, "Owner Side")),
+        note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
+        publish: flag(page.properties, "Publish"),
+        highlight: keptHighlight(previous.get(id), bilingual(textProp(page.properties, "Highlight"), textProp(page.properties, "Highlight EN"))),
+        board: scoreboard(textProp(page.properties, "Scoreboard")),
+      };
+    });
+  }
+  if (sections.seasons) {
+    if (!doc.player) doc.player = emptyPlayer();
+    doc.player.seasons = sorted(sections.seasons)
+      .filter((page) => flag(page.properties, "Publish"))
+      .map((page, index) => seasonFromPage(page, index));
+  }
+  if (sections.honors) {
+    if (!doc.player) doc.player = emptyPlayer();
+    doc.player.championships = sorted(sections.honors)
+      .filter((page) => flag(page.properties, "Publish"))
+      .map((page, index) => ({
+        id: pageId(page, index),
+        title: titleText(page.properties),
+        season: textProp(page.properties, "Season"),
+        note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
+      }));
+  }
+  if (sections.titles) {
+    if (!doc.player) doc.player = emptyPlayer();
+    doc.player.honorTitles = sorted(sections.titles)
+      .filter((page) => flag(page.properties, "Publish"))
+      .map((page, index) => ({
+        id: pageId(page, index),
+        name: titleText(page.properties),
+        note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
+      }));
+  }
+  if (sections.heroes) {
+    if (!doc.player) doc.player = emptyPlayer();
+    doc.player.heroPool = sorted(sections.heroes)
+      .filter((page) => flag(page.properties, "Publish"))
+      .map((page, index) => ({
+        id: pageId(page, index),
+        hero: titleText(page.properties),
+        matches: textProp(page.properties, "Played"),
+        winRate: textProp(page.properties, "Win Rate"),
+        note: bilingual(textProp(page.properties, "Note"), textProp(page.properties, "Note EN")),
+      }));
   }
   return doc;
 }

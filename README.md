@@ -2,7 +2,7 @@
 
 傳說對決戰隊的公開網站，準備部署到 [moohsia.com](https://moohsia.com)。
 
-這不是個人作品集。訪客只會看到戰隊資訊。公開聯絡方式只有 `Info@moohsia.com`。招募狀態是 **不開放招募**，沒有試訓報名表。公開頁面沒有驗證入口，也沒有 Discord 邀請網址。
+這不是個人作品集。訪客看到的是公會 MOOHSIA、戰隊暮霞｜MOS。公開聯絡方式只有 `Info@moohsia.com`。加入只接受官網申請。Discord 不開放加入，邀請由擁有者在核准時貼上並寄出，網站不保存邀請網址。
 
 ## 本地啟動
 
@@ -29,24 +29,26 @@ npm start
 
 | 指令 | 作用 |
 | --- | --- |
-| `npm test` | 品牌文案、驗證 API 與管理後台測試 |
+| `npm test` | 品牌文案、申請表、閒置登出、選手數據與目錄測試 |
 | `npm run build` | 輸出 `dist/`（公開頁與管理頁） |
 | `npm run check` | 以 `wrangler deploy --dry-run` 檢查 Worker 能否打包 |
-| `npm run deploy` | 建置並部署名為 `moohsia-com` 的 Worker |
+| `npm run deploy` | 建置並部署名為 `moohsia-com` 的 Worker。這次變更不要執行 |
 | `npm run cms:hash` | 產生 `ADMIN_PASSWORD_HASH` |
 | `npm run cms:migrate` | 對正式 D1 套用 CMS migration |
-| `npm run catalog:refresh` | 從 Garena 公開頁重抓英雄與模式，寫進 `data/aov-catalog.json` |
+| `npm run catalog:refresh` | 從 Garena 公開頁重抓英雄、模式與活動，寫進 `data/aov-catalog.json` |
 
 ## 頁面
 
 | 路徑 | 內容 |
 | --- | --- |
-| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、選手數據空狀態、英雄預覽、動態、聯絡 |
+| `/` | 戰隊首頁：暮色舞台、識別、狀態、預留席位、選手數據、英雄與活動預覽、加入入口、聯絡 |
 | `/about` | 戰隊。未確認欄位顯示待公布 |
 | `/roster` | 成員。沒有名單時以待公布席位呈現，並附個人數據入口 |
-| `/player` | 個人數據。未發布時是空狀態，不顯示段位或頭銜 |
+| `/player` | 個人數據。對齊遊戲內對戰資料、信譽積分與歷史戰績。未發布時是空狀態 |
 | `/heroes` | 官方英雄名單（Garena 公開頁） |
 | `/modes` | 官方模式名稱（Garena 公開公告），不代表遊戲內正在開放 |
+| `/activities` | Garena 公開活動、公告與賽事 |
+| `/apply` | 加入申請。最低黃金，沒有公開 Discord |
 | `/news` | 動態。沒有公告時為廣播空狀態 |
 | `/contact` | 只有 `Info@moohsia.com` |
 
@@ -93,7 +95,7 @@ openssl rand -base64 32 | npx wrangler secret put ADMIN_SESSION_SECRET
 
 `npm run cms:hash` 會問密碼，印出一行 `pbkdf2-sha256$100000$...`。把那一行貼進 `ADMIN_PASSWORD_HASH`。不要把密碼本身設成 secret。本機開發把雜湊與 `ADMIN_SESSION_SECRET` 放進 `.dev.vars`（從 [`.dev.vars.example`](.dev.vars.example) 複製，帳號已是 `htw0702`）。`.dev.vars` 已被 git 忽略。
 
-登入失敗 8 次會鎖 15 分鐘。正式環境若有綁 `CMS_KV`，鎖在 KV；否則只算這一個 Worker isolate。Cookie 是 `HttpOnly`、`SameSite=Lax`，HTTPS 上加 `Secure`，約 8 小時過期。會改資料的請求要帶登入時拿到的 CSRF 標頭。
+登入失敗 8 次會鎖 15 分鐘。正式環境若有綁 `CMS_KV`，鎖在 KV；否則只算這一個 Worker isolate。Cookie 是 `HttpOnly`、`SameSite=Lax`，HTTPS 上加 `Secure`，閒置 15 分鐘就失效。有操作時 Cookie 與伺服器期限一起往後延。管理頁也會在 15 分鐘沒有輸入時登出。會改資料的請求要帶登入時拿到的 CSRF 標頭。登入頁不預填帳號，也不把帳號寫進 JSON。
 
 ### 資料庫
 
@@ -104,19 +106,32 @@ npm run cms:migrate:local
 npm run cms:migrate
 ```
 
-`migrations/0001_init.sql` 建 `site_documents`。`migrations/0002_player_and_catalog.sql` 再加 `player_records` 與 `aov_catalog`。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。英雄與模式則退回倉庫裡的官方快照。第二次 migration 不會改掉已經發布的文案。
+`migrations/0001_init.sql` 建 `site_documents`。`migrations/0002_player_and_catalog.sql` 再加 `player_records` 與 `aov_catalog`。`migrations/0003_applications.sql` 加 `applications`。申請表只存審核需要的欄位與邀請的 SHA-256，不存邀請網址。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。英雄、模式與活動則退回倉庫裡的官方快照。後面的 migration 不會改掉已經發布的文案。
 
 ## 個人數據
 
 個人戰績跟戰隊文案放在同一份 CMS 文件的 `player` 欄位，並在 D1 的 `player_records`（id 為 `owner`）留一份可查詢的複本。儲存草稿只更新 `draft_json`。按 **發布到網站** 才寫入 `published_json`。
 
-公開頁只在 `publish` 為 true 時顯示這份資料。預設是 false，所以 `/player` 與首頁是空狀態，不會出現段位、頭銜、場次或勝率。空白欄位在已公開的資料裡顯示「待公布」，系統不會補數字。
+公開頁只在 `publish` 為 true 時顯示這份資料。預設是 false，所以 `/player` 與首頁是空狀態，不會出現段位、頭銜、場次或勝率。空白欄位在已公開的資料裡顯示「待公布」。系統不會把空白補成 0，也不會發明信譽積分或段位。擁有者自己打數字，或上傳截圖；沒有 Garena 登入抓取。
 
-遊戲 ID 留空，等擁有者自己填。現有 CMS 測試允許選手名字 `htw0702aov`；保留名稱仍是剛好等於 `moohsia`（大小寫、空白、標點去掉之後）。不要把這個 ID 寫進公開程式的預設文案。
+頁面結構對齊遊戲內玩家資料，親密關係不收：
+
+| 區塊 | 內容 |
+| --- | --- |
+| 對戰資料 | 賽季（例如 2026-S4）、模式（排位賽）、雷達（輸出、KDA、發育、團戰、生存）、場次、勝率、MVP、勳章（超神、五殺、四殺、三殺、頂級、金牌、銀牌、敗方MVP） |
+| 信譽積分 | 分數、等級、經驗、說明、特權。沒填就不顯示 |
+| 歷史戰績 | 兩隊、英雄、IGN、評分、K／D／A、經濟、裝備、MVP、時長、比分、時間 |
+| 對局分頁 | 數據、輸出、生存、發育、戰績、團隊 |
+| 側欄 | 常用英雄、歷史戰績、對戰資料、信譽積分、冠軍賽榮譽、榮譽頭銜 |
+| 精彩對局 | 擁有者上傳的截圖或影片，存在 R2 |
+
+KDA 可以手填。三個擊殺、死亡、助攻都有數字、又沒手填 KDA 時，公開頁用 `(K+A)/max(D,1)`。
+
+遊戲 ID 留空，等擁有者自己填。保留名稱仍是剛好等於 `moohsia`（大小寫、空白、標點去掉之後）。不要把真實 UID 寫進公開程式的預設文案。
 
 對局也有自己的公開勾選。個人檔案沒有公開時，對局不會出現在網站上。
 
-管理頁在 **選手數據**。Notion 的選手資料庫可以覆寫這份草稿，規則見下一節。
+管理頁在 **選手數據**。Notion 的選手、賽季、對局、榮譽、頭銜、常用英雄資料庫可以覆寫對應草稿，規則見下一節。媒體檔仍只從管理頁上傳。
 
 ## Notion 同步
 
@@ -141,6 +156,10 @@ npx wrangler secret put NOTION_COPY_DB
 npx wrangler secret put NOTION_PROFILE_DB
 npx wrangler secret put NOTION_PLAYER_DB
 npx wrangler secret put NOTION_MATCH_DB
+npx wrangler secret put NOTION_SEASON_DB
+npx wrangler secret put NOTION_HONOR_DB
+npx wrangler secret put NOTION_TITLE_DB
+npx wrangler secret put NOTION_HERO_DB
 ```
 
 `NOTION_TOKEN` 是 Notion 內部整合權杖。每個資料庫 ID 是網址裡那串 32 碼，整合要被邀請進那些資料庫。沒設權杖或一個資料庫都沒設時，同步回 `notion_not_configured`，管理頁仍可手動編輯。只設定其中幾個資料庫也可以，沒設定的區塊維持原草稿。
@@ -218,7 +237,11 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 | Title / Title EN | rich text | 頭銜。沒有就留白 |
 | Bio / Bio EN | rich text | 簡介 |
 | Heroes / Heroes EN | rich text | 常用英雄，純文字 |
+| UID | rich text | 全數字。留白表示尚未填 |
 | Played、Wins、Win Rate、KDA、MVP | rich text | 數字。留白表示尚未填 |
+| Kills、Deaths、Assists、Gold、Damage | rich text | 分開的擊殺、死亡、助攻、經濟、輸出 |
+| Reputation、Reputation Level、Reputation Exp、Reputation Exp Max | rich text | 信譽積分。沒有就留白 |
+| Reputation Note / Reputation Note EN | rich text | 信譽說明 |
 | Publish | checkbox | 整份個人頁的公開開關 |
 | Order | number | 多列時取最小 |
 
@@ -228,15 +251,29 @@ API 版本是 `2022-06-28` 的 `POST /v1/databases/{id}/query`。每個資料庫
 | --- | --- | --- |
 | 標題 | title | 這場的名稱 |
 | Date | date | 日期 |
+| Played At | rich text | 例如 `2026-09-25 12:25` |
+| Duration | rich text | `12:16` |
 | Mode | rich text | 模式 |
 | Hero | rich text | 英雄 |
 | Result | rich text 或 select | 結果，原樣顯示 |
-| KDA | rich text | KDA |
+| KDA、Kills、Deaths、Assists、Gold、Damage、Taken | rich text | 這場自己的數字 |
+| Blue、Red | rich text | 兩隊比分 |
+| Winner、Owner Side | rich text 或 select | `blue`／`red`，或藍／紅 |
 | Note / Note EN | rich text | 註記 |
+| Highlight / Highlight EN | rich text | 精彩對局說明。檔案本身不在 Notion |
+| Scoreboard | rich text | 記分板 JSON，最多 10 列。欄位對齊管理頁：side、hero、ign、lane、badge、kills、deaths、assists、gold、score、mvp、owner、items、heroDamage、heroDamagePct、taken、takenPct、teamfightCount、teamfightRate、damageRatio、takenPer、gpm |
 | Publish | checkbox | 這場是否可公開 |
 | Order | number | 排序 |
 
-個人檔案的 Publish 沒勾時，這些對局也不會出現在公開頁。
+個人檔案的 Publish 沒勾時，這些對局也不會出現在公開頁。同步對局時，已上傳的精彩對局檔案會留在同一場。
+
+### 賽季 `NOTION_SEASON_DB`
+
+標題是賽季名，例如 `2026-S4`。Mode、Played、Wins、Win Rate、MVP 是文字。雷達是 Radar Output、Radar KDA、Radar Farm、Radar Teamfight、Radar Survival，0 到 100。勳章欄名用遊戲裡的中文：超神、五殺、四殺、三殺、頂級、金牌、銀牌、敗方MVP。Publish 沒勾的列不會進草稿。
+
+### 榮譽、頭銜、常用英雄
+
+`NOTION_HONOR_DB` 標題是榮譽名，Season 與 Note／Note EN 是文字。`NOTION_TITLE_DB` 標題是頭銜，Note／Note EN 是文字。`NOTION_HERO_DB` 標題是英雄，Played、Win Rate、Note／Note EN 是文字。三個都要勾 Publish 才會進草稿。沒設定的資料庫不會清掉管理頁已經填的內容。
 
 ## 官方英雄與模式
 
@@ -267,7 +304,17 @@ npm run catalog:refresh
 - 每日 cron 會抓公開頁並寫入。抓取失敗就留著上一份。
 - 管理頁 **更新官方英雄目錄** 做同一件事，前提是已經跑過 `0002` migration，或至少綁了 `CMS_KV`。
 
-`GET /api/catalog` 回英雄、定位與模式。沒有帳號資料。
+活動、公告與賽事來自公開列表，不登入：
+
+| 種類 | 公開頁 |
+| --- | --- |
+| 活動 | <https://moba.garena.tw/news/Activity> |
+| 公告 | <https://moba.garena.tw/news/> |
+| 賽事 | <https://moba.garena.tw/news/Esports> |
+
+其中一份列表抓失敗時，英雄與模式仍會更新。摘錄裡的電子郵件與 Discord 邀請會拿掉。
+
+`GET /api/catalog` 回英雄、定位、模式與活動。沒有帳號資料。管理頁按鈕是 **更新官方目錄與活動**。
 
 ### 草稿與發布
 
@@ -275,7 +322,7 @@ npm run catalog:refresh
 
 按 **儲存草稿** 只更新草稿。按 **發布到網站** 才把現在這份內容整份公開。**捨棄草稿** 會回到上次發布的內容。
 
-成員可以新增、修改、隱藏。沒有填名字的人不會出現在公開頁，預設也不會塞假選手。動態預設是草稿；狀態改成公開而且整站發布之後才會出現。再改回草稿並發布，就會從公開頁拿掉。招募文句可以改，但沒有試訓報名表。公開信箱欄位預設是 `Info@moohsia.com`，只有在這個欄位改掉時，頁面上的 mailto 才會換。
+成員可以新增、修改、隱藏。沒有填名字的人不會出現在公開頁，預設也不會塞假選手。動態預設是草稿；狀態改成公開而且整站發布之後才會出現。再改回草稿並發布，就會從公開頁拿掉。加入申請不在這份文案裡，它走下面的申請表。公開信箱欄位預設是 `Info@moohsia.com`，只有在這個欄位改掉時，頁面上的 mailto 才會換。
 
 ### 接上 admin.moohsia.com
 
@@ -306,26 +353,41 @@ export const newsPosts = [
 
 名稱留白的項目不會被畫成選手或新聞。
 
-## Discord 邀請與內部 API
+## 加入申請與 Discord
 
-公開網站 **不會顯示邀請網址，也不提供驗證頁**。預設 `DISCORD_INVITE_URL` 是空的。
+公開網站接受申請，Discord 不開放加入。沒有邀請池，Worker 不會產生邀請，也不會把邀請網址寫進 git、D1 或公開頁。
 
-`POST /api/verify` 仍是人工審核存根，只留給之後的內部流程，沒有掛進公開頁面。Worker 不保存申請、不連 Garena、也不會因為請求就解鎖 Discord。
+申請人在 `/apply` 填：歷史排位賽最高戰績（最低黃金）、全數字 UID、暱稱、聯絡信箱、性別、年齡層（18 歲起）、為什麼希望加入、剛好兩個位子、平日與假日遊玩時間、可配合練習的具體時段（例如 `20:00～22:00`），並勾選尊重、友善、包容、禁止金錢往來、跟隨官方規範。
 
-之後若要放上真正的邀請：
+`POST /api/apply` 會寫進 D1 `applications`。同一個 UID 已有待審申請時回 409。蜜罐欄位直接丟棄。同一 IP 15 分鐘最多 5 筆。
 
-1. 網址必須是 `https://discord.gg/...` 或 `https://discord.com/invite/...`。
-2. 不要把網址寫進 git。
-3. 從 [`wrangler.jsonc`](wrangler.jsonc) 的 `vars` 移除 `DISCORD_INVITE_URL`（同名 var 與 secret 不能並存）。
-4. 設定 secret：
+寄信用 Resend。密鑰不要進 git：
 
 ```bash
-npx wrangler secret put DISCORD_INVITE_URL
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put MAIL_FROM
+npx wrangler secret put APPLICATIONS_TO
 ```
 
-5. 本機開發可複製 `.dev.vars.example` 為 `.dev.vars`（此檔已在 `.gitignore`）。
+`MAIL_FROM` 預設是 `MOOHSIA <Info@moohsia.com>`。`APPLICATIONS_TO` 沒設時，新申請寄到 `Info@moohsia.com`。信沒設好時，申請仍會留下，回應裡的 `mailed` 是 false。
 
-設定成功後，`/api/config` 只會回 `inviteConfigured: true`，仍然不含網址。公開網站不會因此出現邀請或驗證入口。
+管理頁 **加入申請** 列出待審資料。核准時貼上一則 Discord 邀請（`https://discord.gg/` 或 `https://discord.com/invite/`）。在按下核准之前這欄可以空著。按下核准後，這則網址只出現在寄給那位申請人的信裡。資料庫只留 SHA-256，用來擋同一則連結再用一次。回應 JSON 不含網址。信送失敗時狀態維持待審。拒絕可以選擇要不要寄信；有要求寄信但失敗時，也不改狀態。
+
+`DISCORD_INVITE_URL` 留空。它只影響 `/api/config` 的 `inviteConfigured`，公開頁不印出網址。不要把它換成邀請池。
+
+## 精彩對局媒體
+
+截圖與短片放在 R2，綁定名稱 `MEDIA`，bucket 名稱 `moohsia-media`。擁有者自己建立，這次變更不建立正式資源：
+
+```bash
+npx wrangler r2 bucket create moohsia-media
+```
+
+圖片上限 8MB（jpeg、png、gif、webp），影片上限 32MB（mp4、webm）。程式會看檔頭，不信副檔名。公開網址只有已發布對局的 `/api/media/:id`。
+
+## 內部 API
+
+`POST /api/verify` 仍是舊的人工審核存根，沒有掛進公開頁面。Worker 不連 Garena 個人資料，也不會因為這個請求解鎖 Discord。
 
 ## 驗證 API
 

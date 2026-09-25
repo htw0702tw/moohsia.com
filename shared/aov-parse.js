@@ -193,7 +193,110 @@ export function modeFromPage(html, spec) {
   };
 }
 
-export function assembleCatalog({ heroes, modes, fetchedAt }) {
+export const ACTIVITY_LISTS = [
+  { kind: "activity", url: "https://moba.garena.tw/news/Activity" },
+  { kind: "announcement", url: "https://moba.garena.tw/news/" },
+  { kind: "esports", url: "https://moba.garena.tw/news/Esports" },
+];
+
+function stripEmails(value) {
+  return String(value || "")
+    .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "")
+    .replace(/https?:\/\/(?:discord\.gg|discord\.com\/invite)\/\S+/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function safeImage(value) {
+  const text = String(value || "").trim();
+  if (!text.startsWith("https://")) return "";
+  try {
+    const url = new URL(text);
+    const host = url.hostname.toLowerCase();
+    if (host.endsWith(".garenanow.com") || host.endsWith(".akamaihd.net") || host === "akamaihd.net") return url.href;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+function isoFromLabel(label, now) {
+  const match = /^(\d{2})\/(\d{2})$/.exec(String(label || "").trim());
+  if (!match) return "";
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return "";
+  let year = now.getUTCFullYear();
+  const candidate = Date.UTC(year, month - 1, day);
+  if (candidate - now.getTime() > 1000 * 60 * 60 * 24 * 45) year -= 1;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/**
+ * First page of a public Garena news/activity list.
+ * @param {string} html
+ * @param {{ kind: string, url: string }} source
+ * @param {Date} [now]
+ */
+export function parseActivityList(html, source, now = new Date()) {
+  const page = String(html || "");
+  const found = new Map();
+  const remember = (id, titleHtml, textHtml, image) => {
+    const title = stripEmails(htmlToText(titleHtml)).slice(0, 140);
+    if (!title || found.has(id)) return;
+    found.set(id, {
+      id,
+      title,
+      dateLabel: "",
+      date: "",
+      kind: source.kind,
+      excerpt: stripEmails(htmlToText(textHtml)).slice(0, 180),
+      image: safeImage(image),
+      sourceUrl: `https://moba.garena.tw/news/show/${id}`,
+      listUrl: source.url,
+    });
+  };
+  const splitFeature =
+    /<a href="\/news\/show\/(\d+)"[^>]*>\s*<img[^>]+src="([^"]+)"[\s\S]{0,900}?<a href="\/news\/show\/\1"[^>]*class="event_content"[\s\S]*?class="event_title[^"]*">([\s\S]*?)<\/div>\s*<div class="event_text">([\s\S]*?)<\/div>/i.exec(
+      page,
+    );
+  if (splitFeature) remember(splitFeature[1], splitFeature[3], splitFeature[4], splitFeature[2]);
+  const feature =
+    /<a href="\/news\/show\/(\d+)"[\s\S]{0,500}?<img[^>]+src="([^"]+)"[\s\S]{0,800}?class="event_title[^"]*">([\s\S]*?)<\/div>\s*<div class="event_text">([\s\S]*?)<\/div>/i.exec(
+      page,
+    );
+  if (feature) remember(feature[1], feature[3], feature[4], feature[2]);
+  const rowRe =
+    /<a href="\/news\/show\/(\d+)"[^>]*class="event_list"[\s\S]*?<div class="event_list_title">([\s\S]*?)<\/div>\s*<div class="event_list_date">([^<]*)<\/div>/gi;
+  for (const match of page.matchAll(rowRe)) {
+    const title = stripEmails(htmlToText(match[2])).slice(0, 140);
+    if (!title) continue;
+    if (found.has(match[1])) {
+      const existing = found.get(match[1]);
+      if (!existing.dateLabel) {
+        const dateLabel = htmlToText(match[3]).slice(0, 8);
+        existing.dateLabel = dateLabel;
+        existing.date = isoFromLabel(dateLabel, now);
+      }
+      continue;
+    }
+    const dateLabel = htmlToText(match[3]).slice(0, 8);
+    found.set(match[1], {
+      id: match[1],
+      title,
+      dateLabel,
+      date: isoFromLabel(dateLabel, now),
+      kind: source.kind,
+      excerpt: "",
+      image: "",
+      sourceUrl: `https://moba.garena.tw/news/show/${match[1]}`,
+      listUrl: source.url,
+    });
+  }
+  return [...found.values()].slice(0, 24);
+}
+
+export function assembleCatalog({ heroes, modes, activities = [], fetchedAt }) {
   return {
     source: "official-snapshot",
     fetchedAt,
@@ -201,11 +304,13 @@ export function assembleCatalog({ heroes, modes, fetchedAt }) {
       heroes: HERO_LIST_URL,
       images: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/",
       publisher: "Garena Online",
-      note: "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names are copied from public Garena news pages and are not a live queue.",
+      activities: ACTIVITY_LISTS.map((item) => item.url),
+      note: "Hero names, role tags, and portraits come from the public Traditional Chinese hero list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API.",
     },
     roles: roleCatalog(),
     heroes,
     modes,
+    activities,
   };
 }
 
@@ -244,5 +349,20 @@ export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toI
     error.name = "CatalogModes";
     throw error;
   }
-  return assembleCatalog({ heroes, modes, fetchedAt });
+  const activities = [];
+  const seen = new Set();
+  for (const source of ACTIVITY_LISTS) {
+    try {
+      const response = await fetchImpl(source.url, { headers: { "user-agent": "moohsia-com-catalog" } });
+      if (!response.ok) continue;
+      for (const item of parseActivityList(await response.text(), source)) {
+        if (seen.has(item.id)) continue;
+        seen.add(item.id);
+        activities.push(item);
+      }
+    } catch {
+      /* keep heroes and modes if a public list is temporarily unreadable */
+    }
+  }
+  return assembleCatalog({ heroes, modes, activities: activities.slice(0, 36), fetchedAt });
 }

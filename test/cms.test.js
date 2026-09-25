@@ -68,7 +68,7 @@ test("built-in document round-trips and publishes an empty roster", () => {
   assert.equal(doc.placeholderSlots, 5);
   assert.equal(doc.rosterMembers.length, 0);
   assert.equal(doc.newsPosts.length, 0);
-  assert.equal(doc.copy.zh.nav.recruitChip, "不開放招募");
+  assert.equal(doc.copy.zh.nav.recruitChip, "官網申請");
   assert.equal(doc.copy.zh.home.fixtures[0].title, "尚未公布");
   assert.deepEqual(doc.copy, getDefaultDocument().copy);
   const publicDoc = toPublicDocument(doc);
@@ -225,7 +225,7 @@ test("default document and ordinary section edits can be saved", async () => {
   const cookie = (loggedIn.headers.get("set-cookie") || "").split(";")[0];
   const draft = sanitizeDocument(getDefaultDocument());
   assert.equal(draft.contactEmail, "Info@moohsia.com");
-  assert.equal(draft.copy.zh.nav.recruitChip, "不開放招募");
+  assert.equal(draft.copy.zh.nav.recruitChip, "官網申請");
   draft.copy.zh.home.tagline = "暮色仍在。";
   draft.copy.en.about.lead = "MOS plays Arena of Valor.";
   draft.copy.zh.roster.lead = "名單如下。";

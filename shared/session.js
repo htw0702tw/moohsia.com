@@ -1,5 +1,15 @@
 export const SESSION_COOKIE = "mos_admin";
-export const SESSION_TTL_SECONDS = 60 * 60 * 8;
+/** Idle window. Cookie Max-Age matches this. Activity slides both. */
+export const SESSION_IDLE_SECONDS = 15 * 60;
+export const SESSION_TTL_SECONDS = SESSION_IDLE_SECONDS;
+
+export function sessionNow(env) {
+  if (env?.SESSION_CLOCK_FOR_TESTS === "1") {
+    const value = Number(env.SESSION_NOW);
+    if (Number.isFinite(value) && value > 0) return Math.floor(value);
+  }
+  return Math.floor(Date.now() / 1000);
+}
 
 function bytesToBase64Url(bytes) {
   let binary = "";
@@ -32,14 +42,14 @@ async function sign(secret, data) {
  * @param {string} secret
  * @param {{ username: string, csrf: string }} session
  */
-export async function issueSession(secret, session) {
-  const now = Math.floor(Date.now() / 1000);
+export async function issueSession(secret, session, now = Math.floor(Date.now() / 1000)) {
   const payload = {
     v: 1,
     u: session.username,
     csrf: session.csrf,
     iat: now,
-    exp: now + SESSION_TTL_SECONDS,
+    last: now,
+    exp: now + SESSION_IDLE_SECONDS,
   };
   const body = bytesToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   const mac = await sign(secret, body);
@@ -50,7 +60,7 @@ export async function issueSession(secret, session) {
  * @param {string} secret
  * @param {string} token
  */
-export async function readSession(secret, token) {
+export async function readSession(secret, token, now = Math.floor(Date.now() / 1000)) {
   try {
     if (!secret || secret.length < 16 || !token || !token.includes(".")) return null;
     const dot = token.lastIndexOf(".");
@@ -60,10 +70,11 @@ export async function readSession(secret, token) {
     const valid = await crypto.subtle.verify("HMAC", key, base64UrlToBytes(mac), new TextEncoder().encode(body));
     if (!valid) return null;
     const payload = JSON.parse(new TextDecoder().decode(base64UrlToBytes(body)));
-    const now = Math.floor(Date.now() / 1000);
     if (!payload || payload.v !== 1 || typeof payload.u !== "string" || typeof payload.csrf !== "string") return null;
-    if (!Number.isFinite(payload.exp) || payload.exp < now || payload.exp > now + SESSION_TTL_SECONDS + 60) return null;
-    return { username: payload.u, csrf: payload.csrf, exp: payload.exp };
+    const last = Number.isFinite(payload.last) ? payload.last : payload.iat;
+    if (!Number.isFinite(last) || now - last > SESSION_IDLE_SECONDS || now < last - 60) return null;
+    if (!Number.isFinite(payload.exp) || payload.exp < now || payload.exp > now + SESSION_IDLE_SECONDS + 60) return null;
+    return { username: payload.u, csrf: payload.csrf, exp: payload.exp, last };
   } catch {
     return null;
   }

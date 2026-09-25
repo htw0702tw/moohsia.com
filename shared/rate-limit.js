@@ -56,4 +56,26 @@ export function resetLoginFailuresForTests() {
   memory.clear();
 }
 
+async function bumpWindow(env, key, windowSeconds) {
+  const now = Date.now();
+  if (env?.CMS_KV) {
+    const count = Number((await env.CMS_KV.get(key)) || 0) + 1;
+    await env.CMS_KV.put(key, String(count), { expirationTtl: windowSeconds });
+    return count;
+  }
+  const row = memory.get(key);
+  if (!row || row.reset <= now) {
+    memory.set(key, { count: 1, reset: now + windowSeconds * 1000 });
+    return 1;
+  }
+  row.count += 1;
+  return row.count;
+}
+
+/** Basic abuse window. Returns true when the caller should be rejected. */
+export async function overLimit(env, bucket, ip, max, windowSeconds) {
+  const count = await bumpWindow(env, `${bucket}:${ip}`, windowSeconds);
+  return count > max;
+}
+
 export { MAX_FAILS };
