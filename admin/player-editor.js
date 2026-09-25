@@ -676,7 +676,7 @@ export function renderPlayerEditor(player, ui, attrs) {
   let body = "";
   if (tab === "battle") body = battleTab(record, text);
   else if (tab === "builds") body = buildsTab(record, text, choice);
-  else if (tab === "matches") body = matchesTab(record, ui, text, choice);
+  else if (tab === "matches") body = `${attrs?.matchesLead || ""}${matchesTab(record, ui, text, choice)}`;
   else if (tab === "heroes") body = heroesTab(record, text);
   else if (tab === "honors") body = honorsTab(record, text);
   else if (tab === "media") body = mediaTab(record);

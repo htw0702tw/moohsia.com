@@ -135,6 +135,8 @@ textarea { min-height: 4.5rem; resize: vertical; }
 
 .hint { margin: 0; line-height: 1.5; }
 
+details summary { cursor: pointer; color: var(--amber); margin: 0.2rem 0 0.6rem; }
+
 .error { color: var(--danger); }
 
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }

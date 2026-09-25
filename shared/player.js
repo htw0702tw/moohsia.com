@@ -21,10 +21,18 @@ function whole(value, maxDigits = 8) {
   return new RegExp(`^\\d{1,${maxDigits}}$`).test(text) ? text : "";
 }
 
-function decimal(value, maxDigits = 8) {
+function decimal(value, maxDigits = 8, places = 2) {
   const text = clip(typeof value === "number" && Number.isFinite(value) ? String(value) : String(value ?? ""), 16).replace(/,/g, "");
   if (!text) return "";
-  return new RegExp(`^\\d{1,${maxDigits}}(\\.\\d{1,2})?$`).test(text) ? text : "";
+  return new RegExp(`^\\d{1,${maxDigits}}(\\.\\d{1,${places}})?$`).test(text) ? text : "";
+}
+
+function signed(value, maxDigits = 6) {
+  const text = clip(typeof value === "number" && Number.isFinite(value) ? String(value) : String(value ?? ""), 16)
+    .replace(/,/g, "")
+    .replace(/^\+/, "");
+  if (!text) return "";
+  return new RegExp(`^-?\\d{1,${maxDigits}}$`).test(text) ? text : "";
 }
 
 function radarValue(value) {
@@ -108,9 +116,18 @@ export function emptyBoardPlayer() {
     damageRatio: "",
     takenPer: "",
     gpm: "",
+    level: "",
+    minions: "",
+    control: "",
+    tower: "",
+    rankDelta: "",
+    reputation: "",
+    powerDelta: "",
     skin: "",
   };
 }
+
+export const PLAYER_MATCH_LIMIT = 80;
 
 export function emptyMatch() {
   return {
@@ -131,7 +148,16 @@ export function emptyMatch() {
     gold: "",
     damage: "",
     taken: "",
+    minions: "",
+    control: "",
     healing: "",
+    tower: "",
+    lane: "",
+    reputation: "",
+    rankDelta: "",
+    powerDelta: "",
+    externalMatchId: "",
+    source: "",
     blueScore: "",
     redScore: "",
     winner: "",
@@ -242,6 +268,7 @@ export function emptyPlayer() {
     honorTitles: [],
     builds: [],
     matches: [],
+    aov: { syncedAt: "", count: "", keyword: "", server: "" },
   };
 }
 
@@ -332,7 +359,14 @@ function cleanBoardPlayer(value) {
     damageRatio: decimal(source.damageRatio, 3),
     takenPer: whole(source.takenPer, 9),
     gpm: whole(source.gpm, 6),
+    level: whole(source.level, 3),
+    minions: whole(source.minions, 6),
+    control: decimal(source.control, 6, 3),
     healing: whole(source.healing, 9),
+    tower: whole(source.tower, 9),
+    rankDelta: signed(source.rankDelta),
+    reputation: signed(source.reputation),
+    powerDelta: signed(source.powerDelta),
     skin: clip(source.skin, 40),
   };
 }
@@ -353,11 +387,32 @@ function boardFilled(row) {
   );
 }
 
+function cleanExternalId(value) {
+  const text = clip(value, 40);
+  return /^[A-Za-z0-9_-]{1,40}$/.test(text) ? text : "";
+}
+
+function cleanAov(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const synced = clip(source.syncedAt, 40);
+  const server = source.server === "1011" || source.server === "1012" ? source.server : "";
+  return {
+    syncedAt: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(synced) ? synced : "",
+    count: whole(source.count, 3),
+    keyword: clip(source.keyword, 100),
+    server,
+  };
+}
+
 function cleanMatch(item) {
   const source = item && typeof item === "object" ? item : {};
   const playedRaw = clip(source.playedAt, 40);
-  const playedMatch = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}))?/.exec(playedRaw);
-  const playedAt = playedMatch ? (playedMatch[2] ? `${playedMatch[1]} ${playedMatch[2]}` : playedMatch[1]) : "";
+  const playedMatch = /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2})(?::(\d{2}))?)?/.exec(playedRaw);
+  const playedAt = playedMatch
+    ? playedMatch[2]
+      ? `${playedMatch[1]} ${playedMatch[2]}${playedMatch[3] ? `:${playedMatch[3]}` : ""}`
+      : playedMatch[1]
+    : "";
   const board = [];
   if (Array.isArray(source.board)) {
     for (const row of source.board.slice(0, 10)) {
@@ -385,7 +440,16 @@ function cleanMatch(item) {
     gold: whole(source.gold, 9),
     damage: whole(source.damage, 9),
     taken: whole(source.taken, 9),
+    minions: whole(source.minions, 6),
+    control: decimal(source.control, 6, 3),
     healing: whole(source.healing, 9),
+    tower: whole(source.tower, 9),
+    lane: clip(source.lane, 24),
+    reputation: signed(source.reputation),
+    rankDelta: signed(source.rankDelta),
+    powerDelta: signed(source.powerDelta),
+    externalMatchId: cleanExternalId(source.externalMatchId),
+    source: source.source === "aovweb" ? "aovweb" : "",
     blueScore: whole(source.blueScore, 4),
     redScore: whole(source.redScore, 4),
     winner,
@@ -414,8 +478,11 @@ function matchFilled(match) {
       match.assists ||
       match.gold ||
       match.damage ||
-      match.taken ||
+      match.minions ||
       match.healing ||
+      match.tower ||
+      match.externalMatchId ||
+      match.taken ||
       match.skin ||
       match.map ||
       match.mvp ||
@@ -574,7 +641,7 @@ export function cleanPlayer(input) {
   const stats = source.stats && typeof source.stats === "object" ? source.stats : {};
   const matches = [];
   if (Array.isArray(source.matches)) {
-    for (const item of source.matches.slice(0, 80)) {
+    for (const item of source.matches.slice(0, PLAYER_MATCH_LIMIT)) {
       const match = cleanMatch(item);
       if (matchFilled(match)) matches.push(match);
     }
@@ -650,6 +717,7 @@ export function cleanPlayer(input) {
     honorTitles,
     builds,
     matches,
+    aov: cleanAov(source.aov),
   };
 }
 
@@ -701,13 +769,20 @@ function publicMatch(match) {
     gold: match.gold,
     damage: match.damage,
     taken: match.taken,
+    minions: match.minions,
+    control: match.control,
+    healing: match.healing,
+    tower: match.tower,
+    lane: match.lane,
+    reputation: match.reputation,
+    rankDelta: match.rankDelta,
+    powerDelta: match.powerDelta,
     blueScore: match.blueScore,
     redScore: match.redScore,
     winner: match.winner,
     ownerSide: match.ownerSide,
     map: match.map,
     skin: match.skin,
-    healing: match.healing,
     mvp: match.mvp,
     badges: match.badges,
     note: match.note,

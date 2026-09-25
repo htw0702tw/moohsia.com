@@ -164,19 +164,32 @@ function chartBlock(copy, player) {
   return `<div class="chart-grid">${parts.join("")}</div>`;
 }
 
+function tagged(label, value) {
+  if (value === "" || value == null) return "";
+  return `${label} ${value}`;
+}
+
+function signedText(value) {
+  if (value === "" || value == null) return "";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value);
+  if (number > 0) return `+${value}`;
+  return String(value);
+}
+
 function boardCells(row, tab, page) {
   if (tab === "data") {
     return [row.heroDamage, row.heroDamagePct && `${row.heroDamagePct}%`, row.taken, row.takenPct && `${row.takenPct}%`, row.teamfightRate && `${row.teamfightRate}%`]
       .filter(Boolean)
       .join(" · ");
   }
-  if (tab === "output") return [row.heroDamage, row.damageRatio].filter(Boolean).join(" · ");
-  if (tab === "survival") return [row.taken, row.takenPer, row.healing].filter(Boolean).join(" · ");
-  if (tab === "farm") return [row.gold, row.gpm].filter(Boolean).join(" · ");
-  if (tab === "record") return [row.kills, row.deaths, row.assists, row.score].filter(Boolean).join(" / ");
+  if (tab === "output") return [row.heroDamage, tagged(page.tower, row.tower), row.damageRatio].filter(Boolean).join(" · ");
+  if (tab === "survival") return [row.taken, tagged(page.healing, row.healing), tagged(page.control, row.control), row.takenPer].filter(Boolean).join(" · ");
+  if (tab === "farm") return [row.gold, tagged(page.minions, row.minions), row.gpm].filter(Boolean).join(" · ");
+  if (tab === "record") return [row.kills, row.deaths, row.assists, row.score, tagged(page.rankDelta, signedText(row.rankDelta))].filter(Boolean).join(" / ");
   if (tab === "team") return [row.teamfightCount, row.teamfightRate && `${row.teamfightRate}%`, row.heroDamagePct && `${row.heroDamagePct}%`].filter(Boolean).join(" · ");
   const kda = [row.kills, row.deaths, row.assists].filter((part) => part !== "").join(" / ");
-  return [kda, row.gold, row.score].filter(Boolean).join(" · ");
+  return [kda, row.gold, row.score, tagged(page.minions, row.minions)].filter(Boolean).join(" · ");
 }
 
 function badgeLine(match, page) {
@@ -193,7 +206,24 @@ function scoreboard(match, page, tab) {
   const red = (match.board || []).filter((row) => row.side === "red");
   if (!blue.length && !red.length) {
     const kda = [match.kills, match.deaths, match.assists].filter((part) => part !== "").join(" / ");
-    const meta = [match.mode, match.map, match.hero, match.skin, match.result, kda || match.kda, match.gold, match.damage, match.taken, match.healing, badgeLine(match, page)]
+    const meta = [
+      match.mode,
+      match.map,
+      match.hero,
+      match.skin,
+      match.result,
+      kda || match.kda,
+      match.gold,
+      match.damage,
+      match.taken,
+      tagged(page.minions, match.minions),
+      tagged(page.healing, match.healing),
+      tagged(page.tower, match.tower),
+      tagged(page.control, match.control),
+      tagged(page.rankDelta, signedText(match.rankDelta)),
+      match.lane,
+      badgeLine(match, page),
+    ]
       .filter(Boolean)
       .join(" · ");
     return `<p class="section-note">${esc(meta || page.pending)}</p>`;
