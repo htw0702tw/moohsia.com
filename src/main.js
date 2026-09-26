@@ -39,6 +39,7 @@ const ROUTES = {
   "/skins": "skins",
   "/items": "items",
   "/modes": "modes",
+  "/ranks": "ranks",
   "/activities": "activities",
   "/news": "news",
   "/apply": "apply",

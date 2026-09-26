@@ -42,8 +42,16 @@ export const SITE_SEARCH = [
     type: "page",
     id: "modes",
     title: "模式",
-    text: "模式 modes 排位賽",
+    text: "模式 modes 排位賽 傳說之巔 段位",
     href: "/modes",
+    image: "",
+  },
+  {
+    type: "page",
+    id: "ranks",
+    title: "段位",
+    text: "段位 排位 鉑金 傳說之巔 傳說之路 賽年寶藏 榜單",
+    href: "/ranks",
     image: "",
   },
   {

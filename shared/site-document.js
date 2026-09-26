@@ -103,6 +103,9 @@ function cleanRoster(list) {
       role: bilingual(item.role, 80),
       team: teamSlug(item.team) || DEFAULT_TEAM_SLUG,
       hidden: item.hidden === true,
+      rankTier: clip(item.rankTier, 40),
+      rankDivision: clip(item.rankDivision, 8).toUpperCase(),
+      rankStars: /^\d{1,4}$/.test(clip(item.rankStars, 4)) ? clip(item.rankStars, 4) : "",
     });
   }
   return out;
@@ -259,7 +262,15 @@ export function toPublicDocument(doc) {
     teams: doc.teams,
     rosterMembers: doc.rosterMembers
       .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
-      .map(({ id, name, role, team }) => ({ id, name, role, team })),
+      .map(({ id, name, role, team, rankTier, rankDivision, rankStars }) => ({
+        id,
+        name,
+        role,
+        team,
+        rankTier: rankTier || "",
+        rankDivision: rankDivision || "",
+        rankStars: rankStars || "",
+      })),
     newsPosts: doc.newsPosts
       .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
       .map(({ id, date, title, body }) => ({ id, date, title, body })),

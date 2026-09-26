@@ -1,5 +1,6 @@
 import "./admin.css";
 import { applyAovImport, fightHistoryUrl } from "../shared/aov-import.js";
+import { LADDER } from "../shared/ranks.js";
 import { adminMessage, aovNeedsPaste, choosePastedHtml, importFailureMessage } from "./messages.js";
 import {
   applyPlayerInput,
@@ -433,7 +434,11 @@ function rosterEditor() {
           <label>位置 繁中<input data-roster="${index}" data-field="role" data-lang="zh" value="${esc(member.role?.zh)}" ${CMS_TEXT}></label>
           <label>位置 EN<input data-roster="${index}" data-field="role" data-lang="en" value="${esc(member.role?.en)}" ${CMS_TEXT}></label>
           <label>戰隊<select data-roster="${index}" data-field="team" ${CMS_CHOICE}>${teamOptions(member.team)}</select></label>
+          <label>段位階<select data-roster="${index}" data-field="rankTier" ${CMS_CHOICE}><option value="">—</option>${LADDER.map((tier) => `<option value="${esc(tier.id)}"${member.rankTier === tier.id ? " selected" : ""}>${esc(tier.zh)}</option>`).join("")}</select></label>
+          <label>小段<select data-roster="${index}" data-field="rankDivision" ${CMS_CHOICE}>${["", "V", "IV", "III", "II", "I"].map((item) => `<option value="${item}"${member.rankDivision === item ? " selected" : ""}>${item || "—"}</option>`).join("")}</select></label>
+          <label>星數<input data-roster="${index}" data-field="rankStars" value="${esc(member.rankStars)}" ${CMS_TEXT}></label>
         </div>
+        <p class="hint">公會段位榜用這三欄。傳說段位不用填小段，星數填總星數。詳細的星、積分與榜單差距在「選手數據」的段位分頁。</p>
         <label class="check"><input type="checkbox" data-roster="${index}" data-field="hidden"${member.hidden ? " checked" : ""}>在公開頁隱藏</label>
       </article>`;
     })
@@ -840,7 +845,7 @@ function onInput(event) {
     const member = state.draft.rosterMembers[Number(target.dataset.roster)];
     if (!member) return;
     if (target.dataset.field === "hidden") member.hidden = target instanceof HTMLInputElement && target.checked;
-    else if (target.dataset.field === "team") member.team = target.value;
+    else if (target.dataset.field === "team" || target.dataset.field === "rankTier" || target.dataset.field === "rankDivision" || target.dataset.field === "rankStars") member[target.dataset.field] = target.value;
     else if (target.dataset.lang) member[target.dataset.field][target.dataset.lang] = target.value;
     markDirty("有未儲存的修改");
     return;
@@ -1157,7 +1162,16 @@ function onClick(event) {
     return;
   }
   if (action === "roster-add") {
-    state.draft.rosterMembers.push({ id: newId(), name: { zh: "", en: "" }, role: { zh: "", en: "" }, team: "moohsia", hidden: false });
+    state.draft.rosterMembers.push({
+      id: newId(),
+      name: { zh: "", en: "" },
+      role: { zh: "", en: "" },
+      team: "moohsia",
+      hidden: false,
+      rankTier: "",
+      rankDivision: "",
+      rankStars: "",
+    });
     markDirty("有未儲存的修改");
     render();
     return;

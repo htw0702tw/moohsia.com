@@ -1,5 +1,7 @@
 /** Personal Arena of Valor record. Numbers stay blank until the owner enters them. */
 
+import { tierById } from "./ranks.js";
+
 function clip(value, max) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -276,6 +278,68 @@ export function emptyTitle() {
   return { id: "", name: "", note: { zh: "", en: "" } };
 }
 
+export function emptyRankCard() {
+  return {
+    season: "",
+    tier: "",
+    division: "",
+    stars: "",
+    points: "",
+    queueReadout: "",
+    queueReadoutMax: "",
+    seasonChallenge: "",
+    updatedAt: "",
+  };
+}
+
+export function emptyPowerBoard() {
+  return { updatedAt: "", area: "", hero: "", power: "", bestPower: "", rows: [] };
+}
+
+export function emptyYearTreasure() {
+  return {
+    year: "",
+    reward: "",
+    updatedAt: "",
+    seasons: ["S1", "S2", "S3", "S4"].map((id) => ({ id, active: false })),
+  };
+}
+
+export function emptyWeeklyReport() {
+  return {
+    id: "",
+    title: "",
+    start: "",
+    end: "",
+    rankedGames: "",
+    rankedWins: "",
+    starDelta: "",
+    powerFrom: "",
+    powerTo: "",
+    hero: "",
+    mastery: "",
+    heroGames: "",
+    heroWinRate: "",
+    starsEarned: "",
+    starsCasual: "",
+    starsRanked: "",
+    fromLabel: "",
+    toLabel: "",
+    bestLine: "",
+    mvp: "",
+    goldMedals: "",
+    silverMedals: "",
+    winRate: "",
+    winRateBeat: "",
+    winRateGrade: "",
+    kda: "",
+    kdaBeat: "",
+    kdaGrade: "",
+    specialty: "",
+    specialtyGames: "",
+  };
+}
+
 export function emptyPlayer() {
   return {
     publish: false,
@@ -314,6 +378,10 @@ export function emptyPlayer() {
     skins: [],
     matches: [],
     aov: { syncedAt: "", count: "", keyword: "", server: "" },
+    rankCard: emptyRankCard(),
+    powerBoard: emptyPowerBoard(),
+    yearTreasure: emptyYearTreasure(),
+    weeklyReports: [],
   };
 }
 
@@ -718,6 +786,96 @@ function cleanTitle(item) {
   };
 }
 
+function flexDate(value) {
+  const text = clip(value, 10).replaceAll("/", "-");
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : "";
+}
+
+function cleanRankCard(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const tier = tierById(clip(source.tier, 40));
+  const divisionRaw = clip(source.division, 8).toUpperCase();
+  const division = tier?.kind === "division" && tier.divisions.includes(divisionRaw) ? divisionRaw : "";
+  let stars = whole(source.stars, 4);
+  if (!tier) stars = "";
+  else if (tier.kind === "division") {
+    const count = Number(stars);
+    if (!division || !stars || count < 1 || count > tier.stars) stars = "";
+  } else {
+    const count = Number(stars);
+    const above = tier.maxStars == null || count <= tier.maxStars;
+    if (!stars || count < tier.minStars || !above) stars = "";
+  }
+  let points = whole(source.points, 3);
+  if (points !== "" && Number(points) >= 100) points = "";
+  return {
+    season: clip(source.season, 24),
+    tier: tier ? tier.id : "",
+    division: tier?.kind === "division" ? division : "",
+    stars,
+    points,
+    queueReadout: whole(source.queueReadout, 4),
+    queueReadoutMax: whole(source.queueReadoutMax, 4),
+    seasonChallenge: clip(source.seasonChallenge, 16),
+    updatedAt: dateOnly(source.updatedAt),
+  };
+}
+
+function cleanPowerBoard(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const rows = [];
+  const list = Array.isArray(source.rows) ? source.rows : [];
+  for (const item of list.slice(0, 8)) {
+    const row = item && typeof item === "object" ? item : {};
+    const scope = clip(row.scope, 24);
+    const place = whole(row.place, 6);
+    const gap = whole(row.gap, 6);
+    if (!scope && !place && !gap) continue;
+    rows.push({ scope, place, gap });
+  }
+  return {
+    updatedAt: dateOnly(source.updatedAt),
+    area: clip(source.area, 80),
+    hero: clip(source.hero, 40),
+    power: whole(source.power, 6),
+    bestPower: whole(source.bestPower, 6),
+    rows,
+  };
+}
+
+function cleanYearTreasure(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const incoming = Array.isArray(source.seasons) ? source.seasons : [];
+  return {
+    year: /^\d{4}$/.test(clip(source.year, 4)) ? clip(source.year, 4) : "",
+    reward: clip(source.reward, 40),
+    updatedAt: dateOnly(source.updatedAt),
+    seasons: ["S1", "S2", "S3", "S4"].map((id) => ({
+      id,
+      active: incoming.some((row) => row && row.id === id && row.active === true),
+    })),
+  };
+}
+
+function cleanWeeklyReport(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const blank = emptyWeeklyReport();
+  const report = { ...blank, id: "" };
+  const textKeys = ["title", "hero", "mastery", "fromLabel", "toLabel", "bestLine", "winRateGrade", "kdaGrade", "specialty"];
+  const wholeKeys = ["rankedGames", "rankedWins", "powerFrom", "powerTo", "heroGames", "starsEarned", "starsCasual", "starsRanked", "mvp", "goldMedals", "silverMedals", "specialtyGames"];
+  const decimalKeys = ["heroWinRate", "winRate", "winRateBeat", "kda", "kdaBeat"];
+  for (const key of textKeys) report[key] = clip(source[key], key === "bestLine" || key === "title" || key === "specialty" ? 80 : 40);
+  for (const key of wholeKeys) report[key] = whole(source[key], 8);
+  for (const key of decimalKeys) report[key] = decimal(source[key], 4, 1) || decimal(source[key], 4, 2);
+  report.starDelta = signed(source.starDelta, 4);
+  report.start = flexDate(source.start);
+  report.end = flexDate(source.end);
+  const filled = Object.entries(report).some(([key, item]) => key !== "id" && item);
+  if (!filled) return null;
+  report.id = matchId(source.id || report.title || report.start);
+  return report;
+}
+
 /** @param {unknown} input */
 export function cleanPlayer(input) {
   const source = input && typeof input === "object" && !Array.isArray(input) ? input : {};
@@ -809,6 +967,13 @@ export function cleanPlayer(input) {
     skins,
     matches,
     aov: cleanAov(source.aov),
+    rankCard: cleanRankCard(source.rankCard),
+    powerBoard: cleanPowerBoard(source.powerBoard),
+    yearTreasure: cleanYearTreasure(source.yearTreasure),
+    weeklyReports: (Array.isArray(source.weeklyReports) ? source.weeklyReports : [])
+      .slice(0, 8)
+      .map(cleanWeeklyReport)
+      .filter(Boolean),
   };
 }
 
@@ -992,6 +1157,10 @@ export function toPublicPlayer(player) {
     skins: player.skins,
     builds: player.builds.map(publicBuild),
     matches: player.matches.filter((match) => match.publish).map(publicMatch),
+    rankCard: player.rankCard,
+    powerBoard: player.powerBoard,
+    yearTreasure: player.yearTreasure,
+    weeklyReports: player.weeklyReports,
   };
 }
 

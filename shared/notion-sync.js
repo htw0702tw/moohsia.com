@@ -154,15 +154,27 @@ function seasonFromPage(page, index) {
 export function applyNotionCollections(document, sections) {
   const doc = structuredClone(document);
   if (sections.roster) {
+    const prior = new Map((doc.rosterMembers || []).map((member) => [member.id, member]));
     doc.rosterMembers = sorted(sections.roster)
       .filter((page) => flag(page.properties, "Publish"))
-      .map((page, index) => ({
-        id: pageId(page, index),
-        name: bilingual(titleText(page.properties), textProp(page.properties, "Name EN")),
-        role: bilingual(textProp(page.properties, "Role"), textProp(page.properties, "Role EN")),
-        team: textProp(page.properties, "Team") || textProp(page.properties, "戰隊"),
-        hidden: flag(page.properties, "Hidden"),
-      }));
+      .map((page, index) => {
+        const id = pageId(page, index);
+        const name = bilingual(titleText(page.properties), textProp(page.properties, "Name EN"));
+        const previous =
+          prior.get(id) ||
+          [...prior.values()].find((member) => member?.name?.zh && member.name.zh === name.zh) ||
+          {};
+        return {
+          id,
+          name,
+          role: bilingual(textProp(page.properties, "Role"), textProp(page.properties, "Role EN")),
+          team: textProp(page.properties, "Team") || textProp(page.properties, "戰隊"),
+          hidden: flag(page.properties, "Hidden"),
+          rankTier: previous.rankTier || "",
+          rankDivision: previous.rankDivision || "",
+          rankStars: previous.rankStars || "",
+        };
+      });
   }
   if (sections.news) {
     doc.newsPosts = sorted(sections.news).map((page, index) => ({
@@ -215,6 +227,10 @@ export function applyNotionCollections(document, sections) {
     peakRank: doc.player.peakRank,
     joinDate: doc.player.joinDate,
     builds: doc.player.builds,
+    rankCard: doc.player.rankCard,
+    powerBoard: doc.player.powerBoard,
+    yearTreasure: doc.player.yearTreasure,
+    weeklyReports: doc.player.weeklyReports,
   };
   if (sections.player) {
     const published = sorted(sections.player).filter((page) => flag(page.properties, "Publish"));
@@ -260,6 +276,10 @@ export function applyNotionCollections(document, sections) {
         peakRank: kept.peakRank || { zh: "", en: "" },
         joinDate: kept.joinDate || "",
         builds: kept.builds || [],
+        rankCard: kept.rankCard,
+        powerBoard: kept.powerBoard,
+        yearTreasure: kept.yearTreasure,
+        weeklyReports: kept.weeklyReports || [],
         matches: kept.matches,
         seasons: kept.seasons,
         heroPool: kept.heroPool,

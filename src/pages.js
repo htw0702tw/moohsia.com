@@ -17,6 +17,7 @@ import { renderPlayerBody } from "./player-page.js";
 import { findRosterMember, memberSlug, playerMemberPath } from "../shared/match-present.js";
 import { findTeam, memberTeamSlug, teamAka, teamPrimary } from "../shared/teams.js";
 import { renderUltimates } from "./catalog-pages.js";
+import { rankedModeEntries, renderRanksPage } from "./rank-view.js";
 
 export function brandMark() {
   return `
@@ -758,6 +759,7 @@ export function renderMember(copy, key) {
           <a href="/skins" data-nav>${esc(copy.nav.skins)}</a>
           <a href="/items" data-nav>${esc(copy.nav.items)}</a>
           <a href="/modes" data-nav>${esc(copy.nav.modes)}</a>
+          <a href="/ranks" data-nav>${esc(copy.nav.ranks)}</a>
         </p>
       </header>
       <section class="section wrap">${renderPlayerBody(copy, false)}</section>
@@ -812,15 +814,8 @@ export function renderHeroes(copy) {
 
 export function renderModes(copy) {
   const page = copy.modes;
-  const classic = getCatalog().modes.find((mode) => mode.id === "classic-5v5");
   const modes = [
-    {
-      id: "ranked",
-      name: { zh: "排位賽", en: "Ranked" },
-      players: "5V5",
-      excerpt: page.rankedNote,
-      sourceUrl: classic?.sourceUrl || "",
-    },
+    ...rankedModeEntries(copy),
     ...getCatalog().modes,
   ];
   const cards = modes.length
@@ -967,6 +962,8 @@ export function renderPage(name, copy, extra = {}) {
       return renderHeroDetail(copy, extra.id);
     case "items":
       return renderItems(copy);
+    case "ranks":
+      return renderRanksPage(copy);
     case "modes":
       return renderModes(copy);
     case "activities":
