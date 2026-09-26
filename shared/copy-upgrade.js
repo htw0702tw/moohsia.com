@@ -56,6 +56,19 @@ const LEGACY_EXACT = {
   "en.notFound.lead": "That address is not part of the team site.",
   "en.activities.lead": "Activities, news, and esports posts from public Garena pages. Not this team's fixtures.",
   "en.apply.lead": "Guild MOOHSIA and team 暮霞｜MOS take applications only on this website. Discord is not open to join.",
+  "zh.ultimates.kicker": "08 — ULT",
+  "zh.ultimates.lead": "傳說對決英雄的奧義，整理自 Garena 公開英雄頁。",
+  "zh.ultimates.source": "資料來源：Garena 傳說對決官方英雄頁。",
+  "zh.ultimates.method": "官方頁沒有單獨的「奧義」欄位。技能順序是被動、一技、二技、奧義，本頁取第 4 個。說明裡的 {0} 這類符號是官方頁的數值占位，本站不另填冷卻或傷害。技能數不是 4 的英雄不會猜測哪一個是奧義。",
+  "zh.player.arcana": "銘文",
+  "zh.search.placeholder": "英雄、造型、裝備",
+  "en.nav.ultimates": "Ultimates",
+  "en.ultimates.kicker": "08 — ULT",
+  "en.ultimates.title": "Ultimates",
+  "en.ultimates.lead": "Arena of Valor ultimate abilities, taken from public Garena hero pages.",
+  "en.ultimates.source": "Source: official Garena Arena of Valor hero pages.",
+  "en.ultimates.method": "The official page does not label an ultimate on its own. Skills are listed as passive, skill 1, skill 2, then the ultimate, so this page uses the fourth skill. Tokens like {0} are official placeholders. This site does not fill in cooldown or damage. Heroes whose skill list is not four long are left unmarked.",
+  "en.search.placeholder": "Heroes, skins, items",
 };
 
 function readPath(root, path) {

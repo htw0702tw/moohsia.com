@@ -151,6 +151,8 @@ export async function handleApi(request, env = {}) {
         roles: catalog.roles,
         heroes: catalog.heroes,
         items: catalog.items || [],
+        arcana: catalog.arcana || [],
+        userSkills: catalog.userSkills || [],
         modes: catalog.modes,
         activities: catalog.activities || [],
       },

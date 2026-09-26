@@ -4,6 +4,8 @@ import { buildSearchIndex } from "./aov-assets.js";
 
 export const HERO_LIST_URL = "https://moba.garena.tw/game/heroes/";
 export const PROPS_URL = "https://moba.garena.tw/game/props";
+export const KATHA_URL = "https://moba.garena.tw/game/katha";
+export const USER_SKILL_URL = "https://moba.garena.tw/game/skill";
 
 export const ROLE_LABELS = {
   tank: { zh: "坦克", en: "Tank" },
@@ -312,6 +314,23 @@ function absCdn(value) {
   return "";
 }
 
+/** Official page icons that live on moba.garena.tw, plus the CDN. */
+function absOfficial(value) {
+  const cdn = absCdn(value);
+  if (cdn) return cdn;
+  let image = String(value || "").trim().replace(/^['"]|['"]$/g, "");
+  if (image.startsWith("//")) image = `https:${image}`;
+  if (image.startsWith("/")) image = `https://moba.garena.tw${image}`;
+  if (!image.startsWith("https://")) return "";
+  try {
+    const url = new URL(image);
+    if (url.hostname === "moba.garena.tw" && url.pathname.startsWith("/static/")) return url.href;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 function plainTip(html) {
   return htmlToText(String(html || "").replace(/&lt;\s*br\s*\/?\s*&gt;/gi, " ").replace(/<br\s*\/?>/gi, " "));
 }
@@ -396,22 +415,74 @@ async function mapPool(items, size, fn) {
   return out;
 }
 
-export function assembleCatalog({ heroes, modes, activities = [], items = [], fetchedAt }) {
+const KATHA_BOX_RE =
+  /<div class="k_box" data-tags="([^"]*)" data-filter="([^"]*)">([\s\S]*?)<div class="k_b_text">/gi;
+
+/** Official 奧義 list: level, attribute tags, name, and the published effect. */
+export function parseKathaList(html) {
+  const rows = [];
+  const seen = new Set();
+  for (const match of String(html || "").matchAll(KATHA_BOX_RE)) {
+    const tags = match[1]
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const level = Number(/^lv(\d)$/.exec(tags.find((tag) => /^lv\d$/.test(tag)) || "")?.[1] || 0);
+    const attrs = tags.filter((tag) => !/^lv\d$/.test(tag));
+    const block = match[3];
+    const image = absCdn(/<img src="([^"]+)"/i.exec(block)?.[1] || "");
+    const id = /\/(\d+)\.png/i.exec(image)?.[1] || "";
+    const label = htmlToText(match[2]).slice(0, 40);
+    const name = label.replace(/^[1-3]級奧義[:：]\s*/, "").trim();
+    const effect = plainTip(/tooltip-desc">([\s\S]*?)<\/div>/i.exec(block)?.[1] || "").slice(0, 240);
+    const key = `${level}:${id || name}`;
+    if (!name || !level || !id || seen.has(key)) continue;
+    seen.add(key);
+    rows.push({ id, name, level, tags: attrs, effect, image, pageUrl: KATHA_URL });
+  }
+  return rows;
+}
+
+const USER_SKILL_RE =
+  /<div class="s_deta">\s*<div class="s_icon"><img src="([^"]+)"[^>]*>\s*<\/div>\s*<div class="s_title">([\s\S]*?)<\/div>\s*<div class="s_text">([\s\S]*?)<\/div>/gi;
+
+/** Official 挑戰者技能 page. These are player skills, not hero abilities. */
+export function parseChallengerSkills(html) {
+  const rows = [];
+  const seen = new Set();
+  for (const match of String(html || "").matchAll(USER_SKILL_RE)) {
+    const image = absOfficial(match[1]);
+    const name = htmlToText(match[2]).slice(0, 40);
+    const text = plainTip(match[3]).slice(0, 240);
+    const id = /\/([^/]+)\.png$/i.exec(image)?.[1] || "";
+    if (!name || !text || !id || seen.has(id)) continue;
+    seen.add(id);
+    rows.push({ id, name, text, image, pageUrl: USER_SKILL_URL });
+  }
+  return rows;
+}
+
+export function assembleCatalog({ heroes, modes, activities = [], items = [], arcana = [], userSkills = [], fetchedAt }) {
   const payload = {
     source: "official-snapshot",
     fetchedAt,
     attribution: {
       heroes: HERO_LIST_URL,
       items: PROPS_URL,
+      arcana: KATHA_URL,
+      userSkills: USER_SKILL_URL,
+      glyphs: "https://moba.garena.tw/news/show/1854",
       images: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/client/GameData/Hero/",
       itemImages: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/",
       publisher: "Garena Online",
       activities: ACTIVITY_LISTS.map((item) => item.url),
-      note: "Hero names, role tags, portraits, skill text, and skin art come from public Garena Traditional Chinese pages. Equipment names, icons, and descriptions come from the public equipment list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API. Skin art is shown when the hero page publishes it; the page often has no skin name.",
+      note: "Hero names, role tags, portraits, skill text, and skin art come from public Garena Traditional Chinese pages. Equipment names, icons, and descriptions come from the public equipment list. English role words are translations of those on-page labels. Mode names and activity posts are copied from public Garena pages. They are not a live queue and not a private API. Skin art is shown when the hero page publishes it; the page often has no skin name. Arcana names, levels, tags, and effects come from the public katha list. Challenger skills come from the public skill page. Hero skill 4 is not arcana.",
     },
     roles: roleCatalog(),
     heroes,
     items,
+    arcana,
+    userSkills,
     modes,
     activities,
   };
@@ -501,5 +572,27 @@ export async function buildOfficialCatalog(fetchImpl, fetchedAt = new Date().toI
       /* keep heroes and modes if a public list is temporarily unreadable */
     }
   }
-  return assembleCatalog({ heroes, modes, activities: activities.slice(0, 36), items, fetchedAt });
+  let arcana = [];
+  let userSkills = [];
+  try {
+    const kathaResponse = await fetchImpl(KATHA_URL, { headers });
+    if (kathaResponse.ok) arcana = parseKathaList(await kathaResponse.text());
+  } catch {
+    /* merge keeps the bundled katha list if the public page is unreadable */
+  }
+  try {
+    const skillResponse = await fetchImpl(USER_SKILL_URL, { headers });
+    if (skillResponse.ok) userSkills = parseChallengerSkills(await skillResponse.text());
+  } catch {
+    /* merge keeps the bundled challenger skills */
+  }
+  return assembleCatalog({
+    heroes,
+    modes,
+    activities: activities.slice(0, 36),
+    items,
+    arcana,
+    userSkills,
+    fetchedAt,
+  });
 }

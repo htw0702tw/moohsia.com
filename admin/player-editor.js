@@ -65,9 +65,9 @@ const SIDES = [
 ];
 
 const ARCANA_COLORS = [
-  ["red", "紅銘文"],
-  ["purple", "紫銘文"],
-  ["green", "綠銘文"],
+  ["red", "紅奧義"],
+  ["purple", "紫奧義"],
+  ["green", "綠奧義"],
   ["", "其他"],
 ];
 
@@ -421,7 +421,7 @@ function buildCard(build, index, text, choice, total) {
       const extra = row.color ? "" : `<button class="ghost" type="button" data-action="arcana-remove" data-index="${index}" data-arcana="${rowIndex}">刪除</button>`;
       return `<div class="pair">
         ${field("顏色", select(`data-build="${index}" data-arcana="${rowIndex}" data-field="color" ${choice}`, row.color, ARCANA_COLORS))}
-        ${field("銘文", textInput(`data-build="${index}" data-arcana="${rowIndex}" data-field="name"`, row.name, text), "例如：異變、紅月、隱匿。目錄沒有銘文表，請照遊戲內名稱打。")}
+        ${field("奧義", textInput(`data-build="${index}" data-arcana="${rowIndex}" data-field="name"`, row.name, text), "例如：神劍、賢者、暴怒。名稱來自官方奧義列表。")}
         ${field("數量", textInput(`data-build="${index}" data-arcana="${rowIndex}" data-field="count"`, row.count, text), "例如：10。", problem(row.count, "int"))}
         ${extra}
       </div>`;
@@ -449,9 +449,9 @@ function buildCard(build, index, text, choice, total) {
       field("鞋子", textInput(`data-build="${index}" data-field="boots"`, build.boots, text), "例如：聖者戰靴。") +
         field("附魔", textInput(`data-build="${index}" data-field="enchant"`, build.enchant, text), "例如：極限法穿。"),
     )}
-    <h3>銘文</h3>
+    <h3>奧義</h3>
     ${arcana}
-    <button class="btn" type="button" data-action="arcana-add" data-index="${index}">再加一條銘文</button>
+    <button class="btn" type="button" data-action="arcana-add" data-index="${index}">再加一條奧義</button>
     ${field("備註 繁中", area(`data-build="${index}" data-field="note" data-lang="zh" ${text}`, build.note?.zh), "對線思路、幾級成型。")}
     ${field("備註 EN", area(`data-build="${index}" data-field="note" data-lang="en" ${text}`, build.note?.en))}
     ${dropzone("build", index, build.shot, IMAGE_ACCEPT, "配裝截圖", "可上傳出裝截圖。拖放或選擇圖片後按上傳。")}
