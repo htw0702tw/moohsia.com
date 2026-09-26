@@ -124,6 +124,39 @@ npm run cms:migrate
 
 AOVRanking 戰績的四格是 `補兵 | 控場 | 治療 | 塔傷`，用四個 div 依序拆開。補兵就是補刀數，治療就是治療量，塔傷就是對塔傷害。控場以秒儲存（22:59 娜塔亞是 6.534），公開頁的控制效果顯示成秒數 ×1000（6534）。2026-09-25 22:59:28 那場是補刀 34、治療 6077、塔傷 2089、經濟 9819、輸出 125875、承傷 113770、KDA 8/6/4。13:20 的補兵 30 是較早的另一場，不是這場讀錯。已發布的目錄維持匯入的 50 場，不另造對局。`node scripts/rewrite-player-matches.mjs` 只會把已經存在的 22:59 娜塔亞列對齊這些數字。
 
+### Garena 官方戰績
+
+每小時 cron 會先打 Garena 台灣官方的戰績代碼站 <https://gameidsearch.moba.garena.tw/>，不要再靠 AOVRanking 的網頁過驗證。官方介面沒有 Turnstile。登入後的請求形狀來自該站公開的 JS（`app.eb68a9b2.js` 與 source map，2026-01-21）：
+
+| 項目 | 值 |
+| --- | --- |
+| 角色 | `GET /api/character`，沒有 query |
+| 對局 | `GET /api/game`，沒有 query |
+| 標頭 | `Access-Token`（localStorage `access_token`）、`Code`（localStorage `code`）、`Partition`（`1012` 純潔之翼，或 `1011` 聖騎之王） |
+| 另外 | GOP 套件還會送沒有連字號的 `accessToken`。兩個標頭名稱不同，同步時有權杖就兩個都送 |
+| 成功 | 角色 `{ characters: [{ name, head_id, head_url, partition }] }`，對局 `{ games: [{ champion, type, kda, start_time, game_id, game_result }] }`。JSON 是 snake_case，站內會轉成 camelCase |
+| 勝負 | `game_result` 0 是敗，1 是勝 |
+| 失敗 | HTTP 200 且本體有 `error`。沒帶登入標頭是 `ERROR__BAD_REQUEST`。標頭不對是 `ERROR__GOP_LOGIN_FAILED`。`ERROR__LOGIN_REQUIRED` 也當成登入失效 |
+| 不呼叫 | `POST /api/logout`。那個才要 CSRF cookie。GET 不帶 cookie |
+
+`champion` 是英雄圖網址，不是英雄名稱。同步不會把網址猜成英雄名，也不會填官方沒給的補刀、治療、塔傷或十人記分板。同一場以 `game_id` 或唯一的對局時間併入既有列，手寫筆記、精彩時刻，以及 AOVRanking 已經寫入的數據會留下。職業生涯統計不會被這份近期列表蓋掉。已發布選手資料上的 UID 維持原值，程式不寫死測試用 UID。
+
+擁有者要自己登入一次，把瀏覽器裡的值設成這個 Worker（`moohsia-com`）的密鑰。不要把值寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串。
+
+1. 打開 <https://gameidsearch.moba.garena.tw/>，用 Garena 登入，選 純潔之翼。
+2. 開發者工具 → Application → Local Storage，抄下 `access_token`、`code`、`partition`（應為 `1012`）。
+3. 設定密鑰：
+
+```bash
+npx wrangler secret put GARENA_ACCESS_TOKEN
+npx wrangler secret put GARENA_CODE
+npx wrangler secret put GARENA_PARTITION
+```
+
+`GARENA_ACCESS_TOKEN` 與 `GARENA_CODE` 至少要有一個。只設 code 也可以，那是登入導回網址上的 `code`。沒設 `GARENA_PARTITION` 時用 `1012`。權杖過期就再登入一次，重新 secret put。
+
+管理頁 **選手數據** 的 **立即從 Garena 同步**（`POST /api/admin/aov/sync`，要登入與 CSRF）會跑同一條同步，方便試一次。密鑰缺失、登入失效、或官方暫時不能查時，記錄固定代碼並改試 AOVRanking；兩邊都失敗就不動 CMS。貼上歷史戰績頁的匯入維持原樣。
+
 頁面結構對齊遊戲內玩家資料，親密關係不收：
 
 | 區塊 | 內容 |
@@ -152,7 +185,7 @@ Notion 是編輯來源。同步**只寫入 CMS 草稿**，不會直接改公開�
 | 方式 | 怎麼跑 |
 | --- | --- |
 | 管理按鈕 | 總覽的 **從 Notion 同步草稿**。要已登入，並帶 CSRF |
-| 排程 | Worker cron `15 18 * * *`（UTC 18:15，台北約 02:15）。只更新草稿與英雄目錄。另一個 cron `0 * * * *` 每小時抓 `htw0702aov`（純潔之翼／1012）的歷史戰績，合併進選手草稿與已發布的選手資料，不改其他文案。AOVRanking 一次大約 50 場；合併會留下這 50 場以外、已經存著的較舊對局，上限 160 場。驗證頁不寫入，管理頁的貼上與檔案匯入仍可用 |
+| 排程 | Worker cron `15 18 * * *`（UTC 18:15，台北約 02:15）。只更新草稿與英雄目錄。另一個 cron `0 * * * *` 每小時抓 `htw0702aov`（純潔之翼／1012）的歷史戰績，合併進選手草稿與已發布的選手資料，不改其他文案。有 `GARENA_ACCESS_TOKEN` 或 `GARENA_CODE` 時優先走 Garena 官方 API；沒有密鑰或登入失效才改試 AOVRanking。AOVRanking 一次大約 50 場；合併會留下這 50 場以外、已經存著的較舊對局，上限 160 場。驗證頁不寫入，管理頁的貼上與檔案匯入仍可用 |
 | Webhook | `POST https://moohsia.com/api/notion/webhook`，標頭 `Authorization: Bearer <NOTION_WEBHOOK_SECRET>` |
 
 密鑰用 `wrangler secret put`，不要寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串（同名 var 與 secret 不能並存）。

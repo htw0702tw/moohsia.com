@@ -36,6 +36,9 @@ import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/s
  * @property {string} [MAIL_FROM]
  * @property {string} [APPLICATIONS_TO]
  * @property {R2Bucket} [MEDIA]
+ * @property {string} [GARENA_ACCESS_TOKEN]
+ * @property {string} [GARENA_CODE]
+ * @property {string} [GARENA_PARTITION]
  */
 
 const PUBLIC_FALLBACK = "/index.html";
@@ -186,6 +189,7 @@ export default {
 
   /**
    * Hourly: merge htw0702aov fight history and publish that player record only.
+   * Prefers Garena official JSON when GARENA_ACCESS_TOKEN or GARENA_CODE is set.
    * Daily 18:15 UTC: Notion draft sync and official catalog refresh. That job does not publish drafts.
    */
   async scheduled(controller, env, ctx) {
