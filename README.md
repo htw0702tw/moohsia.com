@@ -138,7 +138,7 @@ AOVRanking 戰績的四格是 `補兵 | 控場 | 治療 | 塔傷`，用四個 di
 | 成功 | 角色 `{ characters: [{ partition, name, ... }] }`，對局 `{ games: [{ champion, type, kda, startTime, gameId, gameResult }] }`。`partition` 在已登入的回應是數字。snake_case 也接受 |
 | 勝負 | `game_result` 0 是敗，1 是勝 |
 | 失敗 | HTTP 200 且本體有 `error`。沒帶登入標頭是 `ERROR__BAD_REQUEST`。標頭不對是 `ERROR__GOP_LOGIN_FAILED`。`ERROR__LOGIN_REQUIRED` 也當成登入失效 |
-| 不呼叫 | `POST /api/logout`。那個才要 CSRF cookie。GET 不帶 cookie |
+| 不呼叫 | `POST /api/logout`。已登入的 GET 仍要 cookie `csrftoken` 與標頭 `X-CSRFToken` |
 
 `champion` 是英雄圖網址，不是英雄名稱。同步不會把網址猜成英雄名，也不會填官方沒給的補刀、治療、塔傷或十人記分板。同一場以 `game_id` 或唯一的對局時間併入既有列，手寫筆記、精彩時刻，以及 AOVRanking 已經寫入的數據會留下。職業生涯統計不會被這份近期列表蓋掉。已發布選手資料上的 UID 維持原值，程式不寫死測試用 UID。
 
