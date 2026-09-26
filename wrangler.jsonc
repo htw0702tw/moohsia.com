@@ -49,6 +49,8 @@
     }
   ],
   // 0 * * * * hourly: refresh htw0702aov fight history into the CMS player.
+  // Prefers Garena gameidsearch when GARENA_ACCESS_TOKEN or GARENA_CODE is set
+  // (wrangler secret put; do not add those names under vars). Otherwise AOVRanking.
   // 15 18 * * * daily (02:15 Taipei): Notion draft sync and official catalog refresh.
   // The hourly job publishes only the merged player record. It does not publish other drafts.
   "triggers": {

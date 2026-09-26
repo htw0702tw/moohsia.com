@@ -496,7 +496,7 @@ function cleanMatch(item) {
     rankDelta: signed(source.rankDelta),
     powerDelta: signed(source.powerDelta),
     externalMatchId: cleanExternalId(source.externalMatchId),
-    source: source.source === "aovweb" ? "aovweb" : "",
+    source: source.source === "aovweb" || source.source === "garena" ? source.source : "",
     blueScore: whole(source.blueScore, 4),
     redScore: whole(source.redScore, 4),
     winner,

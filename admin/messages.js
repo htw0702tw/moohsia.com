@@ -38,6 +38,15 @@ const MESSAGES = {
   aov_shell: "這是還沒載入完成的空殼頁（檢視原始碼看不到對局）。請等畫面上出現戰績後，用 F12 → 元素 → 複製 html 的 outerHTML，或改上傳已載入完成的 .html 檔。",
   aov_blocked: "現在連不到 AOVRanking。請改貼歷史戰績頁的原始碼，再按「用貼上的頁面匯入」。",
   aov_invalid: "請填遊戲名稱，或填 UID 並選擇伺服器。",
+  garena_unconfigured: "尚未設定 Garena 密鑰，這次沒有改動已儲存的對局。請用 wrangler secret put 設定 GARENA_ACCESS_TOKEN 或 GARENA_CODE，以及 GARENA_CSRF_TOKEN。貼上 AOVRanking 頁面仍然可以匯入。",
+  garena_secret_rejected: "Garena 密鑰格式無法使用，已儲存的對局沒有清掉。請貼上標頭的值本身，不要加引號或換行。",
+  garena_login_required: "Garena 官方登入已失效，這次沒有改動已儲存的對局。請重新登入 gameidsearch，更新 Worker 密鑰後再同步。貼上 AOVRanking 頁面仍然可以匯入。",
+  garena_no_character: "這個 Garena 登入在所選伺服器沒有角色，已儲存的對局沒有清掉。",
+  garena_character_mismatch: "登入的角色名稱與選手的遊戲 ID 不符，沒有寫入。已儲存的對局還在。",
+  garena_unavailable: "Garena 官方戰績暫時無法查詢，已儲存的對局沒有清掉。",
+  garena_rejected: "Garena 官方拒絕了這次查詢，已儲存的對局沒有清掉。請確認密鑰與伺服器分區。",
+  garena_blocked: "現在連不到 Garena 官方戰績，已儲存的對局沒有清掉。",
+  garena_sync_failed: "Garena 官方同步沒有完成，已儲存的對局沒有清掉。",
 };
 
 function httpLabel(http) {

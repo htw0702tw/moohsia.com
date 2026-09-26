@@ -35,3 +35,14 @@ NOTION_HERO_DB=
 RESEND_API_KEY=
 MAIL_FROM=
 APPLICATIONS_TO=
+
+# Garena gameidsearch session for hourly htw0702aov history.
+# Production: wrangler secret put GARENA_ACCESS_TOKEN (and the others).
+# Copy localStorage access_token, code, and partition after one login.
+# Leave these blank in git. Do not paste a real token here.
+# Partition 1012 is 純潔之翼. Omit it to use that default.
+# GARENA_CSRF_TOKEN is the csrftoken cookie. The worker also sends it as X-CSRFToken.
+GARENA_ACCESS_TOKEN=
+GARENA_CODE=
+GARENA_PARTITION=
+GARENA_CSRF_TOKEN=

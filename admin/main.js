@@ -594,6 +594,11 @@ function aovImportPanel() {
     ? `<a class="btn" data-aov-open href="${esc(href)}" target="_blank" rel="noopener noreferrer">打開歷史戰績頁</a>`
     : `<span class="hint">填好遊戲名稱或 UID 後，就能打開對應的歷史戰績頁。</span>`;
   return `<section class="card aov-import${state.aovFocusPaste ? " is-paste" : ""}">
+    <h2>從 Garena 官方同步</h2>
+    <p class="hint">每小時整點會優先讀 gameidsearch.moba.garena.tw 的官方介面（GET /api/character、GET /api/game）。請在已登入的結果頁，把標頭 Access-Token、Code、Partition 設成 GARENA_ACCESS_TOKEN、GARENA_CODE、GARENA_PARTITION，並把 cookie csrftoken 設成 GARENA_CSRF_TOKEN（同時當作 X-CSRFToken）。畫面上的「2區 純潔之翼」對應 Partition 的值 1012，不要設成 2。官方列表只有英雄圖、模式、KDA 與時間；補刀與治療仍靠下面的貼上匯入。密鑰失效或沒設定時，不會清掉已經存著的對局。</p>
+    <div class="row-actions">
+      <button class="primary" type="button" data-action="garena-sync"${busy}>立即從 Garena 同步</button>
+    </div>
     <h2>從 AOVRanking 匯入</h2>
     <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。伺服器直接抓取常常會被安全驗證擋住。可靠的做法是貼上你瀏覽器裡已通過驗證的頁面。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
     <p class="hint">${lastSync}${cooldown ? ` 請再等 ${cooldown} 秒再向對方查詢。` : ""}</p>
@@ -992,6 +997,40 @@ async function importAov(action) {
   }
 }
 
+async function syncGarena() {
+  if (state.aovBusy) return;
+  state.aovBusy = true;
+  state.error = "";
+  state.status = "正在向 Garena 官方同步";
+  render();
+  try {
+    const data = await api("/api/admin/aov/sync", { method: "POST", body: "{}" });
+    state.aovBusy = false;
+    if (!state.authed) return;
+    if (!data.ok) {
+      state.error = message(data.code, data.http);
+      state.status = "";
+      render();
+      return;
+    }
+    if (data.draft) applyPayload(data);
+    const count = data.garenaSync?.matches;
+    const via = data.garenaSync?.source === "garena" ? "Garena 官方" : "AOVRanking";
+    const total = Number.isFinite(count) ? `選手資料現有 ${count} 場。` : "";
+    state.status = `已從${via}同步。${total}草稿與已發布的選手資料都已更新。`;
+    render();
+  } catch {
+    if (!state.authed) {
+      state.aovBusy = false;
+      return;
+    }
+    state.aovBusy = false;
+    state.error = message("network", 0);
+    state.status = "";
+    render();
+  }
+}
+
 async function persist(mode) {
   state.error = "";
   state.status = mode === "publish" ? "發布中" : "儲存中";
@@ -1223,6 +1262,10 @@ function onClick(event) {
   }
   if (action === "aov-import" || action === "aov-publish" || action === "aov-paste") {
     void importAov(action);
+    return;
+  }
+  if (action === "garena-sync") {
+    void syncGarena();
     return;
   }
   if (action === "notion-sync") {

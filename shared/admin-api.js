@@ -7,6 +7,7 @@ import { readStoredMedia, storeHighlight } from "./media.js";
 import { notionStatus, syncNotionDraft } from "./notion-sync.js";
 import { verifyPassword } from "./password.js";
 import { fetchFightHistory, pastedFightHistory } from "./aov-import.js";
+import { syncOwnerFightHistory } from "./aov-sync.js";
 import { clearLoginFailures, clientIp, loginBlocked, overLimit, recordLoginFailure } from "./rate-limit.js";
 import {
   SESSION_COOKIE,
@@ -329,7 +330,39 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return importAov(request, env);
   }
+  if (path === "/api/admin/aov/sync") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return syncAovNow(request, env);
+  }
   return json(404, { ok: false, code: "not_found" });
+}
+
+async function syncAovNow(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  if (await overLimit(env, "garenasync", clientIp(request), 1, 20)) {
+    return json(429, { ok: false, code: "aov_cooldown" }, { "retry-after": "20" });
+  }
+  const result = await syncOwnerFightHistory(env);
+  if (!result.ok) {
+    const code = result.garenaCode && result.garenaCode !== "garena_synced" ? result.garenaCode : result.code;
+    const status = code === "aov_rate_limited" || code === "aov_cooldown" ? 429 : code === "storage_unconfigured" ? 503 : 502;
+    return json(status, { ok: false, code, fallback: result.code, garenaCode: result.garenaCode || "", stored: false });
+  }
+  const store = storeFromEnv(env);
+  const row = store ? await store.get() : null;
+  if (!row?.draft_json) return json(503, { ok: false, code: "storage_unavailable" });
+  return ok(request, env, session, {
+    ...editorPayload(row, env),
+    garenaSync: {
+      source: result.source || "",
+      matches: result.matches ?? 0,
+      code: result.code,
+      garenaCode: result.garenaCode || "",
+    },
+  });
 }
 
 async function importAov(request, env) {
