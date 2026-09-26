@@ -4,6 +4,28 @@ function clip(value, max) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+function isMapIdToken(value) {
+  return /^MapID_\d+$/i.test(String(value || "").trim());
+}
+
+function visibleMode(value, max) {
+  const text = clip(value, max);
+  return text && !isMapIdToken(text) ? text : "";
+}
+
+function visibleLabel(value, max) {
+  const text = clip(value, max);
+  if (!text || !/MapID_\d+/i.test(text)) return text;
+  return clip(
+    text
+      .split("·")
+      .map((part) => part.trim())
+      .filter((part) => part && !isMapIdToken(part))
+      .join(" · "),
+    max,
+  );
+}
+
 function bilingual(value, max) {
   const record = value && typeof value === "object" ? value : {};
   return { zh: clip(record.zh, max), en: clip(record.en, max) };
@@ -471,12 +493,12 @@ function cleanMatch(item) {
   const ownerSide = source.ownerSide === "blue" || source.ownerSide === "red" ? source.ownerSide : "";
   return {
     id: matchId(source.id),
-    label: clip(source.label, 80),
+    label: visibleLabel(source.label, 80),
     date: /^\d{4}-\d{2}-\d{2}$/.test(clip(source.date, 10)) ? clip(source.date, 10) : "",
     playedAt,
     duration: /^\d{1,3}:\d{2}$/.test(clip(source.duration, 8)) ? clip(source.duration, 8) : "",
-    mode: clip(source.mode, 80),
-    map: clip(source.map, 80),
+    mode: visibleMode(source.mode, 80),
+    map: visibleMode(source.map, 80),
     hero: clip(source.hero, 80),
     skin: clip(source.skin, 80),
     result: clip(source.result, 40),
@@ -552,8 +574,8 @@ function cleanSeason(item) {
   const medals = source.medals && typeof source.medals === "object" ? source.medals : {};
   return {
     id: matchId(source.id || source.label),
-    label: clip(source.label, 40),
-    mode: clip(source.mode, 40),
+    label: visibleLabel(source.label, 40),
+    mode: visibleMode(source.mode, 40),
     radar: {
       output: radarValue(radar.output),
       kda: radarValue(radar.kda),

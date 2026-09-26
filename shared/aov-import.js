@@ -292,12 +292,16 @@ const CATALOG_MODES = new Set([
 ]);
 
 /**
- * AOVRanking 地圖 labels are not the same strings as the site catalog.
- * This owner's 經典競技 / 競賽模式 / 冠軍賽 games are ranked.
+ * AOVRanking's 地圖 field is a map label (經典競技, 競賽模式, 冠軍賽, sometimes MapID_*).
+ * It is not a ranked queue. MapID_* is an unresolved localization key — no name table.
+ * Ranked is 排位賽 only from an explicit 排位 label or a numeric 排位積分變化.
+ * Normal is 一般 only from an explicit 一般 / 匹配 label.
+ * The history column already uses 排位賽 for ranked, matching the modes page.
  */
-const MODE_RULES = [
+const AMBIGUOUS_MAPS = new Set(["經典競技", "競賽模式", "冠軍賽"]);
+
+const ENTERTAINMENT_RULES = [
   [/傳說之巔|巔峰/, "巔峰對決"],
-  [/經典競技|競賽模式|冠軍賽/, "排位賽"],
   [/5\s*v\s*5/i, "5V5經典競技"],
   [/大亂鬥|混沌/, "混沌大亂鬥"],
   [/三人/, "三人對決"],
@@ -309,21 +313,48 @@ const MODE_RULES = [
   [/1\s*v\s*1|單人對戰/i, "單人對戰"],
   [/幻化/, "幻化之戰"],
   [/飛車/, "雙人飛車賽"],
-  [/排位/, "排位賽"],
 ];
 
-export function normalizeQueueMode(raw) {
-  return catalogMode(raw).mode;
+export function isMapIdToken(value) {
+  return /^MapID_\d+$/i.test(String(value || "").trim());
 }
 
-function catalogMode(raw) {
-  const text = clip(raw, 80);
-  if (!text) return { mode: "", raw: "" };
-  if (CATALOG_MODES.has(text)) return { mode: text, raw: text };
-  for (const [pattern, name] of MODE_RULES) {
-    if (pattern.test(text)) return { mode: name, raw: text };
+function explicitQueue(text) {
+  if (/排位/.test(text)) return "排位賽";
+  if (/^一般(?:對戰|模式)?$|^匹配$|^休閒對戰$/.test(text)) return "一般";
+  return "";
+}
+
+function entertainmentName(text) {
+  if (!text || AMBIGUOUS_MAPS.has(text)) return "";
+  if (CATALOG_MODES.has(text)) return text;
+  for (const [pattern, name] of ENTERTAINMENT_RULES) {
+    if (pattern.test(text)) return name;
   }
-  return { mode: text, raw: text };
+  return "";
+}
+
+function hasRankDelta(board) {
+  return (board || []).some((row) => /^-?\d+(?:\.\d+)?$/.test(String(row?.rankDelta ?? "").trim()));
+}
+
+/** User-facing mode, plus the human map label when it is a different real name. */
+export function resolveMatchMode(rawLabel, board) {
+  const raw = clip(rawLabel, 80);
+  const label = !raw || isMapIdToken(raw) ? "" : raw;
+  if (label) {
+    const queue = explicitQueue(label);
+    if (queue) return { mode: queue, map: label === queue ? "" : label };
+    const entertainment = entertainmentName(label);
+    if (entertainment) return { mode: entertainment, map: entertainment === label ? "" : label };
+  }
+  if (hasRankDelta(board)) return { mode: "排位賽", map: label };
+  if (!label) return { mode: "", map: "" };
+  return { mode: label, map: "" };
+}
+
+export function normalizeQueueMode(raw) {
+  return resolveMatchMode(raw, []).mode;
 }
 
 function rowMedals(cells) {
@@ -711,7 +742,6 @@ function parseChunk(chunk, keyword, index) {
   const header = headerResult(chunk);
   const kda = headerKda(headText);
   const playedAt = playedAtFrom(text);
-  const mapped = catalogMode(headerMode(headText));
   const external = /(?:對局\s*(?:ID|編號)?|Match)\s*[:：]?\s*(\d{6,}-\d+)/i.exec(text)?.[1] || /(\d{8,}-\d+)/.exec(text)?.[1] || "";
   const alts = headerAlts(head);
   const hero = alts[alts.length - 1] || "";
@@ -727,8 +757,9 @@ function parseChunk(chunk, keyword, index) {
     board.push(owner);
     boardPartial = true;
   }
+  const mapped = resolveMatchMode(headerMode(headText), board);
   const notes = [];
-  if (mapped.raw && mapped.raw !== mapped.mode) notes.push(`AOVRanking 地圖：${mapped.raw}`);
+  if (mapped.map) notes.push(`AOVRanking 地圖：${mapped.map}`);
   if (boardPartial) notes.push("這頁沒有展開隊伍，記分板只有自己的 KDA。");
   const id = external || stableId([playedAt, hero, kda.kills, kda.deaths, kda.assists, String(index)]);
   const match = {
@@ -740,7 +771,7 @@ function parseChunk(chunk, keyword, index) {
     playedAt,
     duration: durationFrom(headText),
     mode: mapped.mode,
-    map: mapped.raw && mapped.raw !== mapped.mode ? mapped.raw : "",
+    map: mapped.map,
     hero: clip(hero, 80),
     result: header,
     kda: kda.kills || kda.deaths || kda.assists ? `${kda.kills} / ${kda.deaths} / ${kda.assists}` : "",
@@ -1055,17 +1086,95 @@ function mergeSeasons(existing, incoming) {
   return list.slice(0, 8);
 }
 
+const DETAIL_KEYS = [
+  "gold",
+  "damage",
+  "taken",
+  "minions",
+  "lastHits",
+  "jungleGold",
+  "damageRatio",
+  "takenPer",
+  "control",
+  "healing",
+  "tower",
+  "lane",
+  "reputation",
+  "rankDelta",
+  "powerDelta",
+];
+
+const ROW_STATS = ["gold", "heroDamage", "taken", "healing", "lastHits", "minions", "control", "tower", "jungleGold", "rankDelta"];
+
+function filled(value) {
+  return String(value ?? "").trim() !== "";
+}
+
+/** More rows, then real items, then combat numbers. A collapsed owner row loses. */
+function boardRichness(match) {
+  const board = Array.isArray(match?.board) ? match.board : [];
+  let score = board.length * 100;
+  for (const row of board) {
+    if (!row || typeof row !== "object") continue;
+    if (Array.isArray(row.items) && row.items.some((item) => filled(item))) score += 25;
+    for (const key of ROW_STATS) {
+      if (filled(row[key])) score += 3;
+    }
+  }
+  for (const key of DETAIL_KEYS) {
+    if (filled(match?.[key])) score += 1;
+  }
+  return score;
+}
+
+function scrubMapId(match) {
+  if (isMapIdToken(match.mode)) match.mode = "";
+  if (isMapIdToken(match.map)) match.map = "";
+  if (/MapID_\d+/i.test(String(match.label || ""))) {
+    match.label = [match.mode, match.hero].filter((part) => part && !isMapIdToken(part)).join(" · ");
+  }
+  return match;
+}
+
 function mergeMatch(prev, next, publish) {
   const match = { ...next, note: next.note || { zh: "", en: "" }, highlight: next.highlight };
   if (!prev) {
     match.publish = publish === true;
-    return match;
+    return scrubMapId(match);
   }
   match.highlight = prev.highlight?.key || prev.highlight?.caption?.zh || prev.highlight?.caption?.en ? prev.highlight : next.highlight;
   if (prev.note?.zh || prev.note?.en) match.note = prev.note;
   match.publish = publish === true ? true : prev.publish === true;
-  if (!match.label && prev.label) match.label = prev.label;
-  return match;
+  if (!match.label && prev.label && !/MapID_\d+/i.test(prev.label)) match.label = prev.label;
+  if (boardRichness(prev) > boardRichness(next)) {
+    match.board = prev.board;
+    if (prev.ownerSide) match.ownerSide = prev.ownerSide;
+    if (prev.winner) match.winner = prev.winner;
+    if (prev.mvp === true) match.mvp = true;
+    if (prev.badges) match.badges = prev.badges;
+    for (const key of DETAIL_KEYS) {
+      if (filled(prev[key])) match[key] = prev[key];
+    }
+    const prevMode = isMapIdToken(prev.mode) ? "" : String(prev.mode || "");
+    const nextMode = isMapIdToken(next.mode) ? "" : String(next.mode || "");
+    const specific = entertainmentName(prevMode);
+    if (filled(match.rankDelta) && prevMode !== "一般" && nextMode !== "一般") {
+      if (specific && specific !== "排位賽") match.mode = specific;
+      else {
+        match.mode = "排位賽";
+        const human = [prev.map, next.map, prevMode, nextMode].find(
+          (value) => value && !isMapIdToken(value) && value !== "排位賽" && value !== "一般",
+        );
+        if (human) match.map = human;
+      }
+      match.label = [match.mode, match.hero].filter(Boolean).join(" · ");
+    } else if (prevMode && !nextMode) {
+      match.mode = prevMode;
+      if (prev.map && !isMapIdToken(prev.map)) match.map = prev.map;
+      match.label = [match.mode, match.hero].filter(Boolean).join(" · ");
+    }
+  }
+  return scrubMapId(match);
 }
 
 export function applyAovImport(player, parsed, options = {}) {

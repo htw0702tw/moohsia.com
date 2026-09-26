@@ -134,6 +134,15 @@ export function itemIconUrl(id) {
   return `${ITEM_ICON_BASE}${text}.png`;
 }
 
+/** FightHistory item art. These ids are not Garena BattleEquip ids. */
+export const AOV_ITEM_ICON_BASE = "https://aovweb.azurewebsites.net/image/item/";
+
+export function aovItemIconUrl(id) {
+  const text = String(id || "");
+  if (!/^\d{3,6}$/.test(text)) return "";
+  return `${AOV_ITEM_ICON_BASE}${text}.png`;
+}
+
 export function itemIdFromToken(token) {
   const text = String(token || "").trim();
   const labeled = /^裝備\s*(\d{3,6})$/.exec(text);

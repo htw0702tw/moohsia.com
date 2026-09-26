@@ -113,7 +113,8 @@ test("official game JSON maps result, mode, and kda without inventing a hero", (
   assert.equal(matches[0].minions, "");
   assert.equal(matches[1].playedAt, "2026-09-25 22:59:28");
   assert.equal(matches[1].result, "敗");
-  assert.equal(matches[1].mode, "排位賽");
+  assert.equal(matches[1].mode, "經典競技");
+  assert.equal(matches[1].map, "");
 });
 
 test("merge keeps the AOVRanking row for the same time and the stored uid", () => {

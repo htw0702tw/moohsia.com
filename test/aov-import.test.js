@@ -115,8 +115,8 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(win.ownerSide, "red");
   assert.equal(win.winner, "red");
   assert.equal(win.mvp, true);
-  assert.equal(win.mode, "排位賽");
-  assert.equal(win.map, "經典競技");
+  assert.equal(win.mode, "經典競技");
+  assert.equal(win.map, "");
   assert.equal(win.board.find((row) => row.owner).side, "red");
   assert.equal(win.board.find((row) => row.side === "blue").hero, "薇菈");
 
@@ -126,8 +126,8 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(bare.kills, "0");
   assert.equal(bare.deaths, "4");
   assert.equal(bare.assists, "2");
-  assert.equal(bare.mode, "排位賽");
-  assert.equal(bare.map, "經典競技");
+  assert.equal(bare.mode, "經典競技");
+  assert.equal(bare.map, "");
   assert.equal(bare.ownerSide, "blue");
   assert.equal(bare.winner, "red");
   assert.equal(bare.board.length, 1);
@@ -167,13 +167,17 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(merged.matches[0].control, "8.382");
   assert.equal(merged.matches[0].lastHits, "30");
   assert.equal(merged.stats.mvp, "1");
-  assert.equal(merged.seasons.length, 1);
+  assert.equal(merged.seasons.length, 2);
   assert.equal(merged.seasons[0].mode, "排位賽");
-  assert.equal(merged.seasons[0].played, "50");
-  assert.equal(merged.seasons[0].wins, "31");
-  assert.equal(merged.seasons[0].winRate, "62");
-  assert.equal(merged.seasons[0].mvp, "1");
+  assert.equal(merged.seasons[0].played, "1");
+  assert.equal(merged.seasons[0].wins, "0");
+  assert.equal(merged.seasons[0].winRate, "0");
+  assert.equal(merged.seasons[0].mvp, "");
   assert.equal(merged.seasons[0].medals.gold, "1");
+  assert.equal(merged.seasons[1].mode, "經典競技");
+  assert.equal(merged.seasons[1].played, "2");
+  assert.equal(merged.seasons[1].wins, "1");
+  assert.equal(merged.seasons[1].mvp, "1");
   assert.equal(merged.seasons[0].medals.penta, "");
   assert.equal(merged.seasons[0].radar.output, "");
   assert.equal(merged.seasons[0].radar.survival, "");
@@ -238,7 +242,7 @@ test("fixture HTML maps list rows, summary, and expanded stats", () => {
   assert.equal(season.radar.output, "90");
   assert.equal(season.mvp, "12");
   assert.equal(season.medals.gold, "4");
-  assert.equal(season.played, "50");
+  assert.equal(season.played, "1");
 });
 
 test("fifty list rows stay separate and re-import updates by match id", () => {
@@ -262,8 +266,8 @@ test("fifty list rows stay separate and re-import updates by match id", () => {
   assert.equal(sample.kills, "7");
   assert.equal(sample.deaths, "1");
   assert.equal(sample.assists, "2");
-  assert.equal(sample.mode, "排位賽");
-  assert.equal(sample.map, "經典競技");
+  assert.equal(sample.mode, "經典競技");
+  assert.equal(sample.map, "");
   assert.equal(sample.board.length, 1);
   assert.equal(sample.board[0].kills, "7");
   assert.equal(sample.board[0].deaths, "1");
@@ -274,15 +278,19 @@ test("fifty list rows stay separate and re-import updates by match id", () => {
   assert.equal(second.matches.length, 50);
 });
 
-test("AOVRanking map labels map onto catalog modes", () => {
+test("AOVRanking map labels stay names unless a queue signal is present", () => {
   const page = (mode) =>
     `<div class="accordion-item player-match-item"><span class="badge">勝利</span><img alt="娜塔亞" /> KDA: 1 / 2 / 3 | 地圖: ${mode} | 9分 01秒 對局時間: 2026-09-20 01:02:03 對局ID：1790000001-1</div>`;
-  assert.equal(parseFightHistory(page("經典競技"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
-  assert.equal(parseFightHistory(page("競賽模式"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
+  assert.equal(parseFightHistory(page("經典競技"), { keyword: "htw0702aov" }).matches[0].mode, "經典競技");
+  assert.equal(parseFightHistory(page("經典競技"), { keyword: "htw0702aov" }).matches[0].map, "");
+  assert.equal(parseFightHistory(page("競賽模式"), { keyword: "htw0702aov" }).matches[0].mode, "競賽模式");
   assert.equal(parseFightHistory(page("傳說之巔"), { keyword: "htw0702aov" }).matches[0].mode, "巔峰對決");
-  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].mode, "排位賽");
-  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].map, "冠軍賽");
+  assert.equal(parseFightHistory(page("傳說之巔"), { keyword: "htw0702aov" }).matches[0].map, "傳說之巔");
+  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].mode, "冠軍賽");
+  assert.equal(parseFightHistory(page("冠軍賽"), { keyword: "htw0702aov" }).matches[0].map, "");
   assert.equal(parseFightHistory(page("5V5經典競技"), { keyword: "htw0702aov" }).matches[0].mode, "5V5經典競技");
+  assert.equal(parseFightHistory(page("一般對戰"), { keyword: "htw0702aov" }).matches[0].mode, "一般");
+  assert.equal(parseFightHistory(page("大亂鬥"), { keyword: "htw0702aov" }).matches[0].mode, "混沌大亂鬥");
   const radar = parseFightHistory(
     `<p>雷達 輸出 82 KDA 71 發育 64 團戰 58 生存 49</p>${page("經典競技")}`,
     { keyword: "htw0702aov" },
@@ -305,8 +313,8 @@ test("header-only HTML without accordion classes still parses", () => {
   assert.equal(parsed.matches[0].kills, "3");
   assert.equal(parsed.matches[0].deaths, "1");
   assert.equal(parsed.matches[0].assists, "2");
-  assert.equal(parsed.matches[0].mode, "排位賽");
-  assert.equal(parsed.matches[0].map, "經典競技");
+  assert.equal(parsed.matches[0].mode, "經典競技");
+  assert.equal(parsed.matches[0].map, "");
   assert.equal(parsed.matches[0].hero, "娜塔亞");
   assert.equal(parsed.matches[0].duration, "9:01");
   assert.equal(parsed.matches[0].externalMatchId, "1790000000-9");
@@ -534,8 +542,8 @@ test("pasted history page in the real accordion shape imports fifty matches", as
   assert.equal(opened.kills, "0");
   assert.equal(opened.deaths, "1");
   assert.equal(opened.assists, "2");
-  assert.equal(opened.mode, "排位賽");
-  assert.equal(opened.map, "經典競技");
+  assert.equal(opened.mode, "經典競技");
+  assert.equal(opened.map, "");
   assert.ok(opened.board.length >= 1);
 });
 
@@ -551,8 +559,8 @@ test("header-only accordion keeps 勝/敗 and header KDA without inventing a ful
   assert.equal(loss.kills, "7");
   assert.equal(loss.deaths, "10");
   assert.equal(loss.assists, "5");
-  assert.equal(loss.mode, "排位賽");
-  assert.equal(loss.map, "經典競技");
+  assert.equal(loss.mode, "經典競技");
+  assert.equal(loss.map, "");
   assert.equal(loss.hero, "娜塔亞");
   assert.equal(loss.duration, "17:30");
   assert.equal(loss.playedAt, "2026-09-25 13:20:58");
@@ -566,7 +574,8 @@ test("header-only accordion keeps 勝/敗 and header KDA without inventing a ful
   assert.equal(loss.board[0].kills, "7");
   assert.equal(loss.board[0].deaths, "10");
   assert.equal(loss.board[0].assists, "5");
-  assert.match(loss.note.zh, /AOVRanking 地圖：經典競技/);
+  assert.equal(loss.note.zh.includes("MapID_"), false);
+  assert.equal(loss.note.zh.includes("地圖"), false);
   assert.match(loss.note.zh, /記分板只有自己的 KDA/);
 
   const win = parsed.matches.find((match) => match.externalMatchId === "1790313000-1001");
@@ -665,7 +674,7 @@ test("expanded accordion tables fill both teams and the owner row", () => {
 
   const collapsed = pasted.matches.find((match) => match.kda === "14 / 6 / 4");
   assert.equal(collapsed.result, "勝");
-  assert.equal(collapsed.mode, "排位賽");
+  assert.equal(collapsed.mode, "經典競技");
   assert.equal(collapsed.board.length, 1);
   assert.equal(collapsed.board[0].owner, true);
   assert.equal(collapsed.board[0].kills, "14");
@@ -973,7 +982,7 @@ test("four farm divs map 補兵 控場 治療 塔傷 for the 22:59 Natalya row",
   const match = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0];
   const owner = match.board.find((row) => row.owner);
   assert.equal(match.playedAt, "2026-09-25 22:59:28");
-  assert.equal(match.mode, "排位賽");
+  assert.equal(match.mode, "競賽模式");
   assert.equal(match.minions, "34");
   assert.equal(match.lastHits, "34");
   assert.equal(match.control, "6.534");
@@ -1013,7 +1022,7 @@ test("in-game 補刀數 and 治療量 stay different columns, including the Nata
   </div>`;
   const match = parseFightHistory(html, { keyword: "htw0702aov" }).matches[0];
   const owner = match.board.find((row) => row.owner);
-  assert.equal(match.mode, "排位賽");
+  assert.equal(match.mode, "經典競技");
   assert.equal(match.lastHits, "34");
   assert.equal(match.minions, "34");
   assert.equal(match.healing, "6077");
@@ -1057,4 +1066,66 @@ test("pipe farm cell keeps 補刀 before 治療", () => {
   assert.equal(owner.healing, "6077");
   assert.notEqual(owner.lastHits, owner.healing);
   assert.equal(owner.tower, "2089");
+});
+
+test("MapID labels are never stored as mode, map, or label", () => {
+  const ranked = `<div class="accordion-item player-match-item">
+    <span class="badge">勝利</span><img alt="娜塔亞" />
+    KDA: 8 / 2 / 3 | 地圖: MapID_90013 | 11分 02秒
+    對局時間: 2026-09-26 01:02:03 對局ID：1790000090-13
+    <p>藍方</p>
+    <table>
+      <tr><th>玩家</th><th>英雄</th><th>KDA</th><th>排位積分</th></tr>
+      <tr><td>htw0702aov</td><td>娜塔亞</td><td>8 / 2 / 3</td><td>+12</td></tr>
+    </table>
+  </div>`;
+  const rankedMatch = parseFightHistory(ranked, { keyword: "htw0702aov" }).matches[0];
+  assert.equal(rankedMatch.mode, "排位賽");
+  assert.equal(rankedMatch.map, "");
+  assert.equal(rankedMatch.label.includes("MapID_"), false);
+  assert.equal(JSON.stringify(rankedMatch).includes("MapID_"), false);
+
+  const unknown = `<div class="accordion-item player-match-item">
+    <span class="badge">失敗</span><img alt="娜塔亞" />
+    KDA: 1 / 2 / 3 | 地圖: MapID_90013 | 9分 01秒
+    對局時間: 2026-09-26 02:02:03 對局ID：1790000090-14
+  </div>`;
+  const unknownMatch = parseFightHistory(unknown, { keyword: "htw0702aov" }).matches[0];
+  assert.equal(unknownMatch.mode, "");
+  assert.equal(unknownMatch.map, "");
+  assert.equal(unknownMatch.label, "娜塔亞");
+  assert.equal(JSON.stringify(unknownMatch).includes("MapID_"), false);
+
+  const cleaned = cleanPlayer({
+    handle: "htw0702aov",
+    matches: [{ id: "oldmap", mode: "MapID_90013", map: "MapID_90013", label: "MapID_90013 · 娜塔亞", hero: "娜塔亞", result: "勝" }],
+  });
+  assert.equal(cleaned.matches[0].mode, "");
+  assert.equal(cleaned.matches[0].map, "");
+  assert.equal(cleaned.matches[0].label.includes("MapID_"), false);
+});
+
+test("collapsed re-import keeps the fuller scoreboard, items, and combat stats", () => {
+  const expanded = parseFightHistory(expandedFixture, { keyword: "htw0702aov" });
+  const full = expanded.matches.find((match) => match.externalMatchId === "1790313541-5675");
+  const stored = applyAovImport(emptyPlayer(), { matches: [full], summary: {} }, { keyword: "htw0702aov", server: "1012" });
+  const shallow = parseFightHistory(
+    `<div class="accordion-item player-match-item"><span class="badge">失敗</span><img alt="娜塔亞" />
+      KDA: 7 / 10 / 5 | 地圖: 經典競技 | 17分 30秒
+      對局時間: 2026-09-25 13:20:58 對局ID：1790313541-5675</div>`,
+    { keyword: "htw0702aov" },
+  );
+  assert.equal(shallow.matches[0].board.length, 1);
+  assert.equal(shallow.matches[0].gold, "");
+  assert.equal(shallow.matches[0].mode, "經典競技");
+  const again = applyAovImport(stored, shallow, { keyword: "htw0702aov", server: "1012" });
+  const kept = again.matches.find((match) => match.externalMatchId === "1790313541-5675");
+  assert.equal(kept.board.length, 10);
+  assert.equal(kept.board.find((row) => row.owner).items[0], "裝備 1423");
+  assert.equal(kept.gold, "9412");
+  assert.equal(kept.healing, "7964");
+  assert.equal(kept.damage, "125580");
+  assert.equal(kept.mode, "排位賽");
+  assert.equal(kept.map, "經典競技");
+  assert.equal(kept.ownerSide, "red");
 });
