@@ -1,5 +1,5 @@
 import { normalizeQueueMode } from "./aov-import.js";
-import { logFailure } from "./log.js";
+import { logEvent, logFailure } from "./log.js";
 import { emptyMatch, matchRecency, PLAYER_MATCH_LIMIT } from "./player.js";
 
 /**
@@ -24,8 +24,11 @@ import { emptyMatch, matchRecency, PLAYER_MATCH_LIMIT } from "./player.js";
  * Invalid values of either form return HTTP 200 {"error":"ERROR__GOP_LOGIN_FAILED"}.
  * Missing auth headers return HTTP 200 {"error":"ERROR__BAD_REQUEST"}.
  * The SPA treats any JSON object with an `error` field as failure.
- * GET does not send a CSRF token. POST /api/logout is the call that uses
- * cookie `csrftoken` and header `X-CSRFToken`; this sync does not call it.
+ * The browser axios client uses withCredentials. On every call, including GET,
+ * it copies the `csrftoken` cookie into the `X-CSRFToken` header
+ * (xsrfCookieName / xsrfHeaderName in src/services/api.ts). A logged-in
+ * session therefore sends that cookie and header together with Access-Token,
+ * Code, and Partition. POST /api/logout is not called.
  *
  * GOP login (client_id 100050, locale zh-TW, response_type=code) is the same
  * after Garena, Apple (platform 10), or any other button. The callback query
@@ -34,16 +37,19 @@ import { emptyMatch, matchRecency, PLAYER_MATCH_LIMIT } from "./player.js";
  * The on-screen label "2區 純潔之翼" is partition "1012", not "2".
  * Either access_token or code is enough for the SPA to call /api/character.
  *
- * Responses are snake_case and camelized by the SPA:
- *   character: { name, head_id, head_url, partition }
- *   game: { champion, type, kda, start_time, game_id, game_result }
- *   game_result: 0 defeat, 1 victory
- *   champion is an image URL, not a hero name. This mapper does not invent one.
+ * A logged-in response is camelCase. Snake_case is accepted too.
+ *   { characters: [{ partition, name, head_id, head_url }] }
+ *   { games: [{ champion, type, kda, startTime, gameId, gameResult }] }
+ * partition 1012 is a number in the live payload. gameResult 0 is defeat, 1 is victory.
+ * champion is an image URL, not a hero name. This mapper does not invent one.
+ * The list has no farm, healing, tower, or ten-player board. Those stay on rows
+ * already filled from an AOVRanking paste.
  *
  * Worker secrets (values stay out of git):
- *   GARENA_ACCESS_TOKEN  localStorage access_token
- *   GARENA_CODE          localStorage code (OAuth redirect code)
- *   GARENA_PARTITION     localStorage partition, 1011 or 1012 (default 1012)
+ *   GARENA_ACCESS_TOKEN  header Access-Token / localStorage access_token
+ *   GARENA_CODE          header Code / localStorage code
+ *   GARENA_PARTITION     header Partition, 1011 or 1012 (default 1012)
+ *   GARENA_CSRF_TOKEN    cookie csrftoken, also sent as X-CSRFToken
  */
 
 export const GARENA_ORIGIN = "https://gameidsearch.moba.garena.tw";
@@ -125,6 +131,11 @@ export function garenaHeaders(env) {
     Partition: partition,
   };
   if (token) headers.accessToken = token;
+  const csrf = secretValue(env, "GARENA_CSRF_TOKEN");
+  if (csrf && !/[\s;,]/.test(csrf)) {
+    headers["X-CSRFToken"] = csrf;
+    headers.Cookie = `csrftoken=${csrf}`;
+  }
   return headers;
 }
 
@@ -467,6 +478,7 @@ async function garenaGet(env, path) {
  */
 export async function fetchGarenaHistory(env, owner = {}) {
   if (!garenaConfigured(env)) return { ok: false, code: "garena_unconfigured" };
+  if (!secretValue(env, "GARENA_CSRF_TOKEN")) logEvent("garena_csrf_missing");
   const partition = garenaPartition(env);
   try {
     const characters = await garenaGet(env, "/api/character");

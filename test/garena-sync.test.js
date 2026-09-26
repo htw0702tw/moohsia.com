@@ -12,6 +12,7 @@ import { getDefaultDocument } from "../src/content.js";
 
 const TOKEN = "test-access-token";
 const CODE = "test-oauth-code";
+const CSRF = "testcsrftokenvalue";
 
 function challengeHtml() {
   return `<html><h1 id="turnstile-title">安全驗證</h1><form id="turnstile-form"><div class="cf-turnstile"></div></form></html>`;
@@ -205,16 +206,77 @@ test("an unusable token does not wipe stored matches", async () => {
   assert.equal(published.player.matches[0].note.zh, "保留這場筆記");
 });
 
-test("request headers match the gameidsearch interceptor", () => {
+test("request headers match the logged-in gameidsearch client", () => {
   const headers = garenaHeaders({
     GARENA_ACCESS_TOKEN: TOKEN,
     GARENA_CODE: CODE,
+    GARENA_CSRF_TOKEN: CSRF,
   });
   assert.equal(headers["Access-Token"], TOKEN);
   assert.equal(headers.accessToken, TOKEN);
   assert.equal(headers.Code, CODE);
   assert.equal(headers.Partition, "1012");
-  assert.equal(headers.cookie, undefined);
+  assert.equal(headers["X-CSRFToken"], CSRF);
+  assert.equal(headers.Cookie, `csrftoken=${CSRF}`);
+});
+
+test("numeric partition and camelCase games match the live payload", async () => {
+  const seen = [];
+  const live = {
+    character: { characters: [{ partition: 1012, name: "htw0702aov", headId: 1, headUrl: "https://example.invalid/head.jpg" }] },
+    game: {
+      games: [
+        {
+          champion: "https://example.invalid/champion.jpg",
+          type: "排位賽",
+          kda: "8/3/11",
+          startTime: "2026-09-26 08:57",
+          gameId: "live-0857",
+          gameResult: 1,
+        },
+        {
+          champion: "https://example.invalid/champion.jpg",
+          type: "排位賽",
+          kda: "6/10/10",
+          startTime: "2026-09-26 08:35",
+          gameId: "live-0835",
+          gameResult: 0,
+        },
+      ],
+    },
+  };
+  const store = createMemoryStore();
+  const doc = sanitizeDocument({ ...getDefaultDocument(), player: basePlayer() });
+  await store.publish(JSON.stringify(doc), "2026-09-25T00:00:00.000Z");
+  const result = await syncOwnerFightHistory({
+    CMS_STORE: store,
+    GARENA_ACCESS_TOKEN: TOKEN,
+    GARENA_CODE: CODE,
+    GARENA_PARTITION: "1012",
+    GARENA_CSRF_TOKEN: CSRF,
+    GARENA_FETCH: garenaFetch(live, seen),
+    AOV_FETCH: async () => {
+      throw new Error("aov should not run");
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.source, "garena");
+  assert.equal(seen[0].headers["X-CSRFToken"], CSRF);
+  assert.equal(seen[0].headers.Cookie, `csrftoken=${CSRF}`);
+  const published = JSON.parse((await store.get()).published_json);
+  assert.equal(published.player.uid, "3678194289083498");
+  const early = published.player.matches.find((match) => match.playedAt === "2026-09-26 08:57");
+  const later = published.player.matches.find((match) => match.playedAt === "2026-09-26 08:35");
+  const kept = published.player.matches.find((match) => match.playedAt === "2026-09-25 22:59:28");
+  assert.equal(early.kda, "8 / 3 / 11");
+  assert.equal(early.result, "勝");
+  assert.equal(early.hero, "");
+  assert.equal(early.minions, "");
+  assert.equal(later.kda, "6 / 10 / 10");
+  assert.equal(later.result, "敗");
+  assert.equal(kept.hero, "娜塔亞");
+  assert.equal(kept.minions, "34");
+  assert.equal(kept.healing, "6077");
 });
 
 test("hourly sync prefers Garena and does not call AOVRanking", async () => {

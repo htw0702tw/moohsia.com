@@ -39,6 +39,7 @@ import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/s
  * @property {string} [GARENA_ACCESS_TOKEN]
  * @property {string} [GARENA_CODE]
  * @property {string} [GARENA_PARTITION]
+ * @property {string} [GARENA_CSRF_TOKEN]
  */
 
 const PUBLIC_FALLBACK = "/index.html";

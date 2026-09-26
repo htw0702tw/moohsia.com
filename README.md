@@ -132,9 +132,10 @@ AOVRanking 戰績的四格是 `補兵 | 控場 | 治療 | 塔傷`，用四個 di
 | --- | --- |
 | 角色 | `GET /api/character`，沒有 query |
 | 對局 | `GET /api/game`，沒有 query |
-| 標頭 | `Access-Token`（localStorage `access_token`）、`Code`（localStorage `code`）、`Partition`（`1012` 純潔之翼，或 `1011` 聖騎之王） |
+| 標頭 | `Access-Token`、`Code`、`Partition`（`1012` 純潔之翼，或 `1011` 聖騎之王） |
+| Cookie | `csrftoken`，並重送到標頭 `X-CSRFToken`。瀏覽器 `withCredentials` 會帶這組，GET 也一樣 |
 | 另外 | GOP 套件還會送沒有連字號的 `accessToken`。兩個標頭名稱不同，同步時有權杖就兩個都送 |
-| 成功 | 角色 `{ characters: [{ name, head_id, head_url, partition }] }`，對局 `{ games: [{ champion, type, kda, start_time, game_id, game_result }] }`。JSON 是 snake_case，站內會轉成 camelCase |
+| 成功 | 角色 `{ characters: [{ partition, name, ... }] }`，對局 `{ games: [{ champion, type, kda, startTime, gameId, gameResult }] }`。`partition` 在已登入的回應是數字。snake_case 也接受 |
 | 勝負 | `game_result` 0 是敗，1 是勝 |
 | 失敗 | HTTP 200 且本體有 `error`。沒帶登入標頭是 `ERROR__BAD_REQUEST`。標頭不對是 `ERROR__GOP_LOGIN_FAILED`。`ERROR__LOGIN_REQUIRED` 也當成登入失效 |
 | 不呼叫 | `POST /api/logout`。那個才要 CSRF cookie。GET 不帶 cookie |
@@ -148,13 +149,14 @@ Apple 登入與 Garena 帳號登入寫入同一組瀏覽器儲存，標頭名稱
 1. 停在已顯示對局的那一頁。開發者工具 → Network，選 `GET /api/game`（或 `/api/character`）。
 2. 請求標頭對密鑰，只貼值，不要加引號或標頭名稱：
 
-| 請求標頭 | localStorage 鍵 | `wrangler secret put` |
+| 瀏覽器裡的名稱 | 設到哪 | `wrangler secret put` |
 | --- | --- | --- |
-| `Access-Token` | `access_token` | `GARENA_ACCESS_TOKEN` |
-| `Code` | `code` | `GARENA_CODE` |
-| `Partition` | `partition` | `GARENA_PARTITION` |
+| 標頭 `Access-Token`（localStorage `access_token`） | 標頭 `Access-Token` 與 `accessToken` | `GARENA_ACCESS_TOKEN` |
+| 標頭 `Code`（localStorage `code`） | 標頭 `Code` | `GARENA_CODE` |
+| 標頭 `Partition`（localStorage `partition`） | 標頭 `Partition` | `GARENA_PARTITION` |
+| Cookie `csrftoken` | Cookie `csrftoken` 與標頭 `X-CSRFToken` | `GARENA_CSRF_TOKEN` |
 
-若同時看得到沒有連字號的 `accessToken`，它應與 `Access-Token` 相同，只要設一次 `GARENA_ACCESS_TOKEN`。Worker 會兩個標頭都送。
+若同時看得到沒有連字號的 `accessToken`，它應與 `Access-Token` 相同，只要設一次 `GARENA_ACCESS_TOKEN`。`csrftoken` 只設一次，Worker 會同時放進 cookie 與 `X-CSRFToken`。
 
 3. 設定密鑰：
 
@@ -162,6 +164,7 @@ Apple 登入與 Garena 帳號登入寫入同一組瀏覽器儲存，標頭名稱
 npx wrangler secret put GARENA_ACCESS_TOKEN
 npx wrangler secret put GARENA_CODE
 npx wrangler secret put GARENA_PARTITION
+npx wrangler secret put GARENA_CSRF_TOKEN
 ```
 
 `GARENA_ACCESS_TOKEN` 與 `GARENA_CODE` 至少要有一個。只設 code 也可以。沒設 `GARENA_PARTITION` 時用 `1012`。權杖過期就再登入一次，重新 secret put。官方頁面已經顯示、CMS 還沒有的場次，要等這次同步從 `GET /api/game` 讀回來才會寫入，程式不會先造那些對局。`champion` 仍是圖片網址，新的一列不會被猜成英雄名；舊列上已有的英雄名會留下。
