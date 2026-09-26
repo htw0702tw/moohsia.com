@@ -89,7 +89,7 @@ function itemRow(items, link = false) {
       const icon = slot.src
         ? `<img src="${esc(slot.src)}" alt="${esc(slot.label)}" title="${esc(slot.label)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
         : `<em>${esc(slot.label.slice(0, 2))}</em>`;
-      if (link && slot.id) {
+      if (link && slot.id && slot.label !== `裝備 ${slot.id}`) {
         return `<a class="aov-item" href="/items/${esc(slot.id)}" data-nav>${icon}</a>`;
       }
       return `<i class="aov-item">${icon}</i>`;

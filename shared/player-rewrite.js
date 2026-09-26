@@ -5,7 +5,7 @@
  * The stored 2026-09-25 22:59 Natalya row is aligned to the screenshot
  * (補刀 34, 控場 6.534 seconds, 治療 6077, 塔傷 2089) and nothing else is added.
  */
-import { normalizeQueueMode } from "./aov-import.js";
+import { isMapIdToken, normalizeQueueMode } from "./aov-import.js";
 import { cleanPlayer } from "./player.js";
 
 /** Owner-supplied ranked hero cards from the 2026-09-25 profile screenshots. */
@@ -92,8 +92,17 @@ function applyNatalyaTruth(match) {
 function normalizeMode(match) {
   const raw = String(match.mode || "").trim();
   const mode = normalizeQueueMode(raw);
-  if (!mode || mode === raw) return match;
-  return { ...match, mode, map: match.map || raw };
+  const map = isMapIdToken(match.map) ? "" : String(match.map || "");
+  if (mode === raw && map === String(match.map || "")) return match;
+  const next = {
+    ...match,
+    mode,
+    map: map || (mode && raw && mode !== raw && !isMapIdToken(raw) ? raw : ""),
+  };
+  if (/MapID_\d+/i.test(String(next.label || ""))) {
+    next.label = [next.mode, next.hero].filter((part) => part && !isMapIdToken(part)).join(" · ");
+  }
+  return next;
 }
 
 function alignHeroCards(heroPool) {

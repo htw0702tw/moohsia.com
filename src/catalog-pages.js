@@ -163,11 +163,14 @@ export function renderItems(copy) {
     ? `<section class="aov-builds"><h2>${esc(page.builds)}</h2><div class="aov-build-grid">${builds
         .map((build) => {
           const icons = build.items
-            .map((slot) =>
-              slot.id
-                ? `<a class="aov-item" href="/items/${esc(slot.id)}" data-nav><img src="${esc(slot.src)}" alt="${esc(slot.label)}" title="${esc(slot.label)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>`
-                : `<i class="aov-item is-empty"></i>`,
-            )
+            .map((slot) => {
+              if (!slot.src) return `<i class="aov-item is-empty"></i>`;
+              const icon = `<img src="${esc(slot.src)}" alt="${esc(slot.label)}" title="${esc(slot.label)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+              if (slot.id && slot.label !== `裝備 ${slot.id}`) {
+                return `<a class="aov-item" href="/items/${esc(slot.id)}" data-nav>${icon}</a>`;
+              }
+              return `<i class="aov-item">${icon}</i>`;
+            })
             .join("");
           return `<article><header><b>${esc(build.hero || "—")}</b><span>×${build.count}</span></header><span class="aov-items">${icons}</span></article>`;
         })

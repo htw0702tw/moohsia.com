@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { aovItemIconUrl } from "../shared/aov-assets.js";
 import { controlEffect, itemSlots, playerMemberPath } from "../shared/match-present.js";
 import { rewritePlayer } from "../shared/player-rewrite.js";
 
@@ -78,7 +79,7 @@ test("stored 22:59 Natalya row is patched to in-game farm and healing", () => {
   });
   const match = player.matches[0];
   assert.equal(player.matches.length, 1);
-  assert.equal(match.mode, "排位賽");
+  assert.equal(match.mode, "經典競技");
   assert.equal(match.lastHits, "34");
   assert.equal(match.healing, "6077");
   assert.equal(match.control, "6.534");
@@ -98,9 +99,15 @@ test("member path uses the roster handle and item slots stay six official icons"
     { handle: "htw0702aov" },
   );
   assert.equal(path, "/roster/htw0702aov");
-  const slots = itemSlots(["裝備 1423", "破甲弓"], [{ id: "1423", name: { zh: "吟遊之靴" }, image: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1423.png" }]);
+  const slots = itemSlots(
+    ["裝備 1423", "破甲弓"],
+    [{ id: "1423", name: { zh: "吟遊之靴" }, category: "打野", image: "https://cdngarenanow-a.akamaihd.net/mgames/kgcenter/tw/Art_Resources/UI/System_Hon/BattleEquip/1423.png" }],
+  );
   assert.equal(slots.length, 6);
-  assert.equal(slots[0].label, "吟遊之靴");
-  assert.match(slots[0].src, /BattleEquip\/1423\.png$/);
+  assert.equal(slots[0].label, "裝備 1423");
+  assert.equal(slots[0].src, aovItemIconUrl("1423"));
+  assert.match(slots[0].src, /^https:\/\/aovweb\.azurewebsites\.net\/image\/item\/1423\.png$/);
+  assert.equal(slots[0].label.includes("吟遊"), false);
+  assert.equal(slots[1].label, "破甲弓");
   assert.equal(slots[5].label, "");
 });

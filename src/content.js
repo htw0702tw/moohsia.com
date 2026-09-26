@@ -521,7 +521,7 @@ const zh = {
     emptyBody: "請稍後再看。",
     source: "每張卡片連到原始公告。",
     players: "人數",
-    rankedNote: "本站把經典競技、競賽模式、冠軍賽顯示為排位賽。連結前往官方 5V5 公告。",
+    rankedNote: "戰績裡標成排位賽的對局，記分板上要有排位積分變化。經典競技、競賽模式、冠軍賽是地圖名稱，沒有積分變化時照原名顯示。連結前往官方 5V5 公告。",
     detail: "模式說明",
   },
   skins: {
@@ -1025,7 +1025,7 @@ const en = {
     emptyBody: "Try again in a moment.",
     source: "Each card links to the original post.",
     players: "Players",
-    rankedNote: "This site shows 經典競技, 競賽模式, and 冠軍賽 as ranked. The link opens the official 5V5 post.",
+    rankedNote: "A history row is ranked only when its scoreboard includes a rank-point change. 經典競技, 競賽模式, and 冠軍賽 are map names and stay as written when that change is missing. The link opens the official 5V5 post.",
     detail: "Mode notes",
   },
   skins: {

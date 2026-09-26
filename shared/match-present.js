@@ -1,6 +1,6 @@
 /** Display helpers for in-game match rows. Farm and healing stay different fields. */
 
-import { itemIconUrl, resolveItem } from "./aov-assets.js";
+import { aovItemIconUrl, itemIconUrl, resolveItem } from "./aov-assets.js";
 
 export function itemIdFromToken(value) {
   const text = String(value ?? "").trim();
@@ -18,6 +18,16 @@ export function itemSlots(items, catalogItems = []) {
   return Array.from({ length: 6 }, (_, index) => {
     const raw = String(list[index] ?? "").trim();
     const id = itemIdFromToken(raw);
+    // AOVRanking stores 裝備 {id}. That id space is not the Garena catalog,
+    // so a catalog hit (for example 1423 → 吟遊之靴 / 打野) must not rename the slot.
+    if (id && (/^(?:裝備\s*)?\d{3,6}$/.test(raw) || /\/image\/item\/\d+\./i.test(raw))) {
+      return {
+        id,
+        label: `裝備 ${id}`,
+        src: aovItemIconUrl(id),
+        description: "",
+      };
+    }
     const resolved = resolveItem(id || raw, known);
     return {
       id: resolved.id || id,
