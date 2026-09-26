@@ -141,6 +141,70 @@ test("merge keeps the AOVRanking row for the same time and the stored uid", () =
   assert.equal(added.result, "勝");
 });
 
+test("minute-precision official rows stay distinct and do not replace an older stored game", () => {
+  const mapped = mapGarenaGames({
+    games: [
+      {
+        champion: "https://dl.ops.kgtw.garenanow.com/CHT/HeroHeadPath/example.jpg",
+        type: "排位賽",
+        kda: "8/3/11",
+        start_time: "2026-09-26 08:57",
+        game_id: "seen-0857",
+        game_result: 1,
+      },
+      {
+        champion: "https://dl.ops.kgtw.garenanow.com/CHT/HeroHeadPath/example.jpg",
+        type: "排位賽",
+        kda: "6/10/10",
+        start_time: "2026-09-26 08:35",
+        game_id: "seen-0835",
+        game_result: 0,
+      },
+    ],
+  });
+  assert.equal(mapped.length, 2);
+  assert.equal(mapped[0].playedAt, "2026-09-26 08:57");
+  assert.equal(mapped[0].kda, "8 / 3 / 11");
+  assert.equal(mapped[0].kills, "8");
+  assert.equal(mapped[0].deaths, "3");
+  assert.equal(mapped[0].assists, "11");
+  assert.equal(mapped[0].result, "勝");
+  assert.equal(mapped[0].hero, "");
+  assert.equal(mapped[1].playedAt, "2026-09-26 08:35");
+  assert.equal(mapped[1].kda, "6 / 10 / 10");
+  assert.equal(mapped[1].result, "敗");
+  const applied = applyGarenaHistory(basePlayer(), { matches: mapped, character: { name: "htw0702aov", partition: "1012" } }, {
+    publish: true,
+    keyword: "htw0702aov",
+    server: "1012",
+    syncedAt: "2026-09-26T01:00:00.000Z",
+  });
+  assert.equal(applied.player.matches.length, 3);
+  const older = applied.player.matches.find((match) => match.playedAt === "2026-09-25 22:59:28");
+  assert.equal(older.externalMatchId, "1790313541-5675");
+  assert.equal(older.minions, "34");
+  assert.equal(older.hero, "娜塔亞");
+});
+
+test("an unusable token does not wipe stored matches", async () => {
+  const store = createMemoryStore();
+  const doc = sanitizeDocument({ ...getDefaultDocument(), player: basePlayer() });
+  await store.publish(JSON.stringify(doc), "2026-09-25T00:00:00.000Z");
+  const result = await syncOwnerFightHistory({
+    CMS_STORE: store,
+    GARENA_ACCESS_TOKEN: `line\n${"x".repeat(20)}`,
+    AOV_FETCH: async () => new Response(challengeHtml(), { status: 200, headers: { "content-type": "text/html" } }),
+    GARENA_FETCH: async () => {
+      throw new Error("garena should not run");
+    },
+  });
+  assert.equal(result.stored, false);
+  assert.equal(result.garenaCode, "garena_secret_rejected");
+  const published = JSON.parse((await store.get()).published_json);
+  assert.equal(published.player.matches.length, 1);
+  assert.equal(published.player.matches[0].note.zh, "保留這場筆記");
+});
+
 test("request headers match the gameidsearch interceptor", () => {
   const headers = garenaHeaders({
     GARENA_ACCESS_TOKEN: TOKEN,

@@ -595,7 +595,7 @@ function aovImportPanel() {
     : `<span class="hint">填好遊戲名稱或 UID 後，就能打開對應的歷史戰績頁。</span>`;
   return `<section class="card aov-import${state.aovFocusPaste ? " is-paste" : ""}">
     <h2>從 Garena 官方同步</h2>
-    <p class="hint">每小時整點會優先讀 gameidsearch.moba.garena.tw 的官方介面（GET /api/character、GET /api/game）。請先在那個網站登入，把權杖、登入代碼與伺服器分區用 wrangler secret put 設成 GARENA_ACCESS_TOKEN、GARENA_CODE、GARENA_PARTITION。沒設分區時用 1012（純潔之翼）。密鑰失效或沒設定時，不會清掉已經存著的對局。下面的貼上匯入仍然可用。</p>
+    <p class="hint">每小時整點會優先讀 gameidsearch.moba.garena.tw 的官方介面（GET /api/character、GET /api/game）。請在已登入的結果頁，把請求標頭 Access-Token、Code、Partition 用 wrangler secret put 設成 GARENA_ACCESS_TOKEN、GARENA_CODE、GARENA_PARTITION。畫面上的「2區 純潔之翼」對應 Partition 的值 1012，不要設成 2。用 Apple 登入也是這三個標頭。密鑰失效或沒設定時，不會清掉已經存著的對局。下面的貼上匯入仍然可用。</p>
     <div class="row-actions">
       <button class="primary" type="button" data-action="garena-sync"${busy}>立即從 Garena 同步</button>
     </div>

@@ -141,10 +141,21 @@ AOVRanking 戰績的四格是 `補兵 | 控場 | 治療 | 塔傷`，用四個 di
 
 `champion` 是英雄圖網址，不是英雄名稱。同步不會把網址猜成英雄名，也不會填官方沒給的補刀、治療、塔傷或十人記分板。同一場以 `game_id` 或唯一的對局時間併入既有列，手寫筆記、精彩時刻，以及 AOVRanking 已經寫入的數據會留下。職業生涯統計不會被這份近期列表蓋掉。已發布選手資料上的 UID 維持原值，程式不寫死測試用 UID。
 
-擁有者要自己登入一次，把瀏覽器裡的值設成這個 Worker（`moohsia-com`）的密鑰。不要把值寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串。
+Apple 登入與 Garena 帳號登入寫入同一組瀏覽器儲存，標頭名稱不變。OAuth 的 Apple 平台編號是 10，導回後仍是 `access_token`、`code`、`partition`。畫面上的「2區 純潔之翼」不是標頭的值；`Partition` 要設 `1012`。
 
-1. 打開 <https://gameidsearch.moba.garena.tw/>，用 Garena 登入，選 純潔之翼。
-2. 開發者工具 → Application → Local Storage，抄下 `access_token`、`code`、`partition`（應為 `1012`）。
+擁有者登入一次並選好區之後，把瀏覽器裡的值設成 Worker `moohsia-com` 的密鑰。不要把值寫進 git，也不要在 `wrangler.jsonc` 的 `vars` 放同名空字串。已登入的結果頁可以直接抄，不必重登。
+
+1. 停在已顯示對局的那一頁。開發者工具 → Network，選 `GET /api/game`（或 `/api/character`）。
+2. 請求標頭對密鑰，只貼值，不要加引號或標頭名稱：
+
+| 請求標頭 | localStorage 鍵 | `wrangler secret put` |
+| --- | --- | --- |
+| `Access-Token` | `access_token` | `GARENA_ACCESS_TOKEN` |
+| `Code` | `code` | `GARENA_CODE` |
+| `Partition` | `partition` | `GARENA_PARTITION` |
+
+若同時看得到沒有連字號的 `accessToken`，它應與 `Access-Token` 相同，只要設一次 `GARENA_ACCESS_TOKEN`。Worker 會兩個標頭都送。
+
 3. 設定密鑰：
 
 ```bash
@@ -153,7 +164,7 @@ npx wrangler secret put GARENA_CODE
 npx wrangler secret put GARENA_PARTITION
 ```
 
-`GARENA_ACCESS_TOKEN` 與 `GARENA_CODE` 至少要有一個。只設 code 也可以，那是登入導回網址上的 `code`。沒設 `GARENA_PARTITION` 時用 `1012`。權杖過期就再登入一次，重新 secret put。
+`GARENA_ACCESS_TOKEN` 與 `GARENA_CODE` 至少要有一個。只設 code 也可以。沒設 `GARENA_PARTITION` 時用 `1012`。權杖過期就再登入一次，重新 secret put。官方頁面已經顯示、CMS 還沒有的場次，要等這次同步從 `GET /api/game` 讀回來才會寫入，程式不會先造那些對局。`champion` 仍是圖片網址，新的一列不會被猜成英雄名；舊列上已有的英雄名會留下。
 
 管理頁 **選手數據** 的 **立即從 Garena 同步**（`POST /api/admin/aov/sync`，要登入與 CSRF）會跑同一條同步，方便試一次。密鑰缺失、登入失效、或官方暫時不能查時，記錄固定代碼並改試 AOVRanking；兩邊都失敗就不動 CMS。貼上歷史戰績頁的匯入維持原樣。
 

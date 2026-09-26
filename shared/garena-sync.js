@@ -27,8 +27,11 @@ import { emptyMatch, matchRecency, PLAYER_MATCH_LIMIT } from "./player.js";
  * GET does not send a CSRF token. POST /api/logout is the call that uses
  * cookie `csrftoken` and header `X-CSRFToken`; this sync does not call it.
  *
- * GOP login (client_id 100050, locale zh-TW) redirects back with `?code=`.
- * The page copies `access_token`, `code`, and `partition` into localStorage.
+ * GOP login (client_id 100050, locale zh-TW, response_type=code) is the same
+ * after Garena, Apple (platform 10), or any other button. The callback query
+ * may carry access_token, gop_access_token, encodeparam, code, and partition.
+ * The library copies those into localStorage access_token, code, and partition.
+ * The on-screen label "2區 純潔之翼" is partition "1012", not "2".
  * Either access_token or code is enough for the SPA to call /api/character.
  *
  * Responses are snake_case and camelized by the SPA:
@@ -46,7 +49,7 @@ import { emptyMatch, matchRecency, PLAYER_MATCH_LIMIT } from "./player.js";
 export const GARENA_ORIGIN = "https://gameidsearch.moba.garena.tw";
 
 const JSON_MAX = 1_000_000;
-const SECRET_MAX = 4096;
+const SECRET_MAX = 12000;
 
 const LOGIN_ERRORS = new Set([
   "ERROR__LOGIN_REQUIRED",
@@ -72,9 +75,29 @@ function secretValue(env, name) {
   return raw;
 }
 
+function rawSecret(env, name) {
+  return typeof env?.[name] === "string" ? env[name].trim() : "";
+}
+
+function secretUnusable(env, name) {
+  const raw = rawSecret(env, name);
+  if (!raw) return false;
+  return raw.length > SECRET_MAX || /[\r\n\0]/.test(raw);
+}
+
 /** True when the owner has stored an access token or an OAuth code. */
 export function garenaConfigured(env) {
   return Boolean(secretValue(env, "GARENA_ACCESS_TOKEN") || secretValue(env, "GARENA_CODE"));
+}
+
+/**
+ * A present but unusable token or code (too long, or an embedded newline).
+ * Empty secrets are `garena_unconfigured`. A usable secret returns "".
+ */
+export function garenaSecretStatus(env) {
+  if (garenaConfigured(env)) return "";
+  if (secretUnusable(env, "GARENA_ACCESS_TOKEN") || secretUnusable(env, "GARENA_CODE")) return "garena_secret_rejected";
+  return "garena_unconfigured";
 }
 
 /** 1011 or 1012. Unset uses the owner's server, 純潔之翼. */

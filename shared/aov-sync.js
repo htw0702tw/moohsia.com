@@ -1,7 +1,7 @@
 import { getDefaultDocument } from "../src/content.js";
 import { applyAovImport, fetchFightHistory } from "./aov-import.js";
 import { storeFromEnv } from "./cms-store.js";
-import { applyGarenaHistory, characterMatchesOwner, fetchGarenaHistory, garenaConfigured } from "./garena-sync.js";
+import { applyGarenaHistory, characterMatchesOwner, fetchGarenaHistory, garenaSecretStatus } from "./garena-sync.js";
 import { logEvent, logFailure } from "./log.js";
 import { sanitizeDocument } from "./site-document.js";
 
@@ -91,9 +91,10 @@ async function ownerHandle(env) {
 }
 
 export async function syncOwnerFightHistory(env) {
-  if (!garenaConfigured(env)) {
-    logEvent("garena_sync_unconfigured");
-    return syncFromAovRanking(env, "garena_unconfigured");
+  const secretStatus = garenaSecretStatus(env);
+  if (secretStatus) {
+    logEvent(secretStatus === "garena_unconfigured" ? "garena_sync_unconfigured" : "garena_sync_failed");
+    return syncFromAovRanking(env, secretStatus);
   }
   const fetched = await fetchGarenaHistory(env, {
     keyword: OWNER_HISTORY.keyword,
