@@ -2,6 +2,7 @@ import { getDefaultDocument } from "../src/content.js";
 import { CONTACT_EMAIL } from "./brand.js";
 import { upgradeLegacyCopy } from "./copy-upgrade.js";
 import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
+import { cleanGuild, cleanTeamCard, emptyGuild } from "./guild.js";
 import { DEFAULT_TEAM_SLUG, teamSlug } from "./teams.js";
 
 const TEXT_MAX = 2000;
@@ -146,6 +147,7 @@ function cleanTeams(list, fallback) {
       aka,
       lead: bilingual(item.lead, 500),
       requirements: cleanRequirements(item.requirements),
+      card: cleanTeamCard(item.card),
     });
   }
   return out;
@@ -240,6 +242,7 @@ export function sanitizeDocument(input) {
     placeholderSlots: cleanSlots(source.placeholderSlots, base.placeholderSlots),
     profileFields: cleanProfile(source.profileFields, base.profileFields),
     teams: cleanTeams(source.teams, base.teams),
+    guild: cleanGuild(source.guild),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
     player: cleanPlayer(source.player),
@@ -260,6 +263,7 @@ export function toPublicDocument(doc) {
     placeholderSlots: doc.placeholderSlots,
     profileFields: doc.profileFields,
     teams: doc.teams,
+    guild: doc.guild || emptyGuild(),
     rosterMembers: doc.rosterMembers
       .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
       .map(({ id, name, role, team, rankTier, rankDivision, rankStars }) => ({

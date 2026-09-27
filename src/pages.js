@@ -18,6 +18,7 @@ import { findRosterMember, memberSlug, playerMemberPath } from "../shared/match-
 import { findTeam, memberTeamSlug, teamAka, teamPrimary } from "../shared/teams.js";
 import { renderUltimates } from "./catalog-pages.js";
 import { rankedModeEntries, renderRanksPage } from "./rank-view.js";
+import { renderGuildPanel, renderTeamSnapshot, requirementHtml } from "./guild-view.js";
 
 export function brandMark() {
   return `
@@ -488,6 +489,7 @@ export function renderAbout(copy) {
         <ol class="principles">${principles}</ol>
         <p class="section-note"><a class="text-link" href="/teams" data-nav>${esc(copy.nav.teams || copy.teams.title)}</a></p>
       </section>
+      ${renderGuildPanel(copy)}
       <section class="section wrap">
         <div class="plate reveal">
           ${seal(copy.nav.recruitChip)}
@@ -644,7 +646,7 @@ function requirementList(team) {
   return (team.requirements || [])
     .map((row) => {
       const text = (lang === "en" ? row.en || row.zh : row.zh || row.en) || "";
-      return text.trim() ? `<li>${esc(text.trim())}</li>` : "";
+      return text.trim() ? requirementHtml(text.trim()) : "";
     })
     .join("");
 }
@@ -713,6 +715,7 @@ export function renderTeam(copy, slug) {
       ${aka ? `<p class="stamp">${esc(aka)}</p>` : ""}
       <p class="lead">${esc(lead)}</p>
     </header>
+    ${renderTeamSnapshot(copy, team)}
     <section class="section wrap">
       <div class="section-head">
         <p class="section-kicker">${esc(page.requirements)}</p>

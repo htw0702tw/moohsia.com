@@ -1,6 +1,7 @@
 import "./admin.css";
 import { applyAovImport, fightHistoryUrl } from "../shared/aov-import.js";
 import { LADDER } from "../shared/ranks.js";
+import { emptyGuild, emptyTeamCard } from "../shared/guild.js";
 import { adminMessage, aovNeedsPaste, choosePastedHtml, importFailureMessage } from "./messages.js";
 import {
   applyPlayerInput,
@@ -409,6 +410,18 @@ function teamsEditor() {
         </div>
         <label>導言 繁中<textarea data-team="${index}" data-field="lead" data-lang="zh" rows="2" ${CMS_TEXT}>${esc(team.lead?.zh)}</textarea></label>
         <label>導言 EN<textarea data-team="${index}" data-field="lead" data-lang="en" rows="2" ${CMS_TEXT}>${esc(team.lead?.en)}</textarea></label>
+        <h3>遊戲內戰隊快照</h3>
+        <p class="hint">照戰隊列表畫面填。積分畫面上是橫線就留白。不要填其他戰隊的名字。</p>
+        <div class="pair">
+          <label>地區<input data-team="${index}" data-card="region" value="${esc(team.card?.region)}" ${CMS_TEXT}></label>
+          <label>積分<input data-team="${index}" data-card="score" value="${esc(team.card?.score)}" ${CMS_TEXT}></label>
+          <label>成員<input data-team="${index}" data-card="members" value="${esc(team.card?.members)}" ${CMS_TEXT}></label>
+          <label>人數上限<input data-team="${index}" data-card="capacity" value="${esc(team.card?.capacity)}" ${CMS_TEXT}></label>
+          <label>狀態<input data-team="${index}" data-card="status" value="${esc(team.card?.status)}" ${CMS_TEXT}></label>
+          <label>戰隊長<input data-team="${index}" data-card="captain" value="${esc(team.card?.captain)}" ${CMS_TEXT}></label>
+          <label>宣言<input data-team="${index}" data-card="motto" value="${esc(team.card?.motto)}" ${CMS_TEXT}></label>
+          <label>快照日期<input data-team="${index}" data-card="updatedAt" type="date" value="${esc(team.card?.updatedAt)}" ${CMS_TEXT}></label>
+        </div>
         <h3>加入條件</h3>
         ${rules}
         <button class="btn" type="button" data-action="team-req-add" data-index="${index}">新增條件</button>
@@ -478,6 +491,49 @@ function newsEditor() {
     <div class="repeats">${cards}</div>
     <button class="btn" type="button" data-action="news-add">新增動態</button>
     ${copyBlocks("news")}
+  </section>`;
+}
+
+function guildEditor() {
+  const guild = state.draft.guild || emptyGuild();
+  state.draft.guild = guild;
+  const input = (field, label, hint, type = "text") => `<label>${label}<input data-guild="${field}" type="${type}" value="${esc(guild[field])}" ${CMS_TEXT}></label>${hint ? `<p class="hint">${hint}</p>` : ""}`;
+  const flag = (field, label) => `<label>${label}<select data-guild="${field}" ${CMS_CHOICE}><option value="">—</option><option value="on"${guild[field] === "on" ? " selected" : ""}>開啟</option><option value="off"${guild[field] === "off" ? " selected" : ""}>關閉</option></select></label>`;
+  const ranks = LADDER.map((tier) => `<option value="${esc(tier.id)}"${guild.rankReq === tier.id ? " selected" : ""}>${esc(tier.zh)}</option>`).join("");
+  const tops = (key, label) =>
+    [0, 1, 2, 3]
+      .map((index) => `<label>${label} ${index + 1}<input data-guild-top="${key}" data-index="${index}" value="${esc(guild[key]?.[index] || "")}" ${CMS_TEXT}></label>`)
+      .join("");
+  return `<section class="stack">
+    <h2>遊戲內公會快照</h2>
+    <p class="hint">照遊戲內公會、管理設置、成員與競技排行榜填。留白就保持空白。不要填其他玩家或其他公會的名字。儲存草稿之後還要發布。</p>
+    <div class="pair">
+      ${input("region", "所在地區", "")}
+      ${input("members", "成員", "")}
+      ${input("capacity", "人數上限", "例如：20。")}
+      ${input("motto", "宣言", "")}
+      ${input("activity", "活躍點", "")}
+      ${input("activityMax", "活躍點上限", "例如：6240。")}
+      ${input("chestLevel", "目前寶箱等級", "例如：1。")}
+      ${input("chestLevels", "寶箱等級數", "畫面上有幾格，例如：8。")}
+      ${input("levelReq", "等級要求", "例如：6。")}
+      <label>段位要求<select data-guild="rankReq" ${CMS_CHOICE}><option value="">—</option>${ranks}</select></label>
+      ${flag("review", "入隊審核")}
+      ${flag("accept", "接受入隊申請")}
+      ${input("presidentRole", "職位", "例如：公會長。")}
+      ${input("president", "職位上的人", "只填自己人。")}
+      ${input("weekActivity", "本週活躍點", "")}
+      ${input("lastActivity", "上週活躍點", "畫面是 0 才填 0。")}
+      ${input("stars", "本週段位總星數", "")}
+      ${input("starsLast", "上週段位總星數", "畫面是 0 才填 0。")}
+      ${input("standing", "競技榜名次", "未上榜就填「未上榜」。有名次才填數字。")}
+      ${input("updatedAt", "快照日期", "畫面沒有日期就留白。", "date")}
+    </div>
+    <h3>本週前四名的星數門檻</h3>
+    <p class="hint">只填星數，不填公會名字。由第 1 名排到第 4 名。</p>
+    <div class="pair">${tops("weekTop", "本週")}</div>
+    <h3>上週前四名的星數門檻</h3>
+    <div class="pair">${tops("lastTop", "上週")}</div>
   </section>`;
 }
 
@@ -713,7 +769,7 @@ function pageBody() {
   const id = sectionId();
   if (!state.draft) return `<p>正在讀取草稿。</p>`;
   if (id === "dashboard") return dashboard();
-  if (id === "about") return `${profileEditor()}${copyBlocks("about")}`;
+  if (id === "about") return `${guildEditor()}${profileEditor()}${copyBlocks("about")}`;
   if (id === "roster") return rosterEditor();
   if (id === "teams") return teamsEditor();
   if (id === "player") return playerEditor();
@@ -824,6 +880,21 @@ function onInput(event) {
     markDirty("有未儲存的修改");
     return;
   }
+  if (target.dataset.guildTop) {
+    const guild = state.draft.guild || emptyGuild();
+    state.draft.guild = guild;
+    const key = target.dataset.guildTop === "lastTop" ? "lastTop" : "weekTop";
+    guild[key][Number(target.dataset.index)] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
+  if (target.dataset.guild) {
+    const guild = state.draft.guild || emptyGuild();
+    state.draft.guild = guild;
+    guild[target.dataset.guild] = target.value;
+    markDirty("有未儲存的修改");
+    return;
+  }
   if (target.dataset.team != null && target.dataset.roster == null) {
     const team = state.draft.teams?.[Number(target.dataset.team)];
     if (!team) return;
@@ -831,6 +902,9 @@ function onInput(event) {
       const rule = team.requirements?.[Number(target.dataset.req)];
       if (!rule || !target.dataset.lang) return;
       rule[target.dataset.lang] = target.value;
+    } else if (target.dataset.card) {
+      team.card = { ...emptyTeamCard(), ...(team.card || {}) };
+      team.card[target.dataset.card] = target.value;
     } else if (target.dataset.field === "slug") {
       team.slug = String(target.value || "").trim().toLowerCase();
       team.id = team.slug;
@@ -1186,6 +1260,7 @@ function onClick(event) {
       aka: { zh: "", en: "" },
       lead: { zh: "", en: "" },
       requirements: [{ zh: "", en: "" }],
+      card: emptyTeamCard(),
     });
     markDirty("有未儲存的修改");
     render();

@@ -1,4 +1,5 @@
 import { esc } from "./html.js";
+import { renderGuildStarsBoard } from "./guild-view.js";
 import { getPlayer, getRosterMembers } from "./content.js";
 import {
   APEX_RULES,
@@ -233,7 +234,7 @@ function rewardBlocks(text, player) {
   </section>`;
 }
 
-function boardBlocks(text, player, members) {
+function boardBlocks(text, player, members, copy) {
   const board = player?.powerBoard;
   const hasPower = Boolean(board?.hero || board?.power || board?.bestPower || board?.rows?.length);
   const powerRows = (board?.rows || [])
@@ -272,6 +273,7 @@ function boardBlocks(text, player, members) {
           : `<p class="aov-empty">${esc(text.empty)}</p>`
       }
     </article>
+    ${renderGuildStarsBoard(copy)}
     <article>
       <h3>${esc(text.guild)}</h3>
       <p class="section-note">${esc(text.guildNote)}</p>
@@ -306,7 +308,7 @@ export function renderRanksPage(copy) {
       <p class="section-note">${esc(text.sourceNote)} <a href="https://moba.garena.tw/news/show/4760" target="_blank" rel="noopener noreferrer">4760</a> · <a href="https://moba.garena.tw/news/show/4906" target="_blank" rel="noopener noreferrer">4906</a> · <a href="https://moba.garena.tw/news/show/5240" target="_blank" rel="noopener noreferrer">5240</a></p>
     </section>
     <section class="section wrap">${rewardBlocks(text, player)}</section>
-    <section class="section wrap">${boardBlocks(text, player, members)}</section>
+    <section class="section wrap">${boardBlocks(text, player, members, copy)}</section>
   </article>`;
 }
 

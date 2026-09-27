@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL } from "../shared/brand.js";
+import { cleanGuild, emptyGuild } from "../shared/guild.js";
 import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 import { memberTeamSlug } from "../shared/teams.js";
 
@@ -28,9 +29,10 @@ export const teams = [
       en: "A competitive team in the 暮霞｜MOS guild. Apply on this site to join the guild.",
     },
     requirements: [
+      { zh: "遊戲內等級 lv.6 以上", en: "In-game level 6 or higher." },
+      { zh: "排位至少黃金以上", en: "Ranked Gold or above." },
       { zh: "每個週末 20:30–21:30 訓練", en: "Weekend training, 20:30–21:30." },
       { zh: "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄", en: "At least two lanes, with at least five familiar heroes in each." },
-      { zh: "排位至少黃金以上", en: "Ranked Gold or above." },
     ],
   },
 ];
@@ -215,6 +217,29 @@ const zh = {
     ],
     recruitTitle: "官網申請",
     recruitBody: "想加入請填官方網站的申請。Discord 不開放加入，邀請由擁有者在核准後個別寄出。",
+    guild: {
+      title: "遊戲內公會",
+      note: "遊戲內公會畫面的快照。其他人的名字不刊登。",
+      region: "所在地區",
+      members: "成員",
+      motto: "宣言",
+      activity: "公會活躍點",
+      chest: "寶箱等級",
+      chestMail: "獎勵寶箱在每週一凌晨 5 點透過郵件發放。",
+      settings: "管理設置",
+      levelReq: "等級要求",
+      rankReq: "段位要求",
+      review: "入隊審核",
+      accept: "接受入隊申請",
+      on: "開啟",
+      off: "關閉",
+      president: "公會職位",
+      weekActivity: "本週活躍點",
+      lastActivity: "上週活躍點",
+      updated: "快照日期",
+      updatedMissing: "快照日期尚未填",
+      insufficient: "資料不足",
+    },
   },
   roster: {
     kicker: "03 — ROSTER",
@@ -244,6 +269,16 @@ const zh = {
     apply: "提出申請",
     applyNote: "加入公會請走官網申請。戰隊條件列在下面，通過後由擁有者安排。",
     missing: "找不到這支戰隊。",
+    card: {
+      title: "遊戲內戰隊",
+      region: "地區",
+      score: "積分",
+      members: "成員",
+      status: "狀態",
+      captain: "戰隊長",
+      motto: "宣言",
+      scoreEmpty: "—",
+    },
   },
   skills: {
     kicker: "08 — SKILLS",
@@ -631,6 +666,12 @@ const zh = {
     unranked: "未上榜",
     guild: "公會段位榜",
     guildNote: "只排網站上已填目前段位的成員。",
+    guildStars: "公會競技排行榜",
+    guildStarsNote: "依段位總星數。只列本公會自己的名次，和第 4 名的星數差距。不列其他公會的名字。",
+    thisWeek: "本週",
+    lastWeek: "上週",
+    fourth: "第 4 名門檻",
+    gapFourth: "距離第 4 名還差",
     power: "傳說戰區",
     powerNote: "只顯示這位成員自己的名次與差距，不列出其他玩家。",
     best: "歷史最高戰力",
@@ -809,6 +850,29 @@ const en = {
     ],
     recruitTitle: "Apply on site",
     recruitBody: "To join, use the form on this website. Discord is not open to join. A one-time invite is emailed only after approval.",
+    guild: {
+      title: "In-game guild",
+      note: "A snapshot of the in-game guild screen. Other players' names are not published.",
+      region: "Region",
+      members: "Members",
+      motto: "Declaration",
+      activity: "Guild activity",
+      chest: "Chest level",
+      chestMail: "Reward chests are mailed every Monday at 5:00.",
+      settings: "Settings",
+      levelReq: "Level",
+      rankReq: "Rank",
+      review: "Join review",
+      accept: "Accept join requests",
+      on: "On",
+      off: "Off",
+      president: "Guild role",
+      weekActivity: "Activity this week",
+      lastActivity: "Activity last week",
+      updated: "Snapshot date",
+      updatedMissing: "Snapshot date not entered",
+      insufficient: "Not enough data",
+    },
   },
   roster: {
     kicker: "03 — ROSTER",
@@ -838,6 +902,16 @@ const en = {
     apply: "Apply",
     applyNote: "Join the guild from the apply page. Team rules are below. Placement happens after approval.",
     missing: "That team is not listed.",
+    card: {
+      title: "In-game team",
+      region: "Region",
+      score: "Score",
+      members: "Members",
+      status: "Status",
+      captain: "Captain",
+      motto: "Declaration",
+      scoreEmpty: "—",
+    },
   },
   skills: {
     kicker: "08 — SKILLS",
@@ -1225,6 +1299,12 @@ const en = {
     unranked: "Unranked",
     guild: "Guild rank board",
     guildNote: "Members with a current rank on the site.",
+    guildStars: "Guild competitive board",
+    guildStarsNote: "Ranked by total rank stars. Only this guild's standing and the gap to 4th place. Other guilds' names are not listed.",
+    thisWeek: "This week",
+    lastWeek: "Last week",
+    fourth: "4th-place line",
+    gapFourth: "Short of 4th by",
     power: "Legend zone",
     powerNote: "Only this member's place and the gap. Other players are not listed.",
     best: "Best legend power",
@@ -1244,6 +1324,7 @@ function snapshot() {
     rosterMembers: structuredClone(rosterMembers),
     newsPosts: structuredClone(newsPosts),
     player: emptyPlayer(),
+    guild: emptyGuild(),
     copy: {
       zh: structuredClone(zh),
       en: structuredClone(en),
@@ -1298,6 +1379,7 @@ export function applyPublishedContent(payload) {
     rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers.map((member) => ({ ...member, team: memberTeamSlug(member) })) : base.rosterMembers,
     newsPosts: Array.isArray(doc.newsPosts) ? doc.newsPosts : base.newsPosts,
     player: adoptPublicPlayer(doc.player),
+    guild: cleanGuild(doc.guild),
     copy: {
       zh: mergeCopy(base.copy.zh, doc.copy?.zh),
       en: mergeCopy(base.copy.en, doc.copy?.en),
@@ -1315,6 +1397,10 @@ export function getRosterMembers() {
 
 export function getTeams() {
   return current.teams;
+}
+
+export function getGuild() {
+  return current.guild || emptyGuild();
 }
 
 export function getNewsPosts() {
