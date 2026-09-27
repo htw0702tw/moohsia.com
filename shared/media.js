@@ -72,6 +72,34 @@ async function readObject(env, key) {
   return null;
 }
 
+
+export async function storeAovCaptureFrame(env, dataUrl, id = "") {
+  const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=\r\n]+)$/.exec(String(dataUrl || ""));
+  if (!match) return { ok: false, code: "aov_frame_invalid" };
+  let bytes;
+  try {
+    const binary = atob(match[2].replace(/\s+/g, ""));
+    bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  } catch {
+    return { ok: false, code: "aov_frame_invalid" };
+  }
+  if (!bytes.byteLength || bytes.byteLength > 4 * 1024 * 1024) {
+    return { ok: false, code: "aov_frame_too_large" };
+  }
+  const sniffed = sniffMedia(bytes);
+  if (!sniffed || sniffed.kind !== "image") return { ok: false, code: "aov_frame_invalid" };
+  const safeId = /^[A-Za-z0-9_-]{8,96}$/.test(String(id || "")) ? String(id) : crypto.randomUUID().replaceAll("-", "");
+  const key = `aov/frames/${safeId}`;
+  try {
+    await putObject(env, key, bytes, sniffed.mime);
+    return { ok: true, key, mime: sniffed.mime, bytes: bytes.byteLength };
+  } catch (error) {
+    if (error instanceof Error && error.name === "MediaUnconfigured") return { ok: false, code: "media_unconfigured" };
+    logFailure("aov_frame_store_failed", error);
+    return { ok: false, code: "media_unconfigured" };
+  }
+}
+
 export async function storeHighlight(env, file) {
   if (!file || typeof file.arrayBuffer !== "function") return { ok: false, code: "media_invalid" };
   const declared = typeof file.size === "number" ? file.size : 0;
