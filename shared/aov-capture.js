@@ -1,4 +1,4 @@
-import { archiveAovMatches } from "./aov-archive.js";
+import { archiveBeforeAovWrite, ensureAovArchive } from "./aov-archive.js";
 import { logFailure } from "./log.js";
 import { storeAovCaptureFrame } from "./media.js";
 
@@ -257,6 +257,8 @@ async function saveFrameMetadata(env, record) {
 
 export async function analyzeAovFrame(env, input = {}) {
   if (!env?.AI || typeof env.AI.run !== "function") return { ok: false, code: "aov_ai_unconfigured" };
+  const ready = await ensureAovArchive(env);
+  if (!ready.ok) return { ok: false, code: ready.code || "aov_archive_unavailable" };
   const image = String(input.image || "");
   if (!/^data:image\/(?:jpeg|png|webp);base64,/i.test(image) || image.length > 5_500_000) {
     return { ok: false, code: "aov_frame_invalid" };
@@ -294,7 +296,7 @@ export async function analyzeAovFrame(env, input = {}) {
       return { ok: false, code: "aov_vision_failed", importId, frameIndex };
     }
     const normalized = normalizeAovVision(raw, { ownerName: input.ownerName, importId, frameIndex });
-    const archive = await archiveAovMatches(env, normalized.matches, {
+    const archive = await archiveBeforeAovWrite(env, normalized.matches, {
       source: "capture",
       importId,
       capturedAt,
@@ -310,6 +312,7 @@ export async function analyzeAovFrame(env, input = {}) {
       kind: normalized.kind,
       data: normalized,
     });
+    if (!archive.ok) return { ok: false, code: archive.code || "aov_archive_unavailable", importId, frameIndex };
     return {
       ok: true,
       importId,
