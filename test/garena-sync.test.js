@@ -5,7 +5,16 @@ import { syncOwnerFightHistory } from "../shared/aov-sync.js";
 import { createMemoryStore } from "../shared/cms-store.js";
 import { applyGarenaHistory, garenaHeaders, mapGarenaGames } from "../shared/garena-sync.js";
 import { hashPassword } from "../shared/password.js";
-import { emptyPlayer } from "../shared/player.js";
+import { emptyPlayer, PLAYER_MATCH_LIMIT } from "../shared/player.js";
+
+test("official sync refuses to evict stored history at document capacity", () => {
+  const player = { ...emptyPlayer(), matches: Array.from({ length: PLAYER_MATCH_LIMIT }, (_, index) => ({
+    id: `old-${index}`, externalMatchId: `old-${index}`, playedAt: `2025-01-01 00:${String(index % 60).padStart(2, "0")}:00`,
+  })) };
+  const parsed = { character: { name: "htw0702aov" }, matches: [{ id: "new", externalMatchId: "new", playedAt: "2026-09-28 06:00:00" }] };
+  assert.throws(() => applyGarenaHistory(player, parsed, { keyword: "htw0702aov" }), { code: "aov_match_limit" });
+  assert.equal(player.matches.length, PLAYER_MATCH_LIMIT);
+});
 import { resetLoginFailuresForTests } from "../shared/rate-limit.js";
 import { sanitizeDocument } from "../shared/site-document.js";
 import { getDefaultDocument } from "../src/content.js";
