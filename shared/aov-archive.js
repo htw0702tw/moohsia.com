@@ -196,17 +196,28 @@ export async function bootstrapAovArchive(env) {
   const db = dbFromEnv(env);
   if (!db) return { ok: false, code: "aov_archive_unavailable", archived: 0 };
   try {
-    const seeded = await db.prepare("SELECT id FROM aov_imports WHERE id = ?").bind("cms-bootstrap-v1").first();
-    if (seeded?.id) return { ok: true, archived: 0, seeded: true };
+    const seeded = await db.prepare("SELECT id, match_count FROM aov_imports WHERE id = ?").bind("cms-bootstrap-v1").first();
+    if (seeded?.id) {
+      const versions = await db.prepare("SELECT COUNT(*) AS n FROM aov_match_versions WHERE import_id = ?")
+        .bind("cms-bootstrap-v1").first();
+      // A previous bootstrap may have failed after creating its import row.
+      if (Number(versions?.n || 0) < Number(seeded.match_count || 0)) {
+        return { ok: false, code: "aov_archive_unavailable", archived: 0 };
+      }
+      return { ok: true, archived: 0, seeded: true };
+    }
     const row = await db
       .prepare("SELECT draft_json, published_json FROM site_documents WHERE id = ?")
       .bind("site")
       .first();
-    const raw = row?.published_json || row?.draft_json || "";
     let matches = [];
     try {
-      const doc = raw ? JSON.parse(raw) : {};
-      matches = Array.isArray(doc?.player?.matches) ? doc.player.matches : [];
+      // Draft and published histories can differ. Preserve both before a sync
+      // rewrites either CMS document.
+      for (const raw of [row?.published_json, row?.draft_json]) {
+        const doc = raw ? JSON.parse(raw) : {};
+        if (Array.isArray(doc?.player?.matches)) matches.push(...doc.player.matches);
+      }
     } catch {
       matches = [];
     }
@@ -227,6 +238,20 @@ export async function bootstrapAovArchive(env) {
     logFailure("aov_archive_bootstrap_failed", error);
     return { ok: false, code: "aov_archive_unavailable", archived: 0 };
   }
+}
+
+/** Do not update the 160-row CMS view until the complete archive is writable. */
+export async function ensureAovArchive(env) {
+  // Memory-backed stores exist only in local tests; production uses CMS_DB.
+  if (env?.CMS_STORE && !env?.CMS_DB) return { ok: true, memory: true };
+  return bootstrapAovArchive(env);
+}
+
+export async function archiveBeforeAovWrite(env, matches, options = {}) {
+  const ready = await ensureAovArchive(env);
+  if (!ready.ok) return ready;
+  if (ready.memory) return { ok: true, archived: matches?.length || 0, importId: "memory" };
+  return archiveAovMatches(env, matches, options);
 }
 
 export async function aovArchiveSummary(env) {
