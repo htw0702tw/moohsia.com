@@ -463,12 +463,12 @@ async function visionAov(request, env) {
   const result = await analyzeAovFrame(env, parsed.data);
   if (!result.ok) {
     const status =
-      result.code === "aov_ai_unconfigured" || result.code === "media_unconfigured"
+      result.code === "aov_ai_unconfigured" || result.code === "media_unconfigured" || result.code === "aov_archive_unavailable"
         ? 503
         : result.code === "aov_frame_invalid" || result.code === "aov_frame_too_large"
           ? 400
           : 422;
-    return json(status, { ok: false, code: result.code });
+    return json(status, { ok: false, code: result.code, stored: result.stored === true });
   }
   return ok(request, env, session, result);
 }
