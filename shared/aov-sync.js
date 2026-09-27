@@ -1,4 +1,5 @@
 import { getDefaultDocument } from "../src/content.js";
+import { archiveAovMatches } from "./aov-archive.js";
 import { applyAovImport, fetchFightHistory } from "./aov-import.js";
 import { storeFromEnv } from "./cms-store.js";
 import { namesForImport } from "./hidden-names.js";
@@ -56,6 +57,7 @@ async function syncFromAovRanking(env, garenaCode) {
       logEvent(code === "aov_challenge" || code === "aov_shell" ? "aov_sync_skipped" : "aov_sync_failed");
       return { ok: false, code, stored: false, garenaCode, source: "aovweb" };
     }
+    const archive = await archiveAovMatches(env, fetched.matches, { source: "aovweb", note: "hourly fallback sync" });
     const saved = await saveOwnerPlayer(
       env,
       (player, now, hiddenNames) =>
@@ -69,7 +71,7 @@ async function syncFromAovRanking(env, garenaCode) {
         }),
       "aov_synced",
     );
-    return { ...saved, garenaCode, source: "aovweb", matches: saved.matches };
+    return { ...saved, garenaCode, source: "aovweb", matches: saved.matches, archive };
   } catch (error) {
     logFailure("aov_sync_failed", error);
     return { ok: false, code: "aov_sync_failed", stored: false, garenaCode, source: "aovweb" };
@@ -113,6 +115,7 @@ export async function syncOwnerFightHistory(env) {
       logEvent(code === "garena_login_required" ? "garena_login_required" : "garena_sync_failed");
       return syncFromAovRanking(env, code);
     }
+    const archive = await archiveAovMatches(env, fetched.matches, { source: "garena", note: "hourly official sync" });
     const saved = await saveOwnerPlayer(
       env,
       (player, now) => {
@@ -131,7 +134,7 @@ export async function syncOwnerFightHistory(env) {
       logEvent("garena_sync_failed");
       return syncFromAovRanking(env, "garena_character_mismatch");
     }
-    return { ...saved, garenaCode: "garena_synced", source: "garena" };
+    return { ...saved, garenaCode: "garena_synced", source: "garena", archive };
   } catch (error) {
     logFailure("garena_sync_failed", error);
     return { ok: false, code: "garena_sync_failed", stored: false, garenaCode: "garena_sync_failed", source: "garena" };
