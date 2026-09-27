@@ -1200,6 +1200,40 @@ body.intro-on { overflow: hidden; }
   padding: 0.35rem 0.8rem;
 }
 .site-search input:focus { width: 14rem; }
+
+/* Phone widths: the fixed search box plus EN/選單 no longer fits beside the logo.
+   Let the field shrink (and don't widen it on focus). Wider layouts keep 11rem/14rem. */
+@media (max-width: 540px) {
+  .nav-tools { min-width: 0; flex: 1 1 auto; }
+  .brand { flex: none; }
+  .site-search { min-width: 0; flex: 1 1 auto; }
+  .site-search input,
+  .site-search input:focus { width: 100%; min-width: 0; }
+  .lang, .menu-toggle { flex: none; }
+  /* The about-page crest dial is drawn outside its box and widens the page once the header fits. */
+  .about-crest,
+  .about-crest .orbit { overflow: hidden; }
+  .search-results {
+    position: fixed;
+    top: calc(var(--nav-h) + 0.35rem);
+    left: 0.55rem;
+    right: 0.55rem;
+    width: auto;
+  }
+}
+@media (max-width: 400px) {
+  .nav { gap: 0.35rem; padding-inline: 0.5rem; }
+  .brand { gap: 0.4rem; }
+  .nav-tools { gap: 0.35rem; }
+  .lang, .menu-toggle { padding-inline: 0.55rem; }
+  .site-search input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.2' fill='none' stroke='%23d7c6d1' stroke-width='1.6'/%3E%3Cpath d='M10.2 10.2 L13.2 13.2' stroke='%23d7c6d1' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.55rem center;
+    background-size: 0.95rem;
+    padding-left: 1.7rem;
+  }
+}
 .search-results {
   position: absolute;
   top: calc(100% + 0.4rem);
