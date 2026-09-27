@@ -1046,9 +1046,10 @@ async function extractAovVideoFrames(file, onProgress) {
   video.preload = "auto";
   video.muted = true;
   video.playsInline = true;
-  video.src = url;
   try {
-    await waitForVideo(video, "loadedmetadata");
+    const metadata = waitForVideo(video, "loadedmetadata");
+    video.src = url;
+    await metadata;
     if (!Number.isFinite(video.duration) || video.duration <= 0 || !video.videoWidth || !video.videoHeight) {
       throw new Error("video_invalid");
     }
@@ -1106,8 +1107,10 @@ async function extractAovVideoFrames(file, onProgress) {
 
 async function importAovVideo() {
   if (state.aovBusy || !pendingAovVideo || !state.draft?.player) return;
+  state.aovBusy = true;
   const archive = await api("/api/admin/aov/archive");
   if (!archive.ok) {
+    state.aovBusy = false;
     state.error = message(archive.code || "aov_archive_unavailable", archive.http);
     state.status = "";
     render();
@@ -1136,6 +1139,8 @@ async function importAovVideo() {
   const importId = `video-${crypto.randomUUID().replaceAll("-", "")}`;
   const ownerName = String(state.draft.player.handle || state.aovForm.keyword || "").trim();
   let recognizedFrames = 0;
+  let storedFrames = 0;
+  let lastFailure = "";
   let mergedMatches = 0;
   let failedFrames = 0;
   let archiveWarning = false;
@@ -1154,9 +1159,12 @@ async function importAovVideo() {
         ownerName,
       }),
     });
-    if (!state.authed) break;
+    if (data.stored) storedFrames += 1;
+    if (!state.authed) { lastFailure = "unauthorized"; break; }
     if (!data.ok) {
       failedFrames += 1;
+      lastFailure = data.code || "aov_vision_failed";
+      if (["aov_archive_unavailable", "aov_ai_unconfigured", "media_unconfigured", "rate_limited", "network"].includes(lastFailure)) break;
       continue;
     }
     recognizedFrames += 1;
@@ -1176,11 +1184,15 @@ async function importAovVideo() {
 
   state.aovBusy = false;
   const fileName = pendingAovVideo.name;
-  pendingAovVideo = null;
+  if (!lastFailure && !extracted.truncated) pendingAovVideo = null;
+  if (lastFailure) state.error = message(lastFailure);
   if (archiveWarning) state.error = message("aov_archive_unavailable");
   const clipped = extracted.truncated ? "；影片變化畫面超過 180 張，後段可能需要分成第二支影片再匯入" : "";
   const failures = failedFrames ? `；${failedFrames} 張沒有辨識成功，但不會刪除任何既有資料` : "";
-  markDirty(`錄影「${fileName}」完成：保存 ${extracted.frames.length} 個畫面、辨識 ${recognizedFrames} 張、讀到 ${mergedMatches} 筆對局資料${failures}${clipped}。目前只併入草稿，請檢查後再發布。`);
+  const status = `錄影「${fileName}」${lastFailure || extracted.truncated ? "部分處理" : "處理完成"}：擷取 ${extracted.frames.length} 個畫面、伺服器確認保存 ${storedFrames} 張、辨識 ${recognizedFrames} 張、併入 ${mergedMatches} 筆資料${failures}${clipped}。請保留原始影片；同一場的多個畫面可能需要在草稿中確認。`;
+  if (mergedMatches) markDirty(status);
+  else state.status = status;
+
   render();
 }
 
