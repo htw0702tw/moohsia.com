@@ -921,9 +921,9 @@ export function parseFightHistory(html, options = {}) {
   matches.sort((a, b) => String(b.playedAt).localeCompare(String(a.playedAt)));
   if (ownerUid) summary.uid = ownerUid;
   return {
-    matches: matches.slice(0, PLAYER_MATCH_LIMIT),
+    matches,
     summary,
-    count: Math.min(matches.length, PLAYER_MATCH_LIMIT),
+    count: matches.length,
     boardPartial,
   };
 }
@@ -1143,6 +1143,11 @@ function mergeMatch(prev, next, publish, names) {
     match.publish = publish === true;
     return shieldImportedMatch(scrubMapId(match), null, names);
   }
+  // A collapsed HTML page can omit fields that a previous expanded page had.
+  // Treat absence as unknown instead of replacing a recorded value with blank.
+  for (const [key, value] of Object.entries(prev)) {
+    if (typeof value === "string" && value && !filled(match[key])) match[key] = value;
+  }
   match.highlight = prev.highlight?.key || prev.highlight?.caption?.zh || prev.highlight?.caption?.en ? prev.highlight : next.highlight;
   if (prev.note?.zh || prev.note?.en) match.note = prev.note;
   match.publish = publish === true ? true : prev.publish === true;
@@ -1201,7 +1206,12 @@ export function applyAovImport(player, parsed, options = {}) {
     const keys = [match?.externalMatchId, match?.id].filter(Boolean);
     return keys.every((key) => !seen.has(key));
   });
-  const matches = [...imported, ...leftover].slice(0, PLAYER_MATCH_LIMIT);
+  const matches = [...imported, ...leftover];
+  if (matches.length > PLAYER_MATCH_LIMIT) {
+    const error = new RangeError("aov_match_limit");
+    error.code = "aov_match_limit";
+    throw error;
+  }
   const summary = parsed?.summary || {};
   const sums = sumsOf(imported);
   const stats = { ...(base.stats || {}) };
