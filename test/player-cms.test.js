@@ -8,7 +8,12 @@ import { createMemoryMedia } from "../shared/media.js";
 import { highlightKeysFromPublic } from "../shared/media.js";
 import { applyNotionCollections } from "../shared/notion-sync.js";
 import { hashPassword } from "../shared/password.js";
-import { cleanPlayer, derivedKda, toPublicPlayer } from "../shared/player.js";
+import { cleanPlayer, derivedKda, PLAYER_MATCH_LIMIT, toPublicPlayer } from "../shared/player.js";
+
+test("publishing an oversized match array rejects the document instead of truncating it", () => {
+  const player = { ...getDefaultDocument().player, matches: Array.from({ length: PLAYER_MATCH_LIMIT + 1 }, (_, index) => ({ id: `m-${index}`, hero: "娜塔亞" })) };
+  assert.throws(() => sanitizeDocument({ ...getDefaultDocument(), player }), { code: "aov_match_limit" });
+});
 import { resetLoginFailuresForTests } from "../shared/rate-limit.js";
 import { sanitizeDocument } from "../shared/site-document.js";
 import { getDefaultDocument } from "../src/content.js";
@@ -112,12 +117,13 @@ test("builds, separate KDA, and media survive cleaning and public view", () => {
   assert.equal(JSON.stringify(shown).includes("hl/"), false);
 });
 
-test("player lists reject entries past the cap", () => {
+test("player builds are bounded and matches reject entries past the cap", () => {
   const builds = Array.from({ length: 25 }, (_, index) => ({ hero: `英雄${index}`, items: ["破甲弓"] }));
   const matches = Array.from({ length: 161 }, (_, index) => ({ hero: `場${index}`, kills: "1", deaths: "1", assists: "1", publish: true }));
-  const cleaned = cleanPlayer({ publish: true, handle: "sample", builds, matches });
+  const cleaned = cleanPlayer({ publish: true, handle: "sample", builds, matches: matches.slice(0, 160) });
   assert.equal(cleaned.builds.length, 24);
   assert.equal(cleaned.matches.length, 160);
+  assert.throws(() => cleanPlayer({ publish: true, handle: "sample", builds, matches }), { code: "aov_match_limit" });
 });
 
 test("notion sync keeps admin builds, avatar, and match extras", () => {
