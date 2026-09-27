@@ -137,6 +137,16 @@ function pct(value) {
   return `${Number.isInteger(value) ? value : value.toFixed(1)}%`;
 }
 
+/** Horizontal percentage bar drawn in SVG (CSP forbids style="width:…"). */
+function meter(percent, tone = "gold") {
+  const value = Math.max(0, Math.min(100, Number(percent) || 0));
+  return `<svg class="chart-meter" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true"><rect width="100" height="6" class="chart-meter-track"/><rect width="${value.toFixed(1)}" height="6" class="chart-meter-fill is-${tone}"/></svg>`;
+}
+
+function swatch(color) {
+  return `<svg class="chart-swatch" viewBox="0 0 8 8" aria-hidden="true"><rect width="8" height="8" rx="2" fill="${color}"/></svg>`;
+}
+
 function missing(t, title) {
   return `<article class="aov-chart chart-card"><h4>${esc(title)}</h4><p class="aov-empty">${esc(t.missing)}</p></article>`;
 }
@@ -215,7 +225,10 @@ function radarCard(t, stats) {
 }
 
 function scrollSvg(width, height, minPx, body, label) {
-  return `<div class="chart-scroll"><svg class="chart-line" viewBox="0 0 ${width} ${height}" style="min-width:${minPx}px" role="img" aria-label="${esc(label)}">${body}</svg></div>`;
+  // The site CSP blocks inline style attributes, so size with SVG attributes only:
+  // width = the narrowest readable size (scrolls on phones); CSS min-width: 100% fills wider cards.
+  const minHeight = Math.round((minPx * height) / width);
+  return `<div class="chart-scroll"><svg class="chart-line" width="${minPx}" height="${minHeight}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(label)}">${body}</svg></div>`;
 }
 
 /** Date ticks: at most one per day, at least `minGap` apart; the newest match is always labelled. */
@@ -330,6 +343,11 @@ function kdaTrendCard(t, stats) {
   </article>`;
 }
 
+const CHART_DEFS = `<svg class="chart-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="chart-grad-gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f6d37a"/><stop offset="1" stop-color="#ff3b86"/></linearGradient>
+  <linearGradient id="chart-grad-col" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d37a"/><stop offset="1" stop-color="#ff3b86"/></linearGradient>
+</defs></svg>`;
+
 const DONUT_COLORS = ["#f6d37a", "#ff3b86", "#7c5cff", "#4c8dff", "#35d0ba", "#ff8a3d", "#d5dbe8", "#9aa4c4"];
 
 function heroCard(t, stats) {
@@ -355,10 +373,10 @@ function heroCard(t, stats) {
   const rows = heroes
     .map((row, index) => {
       const width = row.rate == null ? 0 : Math.max(0, Math.min(100, row.rate));
-      const swatch = index < 7 ? DONUT_COLORS[index] : DONUT_COLORS[7];
+      const color = index < 7 ? DONUT_COLORS[index] : DONUT_COLORS[7];
       return `<div class="aov-rate-row chart-rate-row chart-hero-row">
-        <span class="aov-rate-name"><i class="chart-swatch" style="background:${swatch}"></i>${heroFace(row.hero)}</span>
-        <i class="aov-bar is-gold" aria-hidden="true"><em style="width:${width}%"></em></i>
+        <span class="aov-rate-name">${swatch(color)}${heroFace(row.hero)}</span>
+        ${meter(width)}
         <span class="aov-rate-meta"><b>${esc(pct(row.rate))}</b><small>${esc(`${row.share}% · ${fill(t.gamesN, { n: row.games })}`)}</small></span>
       </div>`;
     })
@@ -384,7 +402,7 @@ function modeCard(t, stats) {
       const width = Math.max(0, Math.min(100, row.share || 0));
       return `<div class="aov-rate-row chart-rate-row">
         <span class="aov-rate-name"><b>${esc(row.mode)}</b></span>
-        <i class="aov-bar is-gold" aria-hidden="true"><em style="width:${width}%"></em></i>
+        ${meter(width)}
         <span class="aov-rate-meta"><b>${esc(`${row.share}%`)}</b><small>${esc(`${fill(t.gamesN, { n: row.games })} · ${t.winRate} ${pct(row.rate)}`)}</small></span>
       </div>`;
     })
@@ -392,16 +410,28 @@ function modeCard(t, stats) {
   return `<article class="aov-chart chart-card"><h4>${esc(t.modes)}</h4><div class="aov-rate-list">${rows}</div></article>`;
 }
 
-function columns(items, labelOf, t) {
+function columns(items, labelOf, t, minPx, viewWidth = 0) {
+  const n = items.length;
+  const width = Math.max(n * 22, 280, viewWidth);
+  const height = 150;
+  const pad = { t: 16, b: 20 };
+  const innerH = height - pad.t - pad.b;
+  const slot = width / n;
+  const barW = Math.min(22, slot * 0.72);
   const max = Math.max(1, ...items.map((item) => item.games));
-  return `<ol class="chart-cols">${items
-    .map((item) => {
-      const height = item.games ? Math.max(6, Math.round((item.games / max) * 84)) : 2;
-      const heat = item.rate == null ? 0.25 : 0.3 + (item.rate / 100) * 0.7;
+  const bars = items
+    .map((item, index) => {
+      const x = slot * index + (slot - barW) / 2;
+      const h = item.games ? Math.max(4, (item.games / max) * innerH) : 1.5;
+      const y = pad.t + innerH - h;
+      const heat = item.rate == null ? 0.3 : 0.35 + (item.rate / 100) * 0.65;
       const title = `${labelOf(item)} · ${fill(t.gamesN, { n: item.games })}${item.rate == null ? "" : ` · ${t.winRate} ${pct(item.rate)}`}`;
-      return `<li title="${esc(title)}"><small>${item.games || ""}</small><b style="height:${height}px;opacity:${heat.toFixed(2)}"></b><span>${esc(labelOf(item))}</span></li>`;
+      const cx = (x + barW / 2).toFixed(1);
+      return `<g><title>${esc(title)}</title><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="3" class="chart-col${item.games ? "" : " is-zero"}" fill-opacity="${heat.toFixed(2)}"/>${item.games ? `<text x="${cx}" y="${(y - 4).toFixed(1)}" text-anchor="middle" class="chart-col-n">${item.games}</text>` : ""}<text x="${cx}" y="${height - 5}" text-anchor="middle" class="chart-tick">${esc(labelOf(item))}</text></g>`;
     })
-    .join("")}</ol>`;
+    .join("");
+  const minHeight = Math.round((minPx * height) / width);
+  return `<div class="chart-scroll"><svg class="chart-line chart-cols" width="${minPx}" height="${minHeight}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(items.map((item) => `${labelOf(item)} ${item.games}`).join("、"))}">${bars}</svg></div>`;
 }
 
 function timeCard(t, stats) {
@@ -409,9 +439,9 @@ function timeCard(t, stats) {
   return `<article class="aov-chart chart-card">
     <h4>${esc(t.hours)}</h4>
     <p class="section-note">${esc(t.hoursNote)}</p>
-    <div class="chart-scroll">${columns(stats.hours, (item) => String(item.index).padStart(2, "0"), t)}</div>
+    ${columns(stats.hours, (item) => String(item.index).padStart(2, "0"), t, 420)}
     <h5>${esc(t.weekdays)}</h5>
-    ${columns(stats.weekdays, (item) => t.weekdayNames[item.index], t)}
+    ${columns(stats.weekdays, (item) => t.weekdayNames[item.index], t, 280, 520)}
   </article>`;
 }
 
@@ -471,6 +501,7 @@ export function renderChartsTab(page, player, view = {}) {
       <div class="chart-grid-2">${modeCard(t, stats)}${timeCard(t, stats)}</div>`
     : `<p class="aov-empty">${esc(t.empty)}</p>`;
   return `<section class="aov-analysis chart-tab" aria-label="${esc(t.title)}">
+    ${CHART_DEFS}
     ${head}
     ${filter.html}
     ${body}

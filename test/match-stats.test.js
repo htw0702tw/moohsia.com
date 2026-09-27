@@ -177,6 +177,8 @@ test("charts tab renders real charts and the in-game reference card", async () =
   assert.equal((html.match(/class="chart-scroll"/g) || []).length >= 2, true);
   assert.doesNotMatch(html, /data-chart-season="season"/, "no season button without a start date");
   for (const name of ["隊員甲", "別公會的人"]) assert.equal(html.includes(name), false);
+  // The site CSP (style-src 'self') drops inline style attributes, so charts must not rely on them.
+  assert.doesNotMatch(html, /\sstyle="/);
 
   const seasonal = { matches, gameSnapshot: { ...defaultGameSnapshot(), seasonStart: "2026-09-15" } };
   const filtered = renderChartsTab(page, seasonal, { chartSeason: "season" });

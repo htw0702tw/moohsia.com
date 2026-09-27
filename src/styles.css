@@ -1623,7 +1623,7 @@ a.aov-item { text-decoration: none; }
 .chart-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; min-width: 0; }
 .chart-card { min-width: 0; max-width: 100%; overflow: hidden; }
 .chart-scroll { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: thin; }
-.chart-line { width: 100%; height: auto; display: block; }
+.chart-line { min-width: 100%; max-width: none; height: auto; display: block; }
 .chart-line .chart-grid, .chart-radar .chart-spoke { stroke: rgba(186, 168, 255, 0.18); }
 .chart-line .chart-mid { stroke: rgba(246, 211, 122, 0.45); stroke-dasharray: 4 4; }
 .chart-tick { fill: #b7add4; font-size: 11px; font-family: var(--font-sans); }
@@ -1658,15 +1658,16 @@ a.aov-item { text-decoration: none; }
 .chart-donut-n { fill: #f6d37a; font-size: 24px; font-family: var(--font-display); }
 .chart-hero .aov-rate-list { max-height: 320px; overflow-y: auto; min-width: 0; }
 .chart-rate-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.3rem 0.6rem; }
-.chart-rate-row .aov-bar { grid-column: 1 / -1; grid-row: 2; }
 .chart-rate-row .aov-rate-meta b { display: inline; margin-right: 0.4rem; }
-.chart-swatch { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.chart-swatch { width: 8px; height: 8px; flex: none; display: block; }
+.chart-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+.chart-meter { grid-column: 1 / -1; grid-row: 2; display: block; width: 100%; height: 6px; border-radius: 99px; overflow: hidden; }
+.chart-meter-track { fill: rgba(255, 255, 255, 0.08); }
+.chart-meter-fill.is-gold { fill: url(#chart-grad-gold); }
+.chart-col { fill: url(#chart-grad-col); }
+.chart-col.is-zero { fill: rgba(255, 255, 255, 0.12); }
+.chart-col-n { fill: #efe6f6; font-size: 10px; font-family: var(--font-sans); }
 .chart-hero .aov-mini, .chart-hero .aov-mini img, .chart-hero .aov-mini span { width: 28px; height: 28px; }
-.chart-cols { list-style: none; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(14px, 1fr); gap: 2px; align-items: end; margin: 0.2rem 0 0.6rem; padding: 0; min-height: 120px; }
-.chart-cols li { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: end; gap: 2px; min-width: 0; }
-.chart-cols b { display: block; width: 100%; max-width: 22px; border-radius: 4px 4px 1px 1px; background: linear-gradient(180deg, #f6d37a, #ff3b86); }
-.chart-cols small { color: #efe6f6; font-size: 0.68rem; min-height: 0.9rem; }
-.chart-cols span { color: #b7add4; font-size: 0.68rem; }
 .chart-ref-when { margin: -0.3rem 0 0.5rem; color: var(--aov-gold); font-family: var(--font-display); letter-spacing: 0.06em; font-size: 0.86rem; }
 .chart-ref-block { margin-bottom: 0.7rem; }
 .chart-ref .aov-medals { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
