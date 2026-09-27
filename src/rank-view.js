@@ -98,6 +98,22 @@ function renderHistory(text, history) {
   return `${line}${bars}<p class="section-note">${esc(note)}</p>`;
 }
 
+/** Keep the first and last dates, and drop the ones that would sit on the same x position. */
+export function rankAxisTicks(count, xAt) {
+  const minGap = 48;
+  const kept = [];
+  for (let index = 0; index < count; index += 1) {
+    const x = xAt(index);
+    if (!kept.length || x - kept[kept.length - 1].x >= minGap) kept.push({ index, x });
+  }
+  if (count > 0 && kept[kept.length - 1]?.index !== count - 1) {
+    const end = xAt(count - 1);
+    while (kept.length && end - kept[kept.length - 1].x < minGap) kept.pop();
+    kept.push({ index: count - 1, x: end });
+  }
+  return kept.map((item) => item.index);
+}
+
 function lineChart(history, text) {
   const width = 640;
   const height = 260;
@@ -123,11 +139,13 @@ function lineChart(history, text) {
         <text x="${pad.l + innerW + 30}" y="${(y + 4).toFixed(1)}">${esc(line.label)}</text>`;
     })
     .join("");
+  const ticks = new Set(rankAxisTicks(history.series.length, xAt));
   const dots = history.series
     .map((point, index) => {
       const label = point.kind === "now" ? text.now : point.at.slice(5, 10);
+      const tick = ticks.has(index) ? `<text class="rank-tick" x="${xAt(index).toFixed(1)}" y="${height - 8}" text-anchor="middle">${esc(label)}</text>` : "";
       return `<circle cx="${xAt(index).toFixed(1)}" cy="${yAt(point.y).toFixed(1)}" r="3.5"/>
-        <text class="rank-tick" x="${xAt(index).toFixed(1)}" y="${height - 8}" text-anchor="middle">${esc(label)}</text>`;
+        ${tick}`;
     })
     .join("");
   const summary = history.series.map((point) => `${point.at || text.now} ${formatRank(point)}`).join(", ");

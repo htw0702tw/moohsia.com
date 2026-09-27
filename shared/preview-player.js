@@ -1,3 +1,4 @@
+import { sampleRankedMatches } from "./ranks.js";
 import { applyPublishedContent, teams as builtInTeams } from "../src/content.js";
 import { setPlayerMatch, setPlayerSection, setPlayerTab } from "../src/player-view.js";
 
@@ -63,6 +64,9 @@ function row(partial) {
 
 /** Local-only overlay so the member shell can be screenshotted without live CMS data. */
 export function applyPreview() {
+  const params = new URLSearchParams(window.location.search);
+  const fixtureCount = Number(params.get("rankFixture") || 0);
+  const fixtureMatches = Number.isFinite(fixtureCount) && fixtureCount >= 40 ? sampleRankedMatches(fixtureCount) : null;
   applyPublishedContent({
     teams: builtInTeams.map((team) => ({ ...team, card: team.card ? { ...team.card } : team.card })),
     rosterMembers: [
@@ -177,7 +181,7 @@ export function applyPreview() {
           medals: { triple: "2", silver: "3", gold: "0", godlike: "0", penta: "0", quadra: "0", supreme: "0", loseMvp: "0" },
         },
       ],
-      matches: [
+      matches: fixtureMatches || [
         {
           id: "m2259",
           publish: true,
@@ -288,7 +292,6 @@ export function applyPreview() {
       ],
     },
   });
-  const params = new URLSearchParams(window.location.search);
   if (params.get("section")) setPlayerSection(params.get("section"));
   if (params.get("match")) setPlayerMatch(params.get("match"));
   if (params.get("tab")) setPlayerTab(params.get("tab"));

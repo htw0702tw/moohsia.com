@@ -4,7 +4,8 @@ import { querySearch } from "./aov-assets.js";
 import { loadCatalog } from "./catalog-store.js";
 import { highlightKeysFromPublic, readPublishedMedia } from "./media.js";
 import { syncNotionDraft } from "./notion-sync.js";
-import { loadPublicPayload } from "./public-content.js";
+import { redactValue } from "./hidden-names.js";
+import { loadPublicPayload, publishedHiddenNames } from "./public-content.js";
 import { clientIp, overLimit } from "./rate-limit.js";
 import { timingSafeText } from "./session.js";
 import { validateVerification } from "./validate.js";
@@ -141,21 +142,25 @@ export async function handleApi(request, env = {}) {
     if (request.method === "HEAD") {
       return new Response(null, { status: 200, headers: { "cache-control": "public, max-age=300" } });
     }
+    const names = await publishedHiddenNames(env);
     return json(
       200,
-      {
-        ok: true,
-        source: catalog.source,
-        fetchedAt: catalog.fetchedAt,
-        attribution: catalog.attribution,
-        roles: catalog.roles,
-        heroes: catalog.heroes,
-        items: catalog.items || [],
-        arcana: catalog.arcana || [],
-        userSkills: catalog.userSkills || [],
-        modes: catalog.modes,
-        activities: catalog.activities || [],
-      },
+      redactValue(
+        {
+          ok: true,
+          source: catalog.source,
+          fetchedAt: catalog.fetchedAt,
+          attribution: catalog.attribution,
+          roles: catalog.roles,
+          heroes: catalog.heroes,
+          items: catalog.items || [],
+          arcana: catalog.arcana || [],
+          userSkills: catalog.userSkills || [],
+          modes: catalog.modes,
+          activities: catalog.activities || [],
+        },
+        names,
+      ),
       { "cache-control": "public, max-age=300" },
     );
   }
@@ -170,7 +175,8 @@ export async function handleApi(request, env = {}) {
     }
     const catalog = await loadCatalog(env);
     const index = Array.isArray(catalog.search) && catalog.search.length ? catalog.search : [];
-    return json(200, { ok: true, query, results: querySearch(index, query) }, { "cache-control": "no-store" });
+    const names = await publishedHiddenNames(env);
+    return json(200, redactValue({ ok: true, query, results: querySearch(index, query) }, names), { "cache-control": "no-store" });
   }
 
   if (path === "/api/notion/webhook") {

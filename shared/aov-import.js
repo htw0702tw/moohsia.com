@@ -1,3 +1,4 @@
+import { namesForImport, shieldImportedMatch } from "./hidden-names.js";
 import { derivedKda, emptyBadges, emptyBoardPlayer, emptySeason, PLAYER_MATCH_LIMIT } from "./player.js";
 import { logFailure } from "./log.js";
 
@@ -1136,11 +1137,11 @@ function scrubMapId(match) {
   return match;
 }
 
-function mergeMatch(prev, next, publish) {
+function mergeMatch(prev, next, publish, names) {
   const match = { ...next, note: next.note || { zh: "", en: "" }, highlight: next.highlight };
   if (!prev) {
     match.publish = publish === true;
-    return scrubMapId(match);
+    return shieldImportedMatch(scrubMapId(match), null, names);
   }
   match.highlight = prev.highlight?.key || prev.highlight?.caption?.zh || prev.highlight?.caption?.en ? prev.highlight : next.highlight;
   if (prev.note?.zh || prev.note?.en) match.note = prev.note;
@@ -1174,12 +1175,13 @@ function mergeMatch(prev, next, publish) {
       match.label = [match.mode, match.hero].filter(Boolean).join(" · ");
     }
   }
-  return scrubMapId(match);
+  return shieldImportedMatch(scrubMapId(match), prev, names);
 }
 
 export function applyAovImport(player, parsed, options = {}) {
   const base = player && typeof player === "object" ? structuredClone(player) : {};
   const publish = options.publish === true;
+  const names = namesForImport(options.hiddenNames);
   const existing = Array.isArray(base.matches) ? base.matches : [];
   const byKey = new Map();
   for (const match of existing) {
@@ -1193,7 +1195,7 @@ export function applyAovImport(player, parsed, options = {}) {
     if (!key || seen.has(key)) continue;
     seen.add(key);
     const prev = byKey.get(raw.externalMatchId) || byKey.get(raw.id);
-    imported.push(mergeMatch(prev, raw, publish));
+    imported.push(mergeMatch(prev, raw, publish, names));
   }
   const leftover = existing.filter((match) => {
     const keys = [match?.externalMatchId, match?.id].filter(Boolean);

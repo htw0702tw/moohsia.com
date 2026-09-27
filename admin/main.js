@@ -1,5 +1,6 @@
 import "./admin.css";
 import { applyAovImport, fightHistoryUrl } from "../shared/aov-import.js";
+import { cleanHiddenNames, DEFAULT_HIDDEN_NAMES } from "../shared/hidden-names.js";
 import { LADDER } from "../shared/ranks.js";
 import { emptyGuild, emptyTeamCard } from "../shared/guild.js";
 import { adminMessage, aovNeedsPaste, choosePastedHtml, importFailureMessage } from "./messages.js";
@@ -460,6 +461,9 @@ function rosterEditor() {
     <h2>選手</h2>
     <p class="hint">這裡是公開成員名單：名字與位置。空白名單會顯示待公布席位，不會自動填上假的人名。個人戰績、配裝、歷史戰績與截圖請到「選手數據」，照遊戲內畫面填。不要寫 Discord 邀請網址。選手名字不能是 moohsia。</p>
     <label>沒有選手時的空位數量<input data-kind="slots" type="number" min="0" max="12" value="${esc(state.draft.placeholderSlots)}" ${CMS_TEXT}></label>
+    <h3>不公開的名字</h3>
+    <p class="hint">已離開公會的人。公開內容、搜尋和英雄目錄裡這些名字會改成「隊友」。記分板的擊殺、死亡、助攻和積分不變。匯入戰績不會把這些名字寫回去。已經存成「隊友」的那一列，之後匯入也維持「隊友」。一行一個名字。</p>
+    <label>不公開的名字<textarea data-kind="hidden-names" rows="6" ${CMS_TEXT}>${esc((Array.isArray(state.draft.hiddenNames) ? state.draft.hiddenNames : DEFAULT_HIDDEN_NAMES).join("\n"))}</textarea></label>
     <div class="repeats">${cards}</div>
     <button class="btn" type="button" data-action="roster-add">新增成員</button>
     ${copyBlocks("roster")}
@@ -880,6 +884,11 @@ function onInput(event) {
     markDirty("有未儲存的修改");
     return;
   }
+  if (target.dataset.kind === "hidden-names") {
+    state.draft.hiddenNames = cleanHiddenNames(String(target.value || "").split("\n"));
+    markDirty("有未儲存的修改");
+    return;
+  }
   if (target.dataset.guildTop) {
     const guild = state.draft.guild || emptyGuild();
     state.draft.guild = guild;
@@ -1055,6 +1064,7 @@ async function importAov(action) {
       searchType,
       server,
       syncedAt: data.syncedAt,
+      hiddenNames: Array.isArray(state.draft.hiddenNames) ? state.draft.hiddenNames : DEFAULT_HIDDEN_NAMES,
     });
     const count = data.count || data.matches?.length || 0;
     const partial = data.boardPartial

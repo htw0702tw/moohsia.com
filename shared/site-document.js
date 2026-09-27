@@ -3,6 +3,7 @@ import { CONTACT_EMAIL } from "./brand.js";
 import { upgradeLegacyCopy } from "./copy-upgrade.js";
 import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
 import { cleanGuild, cleanTeamCard, emptyGuild, guildFilled, teamCardFilled } from "./guild.js";
+import { cleanHiddenNames, redactValue } from "./hidden-names.js";
 import { DEFAULT_TEAM_SLUG, teamSlug } from "./teams.js";
 
 const TEXT_MAX = 2000;
@@ -252,6 +253,7 @@ export function sanitizeDocument(input) {
     })(),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
+    hiddenNames: cleanHiddenNames(source.hiddenNames),
     player: cleanPlayer(source.player),
     copy: {
       zh: sanitizeBySchema(base.copy.zh, copy.zh),
@@ -263,31 +265,35 @@ export function sanitizeDocument(input) {
   return doc;
 }
 
-/** Published view. Hidden players and unpublished news are omitted. */
+/** Published view. Hidden players and unpublished news are omitted. Hidden names become 隊友. */
 export function toPublicDocument(doc) {
-  return {
-    contactEmail: doc.contactEmail,
-    placeholderSlots: doc.placeholderSlots,
-    profileFields: doc.profileFields,
-    teams: doc.teams,
-    guild: doc.guild || emptyGuild(),
-    rosterMembers: doc.rosterMembers
-      .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
-      .map(({ id, name, role, team, rankTier, rankDivision, rankStars }) => ({
-        id,
-        name,
-        role,
-        team,
-        rankTier: rankTier || "",
-        rankDivision: rankDivision || "",
-        rankStars: rankStars || "",
-      })),
-    newsPosts: doc.newsPosts
-      .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
-      .map(({ id, date, title, body }) => ({ id, date, title, body })),
-    player: toPublicPlayer(doc.player),
-    copy: doc.copy,
-  };
+  const names = cleanHiddenNames(doc?.hiddenNames);
+  return redactValue(
+    {
+      contactEmail: doc.contactEmail,
+      placeholderSlots: doc.placeholderSlots,
+      profileFields: doc.profileFields,
+      teams: doc.teams,
+      guild: doc.guild || emptyGuild(),
+      rosterMembers: doc.rosterMembers
+        .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
+        .map(({ id, name, role, team, rankTier, rankDivision, rankStars }) => ({
+          id,
+          name,
+          role,
+          team,
+          rankTier: rankTier || "",
+          rankDivision: rankDivision || "",
+          rankStars: rankStars || "",
+        })),
+      newsPosts: doc.newsPosts
+        .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
+        .map(({ id, date, title, body }) => ({ id, date, title, body })),
+      player: toPublicPlayer(doc.player),
+      copy: doc.copy,
+    },
+    names,
+  );
 }
 
 export function projectDefault() {

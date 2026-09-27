@@ -1,5 +1,6 @@
 import { CONTACT_EMAIL } from "../shared/brand.js";
 import { cleanGuild, defaultGuild, defaultTeamCard, emptyGuild, guildFilled } from "../shared/guild.js";
+import { DEFAULT_HIDDEN_NAMES } from "../shared/hidden-names.js";
 import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 import { memberTeamSlug } from "../shared/teams.js";
 
@@ -1324,6 +1325,7 @@ function snapshot() {
     teams: structuredClone(teams),
     rosterMembers: structuredClone(rosterMembers),
     newsPosts: structuredClone(newsPosts),
+    hiddenNames: [...DEFAULT_HIDDEN_NAMES],
     player: emptyPlayer(),
     guild: defaultGuild(),
     copy: {

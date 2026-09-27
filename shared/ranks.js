@@ -467,3 +467,27 @@ export const RANKED_MODES = [
 export function rankedMode(id) {
   return RANKED_MODES.find((mode) => mode.id === id) || null;
 }
+
+/** About 55 ranked rows with point deltas, newest first, staying on the division ladder. */
+export function sampleRankedMatches(count = 55) {
+  const total = Math.max(1, Math.min(80, Number(count) || 55));
+  const deltas = [15, -8, 22, -11, 9, -18, 27, -6];
+  const start = Date.UTC(2026, 8, 26, 23, 0, 0);
+  const matches = [];
+  for (let index = 0; index < total; index += 1) {
+    const time = new Date(start - index * 3 * 60 * 60 * 1000);
+    const pad = (value) => String(value).padStart(2, "0");
+    const at = `${time.getUTCFullYear()}-${pad(time.getUTCMonth() + 1)}-${pad(time.getUTCDate())} ${pad(time.getUTCHours())}:${pad(time.getUTCMinutes())}`;
+    const delta = deltas[index % deltas.length];
+    matches.push({
+      id: `rank-fix-${index}`,
+      publish: true,
+      playedAt: at,
+      mode: "排位賽",
+      hero: "娜塔亞",
+      result: delta >= 0 ? "勝" : "敗",
+      rankDelta: String(delta),
+    });
+  }
+  return matches;
+}
