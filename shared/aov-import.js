@@ -1143,6 +1143,9 @@ function mergeMatch(prev, next, publish, names) {
     match.publish = publish === true;
     return shieldImportedMatch(scrubMapId(match), null, names);
   }
+  for (const [key, value] of Object.entries(prev)) {
+    if (typeof value === "string" && value && !filled(match[key])) match[key] = value;
+  }
   match.highlight = prev.highlight?.key || prev.highlight?.caption?.zh || prev.highlight?.caption?.en ? prev.highlight : next.highlight;
   if (prev.note?.zh || prev.note?.en) match.note = prev.note;
   match.publish = publish === true ? true : prev.publish === true;

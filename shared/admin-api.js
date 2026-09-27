@@ -1,5 +1,5 @@
 import { getDefaultDocument } from "../src/content.js";
-import { aovArchiveSummary, archiveAovMatches, bootstrapAovArchive } from "./aov-archive.js";
+import { aovArchiveSummary, archiveBeforeAovWrite, bootstrapAovArchive } from "./aov-archive.js";
 import { analyzeAovFrame } from "./aov-capture.js";
 import { applicationsFromEnv, approveApplication, presentApplication, rejectApplication } from "./applications.js";
 import { refreshCatalog } from "./catalog-store.js";
@@ -399,10 +399,11 @@ async function importAov(request, env) {
       return json(422, { ok: false, code: "aov_empty" });
     }
     if (!result.ok) return json(422, { ok: false, code: result.code || "aov_empty" });
-    const archive = await archiveAovMatches(env, result.matches, {
+    const archive = await archiveBeforeAovWrite(env, result.matches, {
       source: "aovweb",
       note: "manual AOVRanking HTML import",
     });
+    if (!archive.ok) return json(503, { ok: false, code: archive.code || "aov_archive_unavailable" });
     return ok(request, env, session, {
       ok: true,
       fetched: false,
@@ -425,10 +426,11 @@ async function importAov(request, env) {
     const status = fetched.code === "aov_rate_limited" ? 429 : fetched.code === "aov_invalid" ? 400 : fetched.code === "aov_empty" || fetched.code === "aov_shell" ? 422 : 502;
     return json(status, { ok: false, code: fetched.code });
   }
-  const archive = await archiveAovMatches(env, fetched.matches, {
+  const archive = await archiveBeforeAovWrite(env, fetched.matches, {
     source: "aovweb",
     note: "manual AOVRanking fetch",
   });
+  if (!archive.ok) return json(503, { ok: false, code: archive.code || "aov_archive_unavailable" });
   return ok(request, env, session, {
     ok: true,
     ...fetched,
@@ -461,12 +463,12 @@ async function visionAov(request, env) {
   const result = await analyzeAovFrame(env, parsed.data);
   if (!result.ok) {
     const status =
-      result.code === "aov_ai_unconfigured" || result.code === "media_unconfigured"
+      result.code === "aov_ai_unconfigured" || result.code === "media_unconfigured" || result.code === "aov_archive_unavailable"
         ? 503
         : result.code === "aov_frame_invalid" || result.code === "aov_frame_too_large"
           ? 400
           : 422;
-    return json(status, { ok: false, code: result.code });
+    return json(status, { ok: false, code: result.code, stored: result.stored === true });
   }
   return ok(request, env, session, result);
 }

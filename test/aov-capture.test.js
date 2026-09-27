@@ -58,3 +58,44 @@ test("capture prompt forbids guessing and names the owner", () => {
   assert.match(prompt, /不要猜測/);
   assert.match(prompt, /看不到的欄位/);
 });
+
+test("unseen numbers stay blank, true zeros survive, partial KDA is not invented", () => {
+  const { matches } = normalizeAovVision({ matches: [{ hero: "娜塔亞", kills: "", deaths: 0, gold: "1,234", healing: "unknown", assists: "2.5" }] }, { importId: "batch", frameIndex: 1 });
+  assert.equal(matches[0].kills, "");
+  assert.equal(matches[0].deaths, "0");
+  assert.equal(matches[0].gold, "1234");
+  assert.equal(matches[0].healing, "");
+  assert.equal(matches[0].assists, "");
+  assert.equal(matches[0].kda, "");
+});
+
+test("partial screens of the same hero do not overwrite unrelated matches", () => {
+  const raw = { matches: [{ hero: "娜塔亞" }] };
+  const a = normalizeAovVision(raw, { importId: "batch", frameIndex: 1 });
+  const b = normalizeAovVision(raw, { importId: "batch", frameIndex: 2 });
+  assert.notEqual(a.matches[0].id, b.matches[0].id);
+});
+
+test("frame metadata and parent import exist even when AI fails", async (t) => {
+  const sqlite = await import("node:sqlite").catch(() => null);
+  if (!sqlite) return t.skip("SQLite integration requires Node 22+");
+  const { readFileSync } = await import("node:fs");
+  const { analyzeAovFrame } = await import("../shared/aov-capture.js");
+  const db = new sqlite.DatabaseSync(":memory:");
+  t.after(() => db.close());
+  db.exec("PRAGMA foreign_keys=ON");
+  for (const name of ["0001_init.sql", "0004_aov_archive.sql"]) db.exec(readFileSync(new URL(`../migrations/${name}`, import.meta.url), "utf8"));
+  const adapter = { prepare(sql) { return { bind(...args) { return { async first() { return db.prepare(sql).get(...args); }, async run() { return db.prepare(sql).run(...args); } }; } }; } };
+  const stored = new Map();
+  const env = { CMS_DB: adapter, MEDIA: { async put(key, bytes) { stored.set(key, bytes); } }, AI: { async run() { throw new Error("AI unavailable"); } } };
+  const result = await analyzeAovFrame(env, { image: "data:image/jpeg;base64,/9j/AA==", importId: "video-test", frameIndex: 1 });
+  assert.equal(result.ok, false);
+  assert.equal(result.stored, true);
+  assert.equal(stored.size, 1);
+  assert.equal(db.prepare("SELECT kind FROM aov_capture_frames").get().kind, "pending");
+  env.AI.run = async () => ({ answer: JSON.stringify({ kind: "match_result", matches: [{ externalMatchId: "123", hero: "娜塔亞", kills: "0" }] }) });
+  const retried = await analyzeAovFrame(env, { image: "data:image/jpeg;base64,/9j/AA==", importId: "video-test", frameIndex: 1 });
+  assert.equal(retried.ok, true);
+  assert.equal(db.prepare("SELECT kind FROM aov_capture_frames").get().kind, "match_result");
+  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM aov_canonical_matches").get().n, 1);
+});
