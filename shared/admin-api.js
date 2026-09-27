@@ -1,4 +1,6 @@
 import { getDefaultDocument } from "../src/content.js";
+import { aovArchiveSummary, archiveAovMatches } from "./aov-archive.js";
+import { analyzeAovFrame } from "./aov-capture.js";
 import { applicationsFromEnv, approveApplication, presentApplication, rejectApplication } from "./applications.js";
 import { refreshCatalog } from "./catalog-store.js";
 import { storeFromEnv } from "./cms-store.js";
@@ -330,6 +332,17 @@ export async function handleAdmin(request, env = {}) {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return importAov(request, env);
   }
+  if (path === "/api/admin/aov/vision") {
+    if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
+    return visionAov(request, env);
+  }
+  if (path === "/api/admin/aov/archive") {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return json(405, { ok: false, code: "method_not_allowed" }, { allow: "GET, HEAD" });
+    }
+    if (request.method === "HEAD") return new Response(null, { status: 200, headers: { "cache-control": "no-store" } });
+    return archiveStatus(request, env);
+  }
   if (path === "/api/admin/aov/sync") {
     if (request.method !== "POST") return json(405, { ok: false, code: "method_not_allowed" }, { allow: "POST" });
     return syncAovNow(request, env);
@@ -386,10 +399,15 @@ async function importAov(request, env) {
       return json(422, { ok: false, code: "aov_empty" });
     }
     if (!result.ok) return json(422, { ok: false, code: result.code || "aov_empty" });
+    const archive = await archiveAovMatches(env, result.matches, {
+      source: "aovweb",
+      note: "manual AOVRanking HTML import",
+    });
     return ok(request, env, session, {
       ok: true,
       fetched: false,
       ...result,
+      archive,
       keyword,
       searchType,
       server,
@@ -407,13 +425,48 @@ async function importAov(request, env) {
     const status = fetched.code === "aov_rate_limited" ? 429 : fetched.code === "aov_invalid" ? 400 : fetched.code === "aov_empty" || fetched.code === "aov_shell" ? 422 : 502;
     return json(status, { ok: false, code: fetched.code });
   }
+  const archive = await archiveAovMatches(env, fetched.matches, {
+    source: "aovweb",
+    note: "manual AOVRanking fetch",
+  });
   return ok(request, env, session, {
     ok: true,
     ...fetched,
+    archive,
     searchType,
     server,
     syncedAt: new Date().toISOString(),
   });
+}
+
+async function archiveStatus(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const summary = await aovArchiveSummary(env);
+  return ok(request, env, session, summary);
+}
+
+async function visionAov(request, env) {
+  const session = await currentSession(request, env);
+  if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const denied = await requireCsrf(request, session);
+  if (denied) return denied;
+  if (await overLimit(env, "aovvision", clientIp(request), 120, 3600)) {
+    return json(429, { ok: false, code: "rate_limited" }, { "retry-after": "60" });
+  }
+  const parsed = await readJson(request, 6 * 1024 * 1024);
+  if (parsed.error) return parsed.error;
+  const result = await analyzeAovFrame(env, parsed.data);
+  if (!result.ok) {
+    const status =
+      result.code === "aov_ai_unconfigured" || result.code === "media_unconfigured"
+        ? 503
+        : result.code === "aov_frame_invalid" || result.code === "aov_frame_too_large"
+          ? 400
+          : 422;
+    return json(status, { ok: false, code: result.code });
+  }
+  return ok(request, env, session, result);
 }
 
 async function notionSync(request, env) {
