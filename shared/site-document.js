@@ -254,7 +254,14 @@ export function sanitizeDocument(input) {
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
     hiddenNames: cleanHiddenNames(source.hiddenNames),
-    player: cleanPlayer(source.player),
+    player: (() => {
+      try {
+        return cleanPlayer(source.player);
+      } catch (error) {
+        if (error?.code === "aov_match_limit") throw new ContentRejected(error.code);
+        throw error;
+      }
+    })(),
     copy: {
       zh: sanitizeBySchema(base.copy.zh, copy.zh),
       en: sanitizeBySchema(base.copy.en, copy.en),
