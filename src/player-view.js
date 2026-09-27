@@ -1,5 +1,5 @@
 const state = {
-  section: "heroes",
+  section: "rank",
   season: 0,
   match: "",
   tab: "data",

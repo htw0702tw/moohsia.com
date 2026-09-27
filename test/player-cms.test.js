@@ -230,6 +230,15 @@ test("admin editor exposes builds and separate KDA without raw JSON", () => {
   assert.match(builds, /紅奧義/);
   assert.match(builds, /勇/);
   assert.equal(built.player.matches[0].board[0].owner, true);
+  ui.tab = "rank";
+  const rank = renderPlayerEditor(built.player, ui, { text: 'data-cms autocomplete="off"', choice: "" });
+  assert.match(rank, /目前段位/);
+  assert.match(rank, /傳說戰區/);
+  assert.match(rank, /data-rank-card="points"/);
+  assert.match(rank, /不要填其他玩家的名字/);
+  const weekly = runPlayerAction(built.player, "weekly-add", { dataset: {} }, ui);
+  assert.equal(weekly.player.weeklyReports.length, 1);
+  assert.equal(ui.tab, "rank");
 });
 
 test("admin host can read the hero catalog and a logged-in media preview", async () => {

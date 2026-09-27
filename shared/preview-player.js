@@ -1,4 +1,4 @@
-import { applyPublishedContent } from "../src/content.js";
+import { applyPublishedContent, teams as builtInTeams } from "../src/content.js";
 import { setPlayerMatch, setPlayerSection, setPlayerTab } from "../src/player-view.js";
 
 const ITEMS = ["裝備 1423", "裝備 1324", "裝備 1227", "裝備 1224", "裝備 1249", "裝備 1242"];
@@ -64,6 +64,7 @@ function row(partial) {
 /** Local-only overlay so the member shell can be screenshotted without live CMS data. */
 export function applyPreview() {
   applyPublishedContent({
+    teams: builtInTeams.map((team) => ({ ...team, card: team.card ? { ...team.card } : team.card })),
     rosterMembers: [
       {
         id: "owner0702",
@@ -71,12 +72,91 @@ export function applyPreview() {
         name: { zh: "htw0702aov", en: "htw0702aov" },
         role: { zh: "隊長", en: "Captain" },
         team: "moohsia",
+        rankTier: "platinum",
+        rankDivision: "II",
+        rankStars: "3",
       },
     ],
     player: {
       handle: "htw0702aov",
       publish: true,
-      rank: { zh: "鉑金IV", en: "Platinum IV" },
+      rank: { zh: "鉑金 II ★3", en: "Platinum II ★3" },
+      rankCard: {
+        season: "S4 2026",
+        tier: "platinum",
+        division: "II",
+        stars: "3",
+        points: "8",
+        queueReadout: "88",
+        queueReadoutMax: "100",
+        seasonChallenge: "10/10",
+        updatedAt: "",
+      },
+      powerBoard: {
+        updatedAt: "",
+        area: "臺灣/新北市/永和區",
+        hero: "娜塔亞",
+        power: "2759",
+        bestPower: "2984",
+        rows: [
+          { scope: "永和區", place: "90", gap: "" },
+          { scope: "新北市", place: "", gap: "823" },
+          { scope: "臺灣", place: "", gap: "1241" },
+          { scope: "全服", place: "", gap: "" },
+        ],
+      },
+      yearTreasure: {
+        year: "2026",
+        reward: "朔月銀衛",
+        updatedAt: "",
+        seasons: [
+          { id: "S1", active: false },
+          { id: "S2", active: false },
+          { id: "S3", active: false },
+          { id: "S4", active: false },
+        ],
+      },
+      weeklyReports: [
+        {
+          id: "week-0914",
+          title: "我的戰報",
+          start: "2026-09-14",
+          end: "2026-09-21",
+          rankedGames: "8",
+          rankedWins: "5",
+          starDelta: "10",
+          powerFrom: "1836",
+          powerTo: "2939",
+          hero: "娜塔亞",
+          mastery: "修煉到宗師法師",
+          heroGames: "49",
+          heroWinRate: "71.4",
+        },
+        {
+          id: "week-0907",
+          title: "週報",
+          start: "2026-09-07",
+          end: "2026-09-13",
+          starsEarned: "30",
+          starsCasual: "1",
+          starsRanked: "24",
+          fromLabel: "黃金IV ★1",
+          toLabel: "鉑金III ★5",
+          specialty: "專精娜塔亞",
+          specialtyGames: "20",
+          bestLine: "娜塔亞 19/0/7",
+          mvp: "13",
+          goldMedals: "5",
+          silverMedals: "4",
+          winRate: "75",
+          winRateBeat: "73",
+          winRateGrade: "S",
+          kda: "10.4",
+          kdaBeat: "80",
+          kdaGrade: "S+",
+          hero: "娜塔亞",
+        },
+      ],
       season: { zh: "2026-S4", en: "2026-S4" },
       heroPool: [
         { hero: "娜塔亞", matches: "60", winRate: "68.3", power: "2984" },

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { buildSearchIndex, querySearch } from "../shared/aov-assets.js";
 import { getDefaultDocument } from "../src/content.js";
+import { cleanGuild, cleanTeamCard, gapToFourth } from "../shared/guild.js";
 import { sanitizeDocument, toPublicDocument } from "../shared/site-document.js";
 import { heroSkillSlots } from "../shared/hero-skills.js";
 
@@ -22,11 +23,86 @@ test("guild copy and the seeded MOOHSIA team survive a round trip", () => {
   assert.equal(doc.teams[0].aka.zh, "暮霞");
   assert.deepEqual(
     doc.teams[0].requirements.map((row) => row.zh),
-    ["每個週末 20:30–21:30 訓練", "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄", "排位至少黃金以上"],
+    ["遊戲內等級 lv.6 以上", "排位至少黃金以上", "每個週末 20:30–21:30 訓練", "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄"],
   );
+  assert.equal(doc.guild.stars, "55");
+  assert.equal(doc.guild.motto, "moohsia.com 請至官網填表申請");
+  assert.equal(doc.guild.updatedAt, "2026-09-27");
+  assert.equal(doc.guild.activity, "1195");
+  assert.equal(doc.teams[0].card.region, "永和區");
+  assert.equal(doc.teams[0].card.score, "");
+  assert.equal(doc.teams[0].card.updatedAt, "2026-09-27");
   const pub = toPublicDocument(doc);
   assert.equal(pub.teams[0].slug, "moohsia");
+  assert.equal(pub.guild.stars, "55");
+  assert.equal(pub.teams[0].card.status, "招募中");
   assert.equal(pub.rosterMembers.length, 0);
+});
+
+test("an older document without a guild snapshot still publishes the printed screen", () => {
+  const draft = getDefaultDocument();
+  delete draft.guild;
+  delete draft.teams[0].card;
+  const doc = sanitizeDocument(draft);
+  assert.equal(doc.guild.updatedAt, "2026-09-27");
+  assert.equal(doc.guild.members, "1");
+  assert.equal(doc.guild.capacity, "20");
+  assert.equal(doc.teams[0].card.region, "永和區");
+  assert.equal(doc.teams[0].card.captain, "htw0702aov");
+  const edited = sanitizeDocument({ ...getDefaultDocument(), guild: { ...getDefaultDocument().guild, stars: "60", motto: "自訂宣言" } });
+  assert.equal(edited.guild.stars, "60");
+  assert.equal(edited.guild.motto, "自訂宣言");
+  assert.equal(edited.guild.activity, "1195");
+});
+
+test("guild snapshot keeps printed stars and the gap to fourth", () => {
+  const guild = cleanGuild({
+    region: "新北市",
+    members: "1",
+    capacity: "20",
+    motto: "moohsia.com 請至官網填表申請",
+    activity: "1195",
+    activityMax: "6240",
+    chestLevel: "1",
+    chestLevels: "8",
+    levelReq: "6",
+    rankReq: "gold",
+    review: "off",
+    accept: "on",
+    stars: "55",
+    starsLast: "0",
+    standing: "未上榜",
+    weekTop: ["12848", "11895", "11353", "11314"],
+    lastTop: ["25693", "24720", "21402", "21193"],
+    updatedAt: "",
+  });
+  assert.equal(guild.standing, "unranked");
+  assert.equal(guild.rankReq, "gold");
+  assert.equal(gapToFourth(guild.stars, guild.weekTop), "11259");
+  assert.equal(gapToFourth(guild.starsLast, guild.lastTop), "21193");
+  assert.equal(gapToFourth("", guild.weekTop), "");
+  assert.equal(cleanTeamCard({ score: "-", region: "永和區", members: "1", capacity: "5" }).score, "");
+  assert.equal(cleanTeamCard({ score: "-", region: "永和區" }).region, "永和區");
+  const doc = sanitizeDocument({ ...getDefaultDocument(), guild });
+  assert.equal(doc.guild.activity, "1195");
+  assert.equal(toPublicDocument(doc).guild.stars, "55");
+});
+
+test("the guild star board prints this guild's gap", async () => {
+  globalThis.document = { documentElement: { lang: "zh-Hant" } };
+  globalThis.window = { location: { search: "" } };
+  const { applyPreview } = await import("../shared/preview-player.js");
+  const { getCopy } = await import("../src/content.js");
+  const { renderRanksPage } = await import("../src/rank-view.js");
+  applyPreview();
+  const html = renderRanksPage(getCopy("zh"));
+  assert.match(html, /公會競技排行榜/);
+  assert.match(html, /未上榜/);
+  assert.match(html, /11259/);
+  assert.match(html, /21193/);
+  assert.match(html, /1\/20/);
+  assert.match(html, /2026-09-27/);
+  assert.match(html, /\/guild\/moohsia\.webp/);
 });
 
 test("a roster member without a team publishes on MOOHSIA", () => {

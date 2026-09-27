@@ -1,3 +1,4 @@
+import { LADDER, formatRank } from "../shared/ranks.js";
 import {
   emptyArcanaRow,
   emptyBadges,
@@ -8,15 +9,20 @@ import {
   emptyHonor,
   emptyMatch,
   emptyPlayer,
+  emptyPowerBoard,
   emptyPrivilege,
+  emptyRankCard,
   emptyReputation,
   emptySeason,
   emptyTitle,
+  emptyWeeklyReport,
+  emptyYearTreasure,
   matchRecency,
 } from "../shared/player.js";
 
 const TABS = [
   ["profile", "檔案"],
+  ["rank", "段位"],
   ["battle", "對戰資料"],
   ["builds", "配裝"],
   ["matches", "歷史戰績"],
@@ -199,6 +205,21 @@ export function ensurePlayerRecord(player) {
   record.title = { ...base.title, ...(record.title || {}) };
   record.bio = { ...base.bio, ...(record.bio || {}) };
   record.signatureHeroes = { ...base.signatureHeroes, ...(record.signatureHeroes || {}) };
+  record.rankCard = { ...emptyRankCard(), ...(record.rankCard || {}) };
+  record.powerBoard = {
+    ...emptyPowerBoard(),
+    ...(record.powerBoard || {}),
+    rows: Array.isArray(record.powerBoard?.rows) ? record.powerBoard.rows : [],
+  };
+  record.yearTreasure = {
+    ...emptyYearTreasure(),
+    ...(record.yearTreasure || {}),
+    seasons: emptyYearTreasure().seasons.map((row) => ({
+      ...row,
+      active: (record.yearTreasure?.seasons || []).some((item) => item?.id === row.id && item.active === true),
+    })),
+  };
+  record.weeklyReports = Array.isArray(record.weeklyReports) ? record.weeklyReports : [];
   record.avatar = { ...emptyHighlight(), ...(record.avatar || {}), caption: { zh: "", en: "", ...(record.avatar?.caption || {}) } };
   record.reputation = {
     ...emptyReputation(),
@@ -291,6 +312,81 @@ function dropzone(kind, index, current, accept, title, hint) {
 
 function pair(html) {
   return `<div class="pair">${html}</div>`;
+}
+
+function rankTab(player, text) {
+  const card = player.rankCard || emptyRankCard();
+  const tiers = LADDER.map((tier) => `<option value="${esc(tier.id)}"${card.tier === tier.id ? " selected" : ""}>${esc(tier.zh)}</option>`).join("");
+  const divisions = ["", "V", "IV", "III", "II", "I"]
+    .map((item) => `<option value="${item}"${card.division === item ? " selected" : ""}>${item || "—"}</option>`)
+    .join("");
+  const board = player.powerBoard || emptyPowerBoard();
+  const rows = Array.from({ length: Math.max(4, board.rows.length) }, (_, index) => board.rows[index] || { scope: "", place: "", gap: "" })
+    .map(
+      (row, index) => `<div class="pair">
+        ${field("範圍", textInput(`data-power-row="${index}" data-field="scope"`, row.scope, text), "例如：永和區。")}
+        ${field("名次", textInput(`data-power-row="${index}" data-field="place"`, row.place, text), "未上榜就留白。")}
+        ${field("差距", textInput(`data-power-row="${index}" data-field="gap"`, row.gap, text), "距離上榜還差的戰力。沒有就留白。")}
+      </div>`,
+    )
+    .join("");
+  const treasure = player.yearTreasure || emptyYearTreasure();
+  const seasons = treasure.seasons
+    .map((row) => check(`data-year="${row.id}"`, row.active, `${row.id} 已達到戰場傳說`))
+    .join("");
+  const reports = (player.weeklyReports || [])
+    .map((report, index) => {
+      const input = (fieldName, label, hint) => field(label, textInput(`data-weekly="${index}" data-field="${fieldName}"`, report[fieldName], text), hint);
+      return `<article class="repeat"><header><b>週報 ${index + 1}</b><button class="ghost" type="button" data-action="weekly-remove" data-index="${index}">刪除</button></header>
+        ${pair(input("title", "標題", "例如：我的戰報。") + input("start", "開始", "YYYY-MM-DD。") + input("end", "結束", "YYYY-MM-DD。"))}
+        ${pair(input("rankedGames", "排位場次", "") + input("rankedWins", "排位勝場", "") + input("starDelta", "星數變化", "可帶負號。"))}
+        ${pair(input("powerFrom", "戰力從", "") + input("powerTo", "戰力到", ""))}
+        ${pair(input("hero", "英雄", "") + input("mastery", "熟練度", "例如：宗師法師。"))}
+        ${pair(input("heroGames", "英雄場次", "") + input("heroWinRate", "英雄勝率", "不要加 %。"))}
+        ${pair(input("starsEarned", "獲得星數", "") + input("starsCasual", "對戰星數", "") + input("starsRanked", "排位星數", ""))}
+        ${pair(input("fromLabel", "從", "例如：黃金IV ★1。") + input("toLabel", "到", "例如：鉑金III ★5。"))}
+        ${pair(input("bestLine", "最佳表現", "例如：娜塔亞 19/0/7。") + input("mvp", "MVP", "") + input("goldMedals", "金牌", "") + input("silverMedals", "銀牌", ""))}
+        ${pair(input("winRate", "勝率", "") + input("winRateBeat", "勝率超過", "") + input("winRateGrade", "勝率評級", "例如：S。"))}
+        ${pair(input("kda", "KDA", "") + input("kdaBeat", "KDA 超過", "") + input("kdaGrade", "KDA 評級", "例如：S+。"))}
+        ${pair(input("specialty", "專精", "例如：專精娜塔亞。") + input("specialtyGames", "專精場次", ""))}
+      </article>`;
+    })
+    .join("");
+  return `<div class="stack">
+    <p class="hint">段位不能從戰績頁抓。照遊戲畫面填，留白就保持空白。儲存草稿之後還要發布，公開頁才會換。</p>
+    <h2>目前段位</h2>
+    <div class="pair">
+      ${field("賽季", textInput(`data-rank-card="season"`, card.season, text), "例如：S4 2026。")}
+      <label>階<select data-rank-card="tier" ${text}><option value="">—</option>${tiers}</select></label>
+      <label>小段<select data-rank-card="division" ${text}>${divisions}</select></label>
+      ${field("星數", textInput(`data-rank-card="stars"`, card.stars, text), "例如：3。傳說段位填總星數。")}
+      ${field("距下一星", textInput(`data-rank-card="points"`, card.points, text), "徽章下方的 x/100。0 到 99。")}
+      ${field("按鈕旁讀數", textInput(`data-rank-card="queueReadout"`, card.queueReadout, text), "排位賽按鈕旁的數字。畫面沒有名稱。")}
+      ${field("讀數上限", textInput(`data-rank-card="queueReadoutMax"`, card.queueReadoutMax, text), "例如：100。")}
+      ${field("賽季挑戰", textInput(`data-rank-card="seasonChallenge"`, card.seasonChallenge, text), "例如：10/10。不知道內容就只填進度。")}
+      ${field("更新日期", textInput(`data-rank-card="updatedAt" type="date"`, card.updatedAt, text), "這次是哪一天對過遊戲。")}
+    </div>
+    <h2>傳說戰區</h2>
+    <p class="hint">只記自己的名次和差距。不要填其他玩家的名字。</p>
+    <div class="pair">
+      ${field("地區", textInput(`data-power="area"`, board.area, text), "例如：臺灣/新北市/永和區。")}
+      ${field("英雄", textInput(`data-power="hero"`, board.hero, text), "例如：娜塔亞。")}
+      ${field("目前戰力", textInput(`data-power="power"`, board.power, text), "")}
+      ${field("歷史最高", textInput(`data-power="bestPower"`, board.bestPower, text), "")}
+      ${field("快照日期", textInput(`data-power="updatedAt" type="date"`, board.updatedAt, text), "")}
+    </div>
+    ${rows}
+    <h2>賽年寶藏</h2>
+    <div class="pair">
+      ${field("賽年", textInput(`data-year-field="year"`, treasure.year, text), "例如：2026。")}
+      ${field("限定獎勵", textInput(`data-year-field="reward"`, treasure.reward, text), "畫面寫得出名字才填。")}
+      ${field("快照日期", textInput(`data-year-field="updatedAt" type="date"`, treasure.updatedAt, text), "")}
+    </div>
+    ${seasons}
+    <h2>週報</h2>
+    <div class="repeats">${reports || `<p class="hint">還沒有週報。</p>`}</div>
+    <button class="btn" type="button" data-action="weekly-add">新增週報</button>
+  </div>`;
 }
 
 function profileTab(player, text, choice) {
@@ -685,7 +781,8 @@ export function renderPlayerEditor(player, ui, attrs) {
     ([id, label]) => `<button type="button" class="editor-tab${tab === id ? " is-on" : ""}" data-action="player-tab" data-tab="${id}" aria-selected="${tab === id ? "true" : "false"}">${label}</button>`,
   ).join("");
   let body = "";
-  if (tab === "battle") body = battleTab(record, text);
+  if (tab === "rank") body = rankTab(record, text);
+  else if (tab === "battle") body = battleTab(record, text);
   else if (tab === "builds") body = buildsTab(record, text, choice);
   else if (tab === "matches") body = `${attrs?.matchesLead || ""}${matchesTab(record, ui, text, choice)}`;
   else if (tab === "heroes") body = heroesTab(record, text);
@@ -717,6 +814,37 @@ function writeBilingual(target, key, lang, value) {
 export function applyPlayerInput(player, target, catalog) {
   if (!(target instanceof HTMLElement)) return false;
   const record = ensurePlayerRecord(player);
+  if (target.dataset.rankCard) {
+    record.rankCard[target.dataset.rankCard] = target.value;
+    const zh = formatRank({ ...record.rankCard, points: Number(record.rankCard.points) || 0 }, "zh");
+    const en = formatRank({ ...record.rankCard, points: Number(record.rankCard.points) || 0 }, "en");
+    if (zh) record.rank = { zh, en };
+    return true;
+  }
+  if (target.dataset.power != null && target.dataset.powerRow == null) {
+    record.powerBoard[target.dataset.power] = target.value;
+    return true;
+  }
+  if (target.dataset.powerRow != null) {
+    const index = Number(target.dataset.powerRow);
+    while (record.powerBoard.rows.length <= index) record.powerBoard.rows.push({ scope: "", place: "", gap: "" });
+    record.powerBoard.rows[index][target.dataset.field] = target.value;
+    return true;
+  }
+  if (target.dataset.yearField) {
+    record.yearTreasure[target.dataset.yearField] = target.value;
+    return true;
+  }
+  if (target.dataset.year) {
+    const row = record.yearTreasure.seasons.find((item) => item.id === target.dataset.year);
+    if (row) row.active = target instanceof HTMLInputElement && target.checked;
+    return true;
+  }
+  if (target.dataset.weekly != null) {
+    const report = record.weeklyReports[Number(target.dataset.weekly)];
+    if (report && target.dataset.field) report[target.dataset.field] = target.value;
+    return true;
+  }
   if (target.dataset.playerStat) {
     record.stats[target.dataset.playerStat] = target.value;
     return true;
@@ -833,6 +961,17 @@ export function runPlayerAction(player, action, node, ui) {
   const record = ensurePlayerRecord(player);
   const index = Number(node?.dataset?.index);
   const done = (dirty, status = "") => ({ handled: true, dirty, player: record, status });
+  if (action === "weekly-add") {
+    const report = emptyWeeklyReport();
+    report.id = newId();
+    record.weeklyReports.push(report);
+    ui.tab = "rank";
+    return done(true);
+  }
+  if (action === "weekly-remove") {
+    record.weeklyReports.splice(index, 1);
+    return done(true);
+  }
   if (action === "player-tab") {
     if (node?.dataset?.tab) ui.tab = node.dataset.tab;
     return done(false);

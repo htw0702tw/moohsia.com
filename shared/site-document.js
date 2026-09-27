@@ -2,6 +2,7 @@ import { getDefaultDocument } from "../src/content.js";
 import { CONTACT_EMAIL } from "./brand.js";
 import { upgradeLegacyCopy } from "./copy-upgrade.js";
 import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
+import { cleanGuild, cleanTeamCard, emptyGuild, guildFilled, teamCardFilled } from "./guild.js";
 import { DEFAULT_TEAM_SLUG, teamSlug } from "./teams.js";
 
 const TEXT_MAX = 2000;
@@ -103,6 +104,9 @@ function cleanRoster(list) {
       role: bilingual(item.role, 80),
       team: teamSlug(item.team) || DEFAULT_TEAM_SLUG,
       hidden: item.hidden === true,
+      rankTier: clip(item.rankTier, 40),
+      rankDivision: clip(item.rankDivision, 8).toUpperCase(),
+      rankStars: /^\d{1,4}$/.test(clip(item.rankStars, 4)) ? clip(item.rankStars, 4) : "",
     });
   }
   return out;
@@ -143,6 +147,11 @@ function cleanTeams(list, fallback) {
       aka,
       lead: bilingual(item.lead, 500),
       requirements: cleanRequirements(item.requirements),
+      card: (() => {
+        const card = cleanTeamCard(item.card);
+        const prior = base.find((team) => team.slug === slug);
+        return teamCardFilled(card) || !teamCardFilled(prior?.card) ? card : cleanTeamCard(prior.card);
+      })(),
     });
   }
   return out;
@@ -237,6 +246,10 @@ export function sanitizeDocument(input) {
     placeholderSlots: cleanSlots(source.placeholderSlots, base.placeholderSlots),
     profileFields: cleanProfile(source.profileFields, base.profileFields),
     teams: cleanTeams(source.teams, base.teams),
+    guild: (() => {
+      const cleaned = cleanGuild(source.guild);
+      return guildFilled(cleaned) ? cleaned : cleanGuild(base.guild);
+    })(),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
     player: cleanPlayer(source.player),
@@ -257,9 +270,18 @@ export function toPublicDocument(doc) {
     placeholderSlots: doc.placeholderSlots,
     profileFields: doc.profileFields,
     teams: doc.teams,
+    guild: doc.guild || emptyGuild(),
     rosterMembers: doc.rosterMembers
       .filter((member) => member.hidden !== true && (member.name.zh || member.name.en))
-      .map(({ id, name, role, team }) => ({ id, name, role, team })),
+      .map(({ id, name, role, team, rankTier, rankDivision, rankStars }) => ({
+        id,
+        name,
+        role,
+        team,
+        rankTier: rankTier || "",
+        rankDivision: rankDivision || "",
+        rankStars: rankStars || "",
+      })),
     newsPosts: doc.newsPosts
       .filter((post) => post.status === "published" && (post.title.zh || post.title.en || post.body.zh || post.body.en))
       .map(({ id, date, title, body }) => ({ id, date, title, body })),

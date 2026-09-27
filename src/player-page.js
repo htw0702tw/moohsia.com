@@ -4,6 +4,7 @@ import { esc } from "./html.js";
 import { getPlayerView } from "./player-view.js";
 import { resolveHero } from "../shared/aov-assets.js";
 import { analyzeMatches } from "../shared/match-analysis.js";
+import { renderRankStage } from "./rank-view.js";
 import { derivedKda, matchRecency } from "../shared/player.js";
 import { renderMatchAnalysis } from "./match-charts.js";
 import {
@@ -406,13 +407,16 @@ export function renderPlayerBody(copy, compact) {
   if (compact) {
     return `<div class="aov-shell is-compact">${historyList(copy, player, 3)}</div>`;
   }
-  const sections = ["heroes", "history", "analysis", "battle", "reputation", "honors", "titles", "bonds"];
+  const sections = ["heroes", "history", "rank", "analysis", "battle", "reputation", "honors", "titles", "bonds"];
   const nav = sections
     .map((id) => `<button type="button" class="${view.section === id ? "is-on" : ""}" data-profile-section="${id}">${esc(page.sections[id])}</button>`)
     .join("");
   let main = "";
   if (view.section === "history") main = `${analysisSection(copy, player)}<div class="aov-history-block">${queueTabs(page, view)}${historyList(copy, player)}</div>`;
-  else if (view.section === "analysis") main = analysisSection(copy, player) || `<p class="aov-empty">${esc(page.matchesEmpty)}</p>`;
+  else if (view.section === "rank" || view.section === "analysis") {
+    const rank = renderRankStage(copy, player);
+    main = view.section === "analysis" ? `${rank}${analysisSection(copy, player) || `<p class="aov-empty">${esc(page.matchesEmpty)}</p>`}` : rank || `<p class="aov-empty">${esc(page.analysis?.empty || "資料不足")}</p>`;
+  }
   else if (view.section === "heroes") main = heroCards(copy, player);
   else if (view.section === "reputation") main = reputationPanel(copy, player);
   else if (view.section === "honors") {

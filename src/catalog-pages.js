@@ -13,6 +13,7 @@ import {
 } from "./catalog-state.js";
 import { getPlayer } from "./content.js";
 import { esc } from "./html.js";
+import { renderRankedModeDetail } from "./rank-view.js";
 
 function uiLang() {
   return document.documentElement.lang === "en" ? "en" : "zh";
@@ -432,21 +433,11 @@ export function renderItemDetail(copy, id) {
 
 export function renderModeDetail(copy, id) {
   const page = copy.modes;
+  const ranked = renderRankedModeDetail(copy, id);
+  if (ranked) return ranked;
   const mode = getCatalog().modes.find((item) => item.id === id);
-  if (!mode && id !== "ranked") {
+  if (!mode) {
     return `<article class="page subpage"><header class="mast wrap"><h1>${esc(page.emptyTitle)}</h1><a class="btn btn-primary" href="/modes" data-nav>${esc(page.title)}</a></header></article>`;
-  }
-  if (id === "ranked") {
-    const classic = getCatalog().modes.find((item) => item.id === "classic-5v5");
-    return `<article class="page subpage">
-      <header class="mast catalog-mast wrap">
-        <p class="crumbs"><a href="/modes" data-nav>${esc(page.title)}</a><span aria-hidden="true">/</span><span>排位賽</span></p>
-        <p class="kicker">5V5</p>
-        <h1>排位賽</h1>
-        <p class="lead">${esc(page.rankedNote)}</p>
-        ${classic?.sourceUrl ? `<a class="btn btn-ghost" href="${esc(classic.sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(copy.heroes.open)}</a>` : ""}
-      </header>
-    </article>`;
   }
   const name = bi(mode.name) || mode.name?.zh || "";
   return `<article class="page subpage">

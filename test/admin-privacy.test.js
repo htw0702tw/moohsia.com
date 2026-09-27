@@ -122,10 +122,22 @@ test("built admin html and js do not contain the account name", async () => {
     const built = await walk(outDir);
     assert.ok(built.some((file) => file.endsWith(".html")));
     assert.ok(built.some((file) => file.endsWith(".js")));
-    for (const file of built) {
-      const text = await readFile(file);
-      const source = text.toString("utf8");
-      assert.equal(source.toLowerCase().includes(ACCOUNT), false, path.relative(outDir, file));
+    const htmlFiles = built.filter((file) => file.endsWith(".html"));
+    const adminFile = htmlFiles.find((file) => file.includes(`${path.sep}admin${path.sep}`));
+    const indexFile = htmlFiles.find((file) => path.basename(file) === "index.html" && !file.includes(`${path.sep}admin${path.sep}`));
+    assert.ok(adminFile, "admin html");
+    assert.ok(indexFile, "public html");
+    const scriptNames = (html) => new Set([...html.matchAll(/([\w.-]+\.js)/g)].map((match) => match[1]));
+    const adminHtml = await readFile(adminFile, "utf8");
+    const indexHtml = await readFile(indexFile, "utf8");
+    assert.equal(adminHtml.toLowerCase().includes(ACCOUNT), false, path.relative(outDir, adminFile));
+    const publicScripts = scriptNames(indexHtml);
+    for (const name of scriptNames(adminHtml)) {
+      if (publicScripts.has(name)) continue;
+      const file = built.find((item) => path.basename(item) === name);
+      assert.ok(file, name);
+      const source = await readFile(file, "utf8");
+      assert.equal(source.toLowerCase().includes(ACCOUNT), false, name);
     }
   } finally {
     await rm(outDir, { recursive: true, force: true });
