@@ -1,6 +1,7 @@
 import { getDefaultDocument } from "../src/content.js";
 import { applyAovImport, fetchFightHistory } from "./aov-import.js";
 import { storeFromEnv } from "./cms-store.js";
+import { namesForImport } from "./hidden-names.js";
 import { applyGarenaHistory, characterMatchesOwner, fetchGarenaHistory, garenaSecretStatus } from "./garena-sync.js";
 import { logEvent, logFailure } from "./log.js";
 import { sanitizeDocument } from "./site-document.js";
@@ -31,8 +32,8 @@ async function saveOwnerPlayer(env, mutate, logCode) {
     }
     const draft = JSON.parse(row.draft_json);
     const published = row.published_json ? JSON.parse(row.published_json) : sanitizeDocument(getDefaultDocument());
-    const draftNext = mutate(draft.player, now);
-    const publishedNext = mutate(published.player, now);
+    const draftNext = mutate(draft.player, now, namesForImport(draft.hiddenNames));
+    const publishedNext = mutate(published.player, now, namesForImport(published.hiddenNames));
     if (!draftNext || !publishedNext) return { ok: false, code: "garena_character_mismatch", stored: false };
     draft.player = draftNext;
     published.player = publishedNext;
@@ -56,13 +57,14 @@ async function syncFromAovRanking(env, garenaCode) {
   }
   const saved = await saveOwnerPlayer(
     env,
-    (player, now) =>
+    (player, now, hiddenNames) =>
       applyAovImport(player, fetched, {
         publish: true,
         keyword: OWNER_HISTORY.keyword,
         server: OWNER_HISTORY.server,
         searchType: OWNER_HISTORY.searchType,
         syncedAt: now,
+        hiddenNames,
       }),
     "aov_synced",
   );

@@ -1589,8 +1589,11 @@ a.aov-item { text-decoration: none; }
 .rank-stage, .rank-page { --rank-gold: #f6d37a; }
 .rank-stage {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.9rem;
+  min-width: 0;
 }
+.rank-stage > * { min-width: 0; }
 .rank-card, .rank-history, .rank-weeks, .rank-tier, .rank-reward, .rank-block article {
   border: 1px solid rgba(186, 168, 255, 0.24);
   border-radius: 18px;
@@ -1679,26 +1682,30 @@ a.aov-item { text-decoration: none; }
 }
 .rank-pointbar small { top: 20px; color: #b7add4; position: static; display: block; text-align: center; margin-top: 0.2rem; }
 .rank-history, .rank-weeks { padding: 0.95rem 1rem 1.05rem; }
-.rank-line { width: 100%; height: auto; display: block; }
+.rank-line { width: 100%; max-width: 100%; height: auto; display: block; }
 .rank-line text { fill: #efe6f6; font-size: 12px; font-family: var(--font-sans); }
 .rank-line .rank-tick { fill: #b7add4; font-size: 11px; }
 .rank-line polyline { fill: none; stroke: #f6d37a; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
 .rank-line circle { fill: #fff6c8; stroke: #1a1404; stroke-width: 1; }
 .rank-line .rank-bound { stroke: rgba(246, 211, 122, 0.35); stroke-dasharray: 4 4; }
+.rank-bars { min-width: 0; max-width: 100%; }
 .rank-bars ol {
   display: flex;
   gap: 0.45rem;
   align-items: end;
   margin: 0.4rem 0 0;
-  padding: 0.4rem 0 0;
+  padding: 0.4rem 0 0.15rem;
   list-style: none;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
-.rank-bars li { display: grid; justify-items: center; gap: 0.15rem; min-width: 2.4rem; }
+.rank-bars li { display: grid; justify-items: center; gap: 0.15rem; flex: 0 0 auto; min-width: 2.75rem; }
 .rank-bars b { display: block; width: 14px; border-radius: 6px 6px 2px 2px; transform-origin: bottom; animation: rank-bar 0.7s var(--ease) both; }
 .rank-bars .is-up b { background: linear-gradient(#fff6c8, #f6d37a); }
 .rank-bars .is-down b { background: linear-gradient(#d5dbe8, #7f8cab); }
-.rank-bars span, .rank-bars small { font-size: 0.72rem; color: #d9d3ea; }
+.rank-bars span, .rank-bars small { font-size: 0.72rem; color: #d9d3ea; white-space: nowrap; }
 .rank-week-grid, .rank-ladder { display: grid; gap: 0.75rem; }
 .rank-week-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .rank-weeks article, .rank-guild li, .rank-places li {
