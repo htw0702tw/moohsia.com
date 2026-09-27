@@ -127,7 +127,6 @@ export async function archiveAovMatches(env, matches, options = {}) {
   if (!db) return { ok: false, code: "aov_archive_unavailable", archived: 0, importId: "" };
 
   const list = Array.isArray(matches) ? matches.filter((item) => item && typeof item === "object") : [];
-  if (!list.length) return { ok: true, archived: 0, importId: "" };
 
   const source = archiveSource(options.source);
   const now = text(options.capturedAt || new Date().toISOString(), 40);
@@ -139,12 +138,15 @@ export async function archiveAovMatches(env, matches, options = {}) {
       .prepare(
         `INSERT INTO aov_imports (id, source, created_at, match_count, note)
          VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO NOTHING`,
+         ON CONFLICT(id) DO UPDATE SET
+           match_count = aov_imports.match_count + excluded.match_count,
+           note = CASE WHEN aov_imports.note = '' THEN excluded.note ELSE aov_imports.note END`,
       )
       .bind(importId, source, now, list.length, note)
       .run();
 
     let archived = 0;
+    if (!list.length) return { ok: true, archived, importId };
     for (const match of list) {
       const key = aovMatchKey(match);
       const richness = aovMatchRichness(match);
