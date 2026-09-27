@@ -451,7 +451,7 @@ async function visionAov(request, env) {
   if (!session) return json(401, { ok: false, code: "unauthorized" });
   const denied = await requireCsrf(request, session);
   if (denied) return denied;
-  if (await overLimit(env, "aovvision", clientIp(request), 120, 3600)) {
+  if (await overLimit(env, "aovvision", clientIp(request), 220, 3600)) {
     return json(429, { ok: false, code: "rate_limited" }, { "retry-after": "60" });
   }
   const parsed = await readJson(request, 6 * 1024 * 1024);
