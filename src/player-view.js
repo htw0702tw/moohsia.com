@@ -4,6 +4,7 @@ const state = {
   match: "",
   tab: "data",
   queue: "classic",
+  chartSeason: "all",
 };
 
 export function getPlayerView() {
@@ -34,4 +35,8 @@ export function setPlayerQueue(queue) {
 
 export function setPlayerTab(tab) {
   state.tab = tab || "board";
+}
+
+export function setChartSeason(value) {
+  state.chartSeason = value === "season" ? "season" : "all";
 }

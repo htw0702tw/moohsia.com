@@ -1614,6 +1614,74 @@ a.aov-item { text-decoration: none; }
 .aov-compare-side { display: grid; gap: 0.15rem; margin-bottom: 0.55rem; }
 .aov-compare-side b { font-family: var(--font-display); color: var(--aov-gold); }
 .aov-compare-side small { color: #b7add4; }
+.chart-tab { min-width: 0; }
+.chart-tab > * { min-width: 0; }
+.chart-filter { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chart-summary { display: grid; gap: 0.55rem; min-width: 0; }
+.chart-summary .section-note { margin: 0; }
+.chart-summary .aov-trio article small, .chart-ref .aov-medals article small { display: block; color: #b7add4; font-size: 0.78rem; }
+.chart-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; min-width: 0; }
+.chart-card { min-width: 0; max-width: 100%; overflow: hidden; }
+.chart-scroll { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.chart-line { width: 100%; height: auto; display: block; }
+.chart-line .chart-grid, .chart-radar .chart-spoke { stroke: rgba(186, 168, 255, 0.18); }
+.chart-line .chart-mid { stroke: rgba(246, 211, 122, 0.45); stroke-dasharray: 4 4; }
+.chart-tick { fill: #b7add4; font-size: 11px; font-family: var(--font-sans); }
+.chart-tick.is-kda { fill: #efe6f6; }
+.chart-series { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.chart-series.is-gold { stroke: #f6d37a; }
+.chart-series.is-pink { stroke: #ff3b86; stroke-width: 1.8; opacity: 0.9; }
+.chart-series.is-white { stroke: #f4f0ff; stroke-width: 1.6; opacity: 0.9; }
+.chart-cell.is-win { fill: #f6d37a; }
+.chart-cell.is-loss { fill: #6f7896; }
+.chart-cell.is-none { fill: rgba(255, 255, 255, 0.15); }
+.chart-bar.is-kills { fill: #f6d37a; }
+.chart-bar.is-deaths { fill: #ff4d6d; }
+.chart-bar.is-assists { fill: #4c8dff; }
+.chart-legend .is-kills { background: #f6d37a; }
+.chart-legend .is-deaths { background: #ff4d6d; }
+.chart-legend .is-assists { background: #4c8dff; }
+.chart-legend .is-white { background: #f4f0ff; }
+.chart-legend, .chart-tab .aov-legend { flex-wrap: wrap; gap: 0.35rem 0.8rem; }
+.chart-radar-wrap { display: grid; place-items: center; }
+.chart-radar { width: min(100%, 340px); height: auto; display: block; }
+.chart-radar .chart-ring { fill: none; stroke: rgba(214, 196, 255, 0.28); }
+.chart-radar .chart-area { fill: rgba(246, 211, 122, 0.32); stroke: #f6d37a; stroke-width: 2; stroke-linejoin: round; }
+.chart-radar .chart-dot { fill: #fff6c8; stroke: #1a1404; stroke-width: 1; }
+.chart-axis { fill: #f6d37a; font-size: 14px; font-family: var(--font-sans); font-weight: 650; }
+.chart-axis-value { fill: #efe6f6; font-size: 12px; font-family: var(--font-display); }
+.chart-raw { margin: 0.2rem 0 0.35rem; color: #efe6f6; font-size: 0.86rem; text-align: center; }
+.chart-caption { font-size: 0.8rem; line-height: 1.5; }
+.chart-card .section-note.chart-caption { margin: 0; }
+.chart-hero { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 0.8rem; align-items: start; min-width: 0; }
+.chart-donut { width: 140px; height: 140px; display: block; }
+.chart-donut-n { fill: #f6d37a; font-size: 24px; font-family: var(--font-display); }
+.chart-hero .aov-rate-list { max-height: 320px; overflow-y: auto; min-width: 0; }
+.chart-rate-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.3rem 0.6rem; }
+.chart-rate-row .aov-bar { grid-column: 1 / -1; grid-row: 2; }
+.chart-rate-row .aov-rate-meta b { display: inline; margin-right: 0.4rem; }
+.chart-swatch { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.chart-hero .aov-mini, .chart-hero .aov-mini img, .chart-hero .aov-mini span { width: 28px; height: 28px; }
+.chart-cols { list-style: none; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(14px, 1fr); gap: 2px; align-items: end; margin: 0.2rem 0 0.6rem; padding: 0; min-height: 120px; }
+.chart-cols li { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: end; gap: 2px; min-width: 0; }
+.chart-cols b { display: block; width: 100%; max-width: 22px; border-radius: 4px 4px 1px 1px; background: linear-gradient(180deg, #f6d37a, #ff3b86); }
+.chart-cols small { color: #efe6f6; font-size: 0.68rem; min-height: 0.9rem; }
+.chart-cols span { color: #b7add4; font-size: 0.68rem; }
+.chart-ref-when { margin: -0.3rem 0 0.5rem; color: var(--aov-gold); font-family: var(--font-display); letter-spacing: 0.06em; font-size: 0.86rem; }
+.chart-ref-block { margin-bottom: 0.7rem; }
+.chart-ref .aov-medals { grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); }
+.chart-ref .aov-medals b { font-size: 1.2rem; }
+@media (max-width: 900px) {
+  .chart-grid-2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 540px) {
+  .chart-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .chart-hero .aov-rate-list { width: 100%; max-height: none; }
+  .chart-tab .aov-trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chart-tab .aov-trio b { font-size: 1.25rem; }
+  .chart-ref .aov-medals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chart-card { padding: 0.8rem 0.7rem 0.9rem; }
+}
 @keyframes aov-arc { from { stroke-dashoffset: var(--arc, 220); } }
 @keyframes aov-bar-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @media (max-width: 640px) {

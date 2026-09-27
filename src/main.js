@@ -14,7 +14,7 @@ import {
   setSkillQuery,
   setSkillSlot,
 } from "./catalog-state.js";
-import { setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
+import { setChartSeason, setPlayerMatch, setPlayerQueue, setPlayerSeason, setPlayerSection, setPlayerTab } from "./player-view.js";
 import { NAV, applyPublishedContent, getContactEmail, getCopy, getMailto, getNewsPosts, getPlaceholderSlots, getPlayer, getProfileFields, getRosterMembers, getTeams } from "./content.js";
 import { esc } from "./html.js";
 import { mountChrome, mountMotion } from "./motion.js";
@@ -419,6 +419,12 @@ function onClick(event) {
   const section = event.target.closest("[data-profile-section]");
   if (section) {
     setPlayerSection(section.getAttribute("data-profile-section"));
+    paint();
+    return;
+  }
+  const chartSeason = event.target.closest("[data-chart-season]");
+  if (chartSeason) {
+    setChartSeason(chartSeason.getAttribute("data-chart-season"));
     paint();
     return;
   }
