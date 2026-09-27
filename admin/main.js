@@ -671,9 +671,9 @@ function aovImportPanel() {
     <label>螢幕錄影（mp4 / mov / webm）
       <input data-aov-video type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
     </label>
-    <p class="hint" data-aov-video-note>${{pendingAovVideo ? esc(##{pendingAovVideo.name}) : "尚未選擇影片。"}${</p>
+    <p class="hint" data-aov-video-note>${pendingAovVideo ? esc(`已選擇：${pendingAovVideo.name}`) : "尚未選擇影片。"}</p>
     <div class="row-actions">
-      <button class="primary" type="button" data-action="aov-video"${{busy || !pendingAovVideo ? " disabled" : ""}${>分析錄影並併入草稿</button>
+      <button class="primary" type="button" data-action="aov-video"${busy || !pendingAovVideo ? " disabled" : ""}>分析錄影並併入草稿</button>
     </div>
     <h2>從 AOVRanking 匯入</h2>
     <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。伺服器直接抓取常常會被安全驗證擋住。可靠的做法是貼上你瀏覽器裡已通過驗證的頁面。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
