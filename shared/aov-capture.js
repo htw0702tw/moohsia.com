@@ -9,7 +9,9 @@ function clip(value, max = 120) {
 }
 
 function integer(value, max = 999999999) {
-  const n = Number(String(value ?? "").replace(/,/g, "").replace(/[^0-9-]/g, ""));
+  const raw = String(value ?? "").trim().replace(/,/g, "");
+  if (!/^[+-]?\d+$/.test(raw)) return "";
+  const n = Number(raw);
   if (!Number.isInteger(n) || n < -max || n > max) return "";
   return String(n);
 }
@@ -26,7 +28,8 @@ function truth(value) {
 }
 
 function side(value) {
-  return String(value || "").toLowerCase() === "red" ? "red" : "blue";
+  const raw = String(value || "").toLowerCase();
+  return raw === "red" || raw === "blue" ? raw : "";
 }
 
 function resultLabel(value) {
@@ -95,21 +98,13 @@ function cleanBoard(value, ownerName) {
 
 function matchIdentity(raw, fallback) {
   const external = clip(raw.externalMatchId || raw.matchId, 40);
-  if (external) return { id: external, externalMatchId: external };
-  const seed = [
-    raw.playedAt,
-    raw.date,
-    raw.hero,
-    raw.kills,
-    raw.deaths,
-    raw.assists,
-    raw.duration,
-    raw.result,
-  ]
-    .map((part) => clip(part, 80))
-    .filter(Boolean)
-    .join("|");
-  return { id: `capture-${hash(seed || fallback)}`, externalMatchId: "" };
+  if (/^[A-Za-z0-9_-]{1,40}$/.test(external)) return { id: external, externalMatchId: external };
+  const time = clip(raw.playedAt || raw.time, 40);
+  const hero = clip(raw.hero, 80);
+  // Partial screens must never collapse unrelated games of the same hero.
+  const timed = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(time);
+  const seed = timed && hero ? `${time}|${hero}` : fallback;
+  return { id: `capture-${hash(seed)}`, externalMatchId: "" };
 }
 
 function cleanMatch(raw, ownerName, fallback) {
@@ -133,7 +128,7 @@ function cleanMatch(raw, ownerName, fallback) {
     hero: clip(source.hero || owner.hero, 80),
     skin: clip(source.skin || owner.skin, 80),
     result: resultLabel(source.result),
-    kda: kills || deaths || assists ? `${kills || "0"} / ${deaths || "0"} / ${assists || "0"}` : "",
+    kda: [kills, deaths, assists].every((value) => value !== "") ? `${kills} / ${deaths} / ${assists}` : "",
     kills,
     deaths,
     assists,
@@ -230,14 +225,14 @@ export function aovVisionPrompt(ownerName = "") {
 }
 
 async function saveFrameMetadata(env, record) {
-  if (!env?.CMS_DB || typeof env.CMS_DB.prepare !== "function") return;
+  if (!env?.CMS_DB || typeof env.CMS_DB.prepare !== "function") return false;
   try {
     await env.CMS_DB
       .prepare(
         `INSERT INTO aov_capture_frames
            (id, import_id, frame_index, video_time, captured_at, frame_key, kind, data_json)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(id) DO NOTHING`,
+         ON CONFLICT(id) DO UPDATE SET kind = excluded.kind, data_json = excluded.data_json`,
       )
       .bind(
         record.id,
@@ -252,7 +247,9 @@ async function saveFrameMetadata(env, record) {
       .run();
   } catch (error) {
     logFailure("aov_frame_archive_failed", error);
+    return false;
   }
+  return true;
 }
 
 export async function analyzeAovFrame(env, input = {}) {
@@ -271,6 +268,12 @@ export async function analyzeAovFrame(env, input = {}) {
 
   const stored = await storeAovCaptureFrame(env, image, frameId);
   if (!stored.ok) return { ok: false, code: stored.code || "media_unconfigured", importId, frameIndex };
+  const batch = await archiveBeforeAovWrite(env, [], { source: "capture", importId, capturedAt });
+  if (!batch.ok) return { ok: false, code: "aov_archive_unavailable", stored: true, importId, frameIndex };
+  const frameRecord = { id: frameId, importId, frameIndex, videoTime, capturedAt, frameKey: stored.key };
+  if (!await saveFrameMetadata(env, { ...frameRecord, kind: "pending", data: {} })) {
+    return { ok: false, code: "aov_archive_unavailable", stored: true, importId, frameIndex };
+  }
   try {
     const ai = await env.AI.run(MODEL, {
       task: "query",
@@ -278,7 +281,7 @@ export async function analyzeAovFrame(env, input = {}) {
       question: aovVisionPrompt(input.ownerName),
       reasoning: false,
       temperature: 0,
-      max_tokens: 3000,
+      max_tokens: 8192,
       stream: false,
     });
     const raw = jsonFromAnswer(ai?.answer || ai?.response || ai?.description || "");
@@ -293,7 +296,7 @@ export async function analyzeAovFrame(env, input = {}) {
         kind: "unreadable",
         data: { raw: clip(ai?.answer || ai?.response || "", 4000) },
       });
-      return { ok: false, code: "aov_vision_failed", importId, frameIndex };
+      return { ok: false, code: "aov_vision_failed", stored: true, importId, frameIndex };
     }
     const normalized = normalizeAovVision(raw, { ownerName: input.ownerName, importId, frameIndex });
     const archive = await archiveBeforeAovWrite(env, normalized.matches, {
@@ -302,7 +305,7 @@ export async function analyzeAovFrame(env, input = {}) {
       capturedAt,
       note: `video frame ${frameIndex} @ ${videoTime.toFixed(2)}s`,
     });
-    await saveFrameMetadata(env, {
+    const metadataSaved = await saveFrameMetadata(env, {
       id: frameId,
       importId,
       frameIndex,
@@ -312,7 +315,7 @@ export async function analyzeAovFrame(env, input = {}) {
       kind: normalized.kind,
       data: normalized,
     });
-    if (!archive.ok) return { ok: false, code: archive.code || "aov_archive_unavailable", importId, frameIndex };
+    if (!archive.ok || !metadataSaved) return { ok: false, code: "aov_archive_unavailable", stored: true, importId, frameIndex };
     return {
       ok: true,
       importId,
@@ -324,6 +327,6 @@ export async function analyzeAovFrame(env, input = {}) {
     };
   } catch (error) {
     logFailure("aov_vision_failed", error);
-    return { ok: false, code: "aov_vision_failed", importId, frameIndex };
+    return { ok: false, code: "aov_vision_failed", stored: true, importId, frameIndex };
   }
 }
