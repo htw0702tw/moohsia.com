@@ -7,10 +7,10 @@ function lang() {
   return document.documentElement.lang === "en" ? "en" : "zh";
 }
 
-function crest(src, label) {
+function crest(src, label, small = false) {
   const name = label || "MOOHSIA";
-  // Background, not an <img>: a missing crop stays a letter plate instead of a broken icon.
-  return `<span class="guild-crest"><i style="background-image:url(${esc(src)})"></i><b>${esc(name.slice(0, 1))}</b></span>`;
+  const size = small ? 56 : 96;
+  return `<span class="guild-crest${small ? " is-small" : ""}"><img src="${esc(src)}" alt="${esc(name)}" width="${size}" height="${size}" decoding="async"></span>`;
 }
 
 function pair(label, value) {
@@ -137,12 +137,17 @@ export function renderGuildStarsBoard(copy) {
   ].join("");
   const members = ratio(guild.members, guild.capacity);
   const when = guild.updatedAt ? `${text.updated} ${guild.updatedAt}` : text.updatedMissing;
-  return `<article>
-    <h3>${esc(text.guildStars)}</h3>
-    <p class="section-note">${esc(text.guildStarsNote)}</p>
-    ${standing ? `<p>${esc(standing)}</p>` : ""}
-    ${members ? `<p>${esc(copy.about.guild.members)} ${esc(members)}</p>` : ""}
-    <p class="section-note">${esc(when)}</p>
+  return `<article class="guild-board">
+    <div class="guild-board-row">
+      ${crest(GUILD_EMBLEM, "MOOHSIA", true)}
+      <div>
+        <h3>${esc(text.guildStars)}</h3>
+        <p class="section-note">${esc(text.guildStarsNote)}</p>
+        ${standing ? `<p>${esc(standing)}</p>` : ""}
+        ${members ? `<p>${esc(copy.about.guild.members)} ${esc(members)}</p>` : ""}
+        <p class="section-note">${esc(when)}</p>
+      </div>
+    </div>
     <ol class="rank-places guild-star-rows">${rows}</ol>
   </article>`;
 }

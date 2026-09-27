@@ -1,5 +1,5 @@
 import { CONTACT_EMAIL } from "../shared/brand.js";
-import { cleanGuild, emptyGuild } from "../shared/guild.js";
+import { cleanGuild, defaultGuild, defaultTeamCard, emptyGuild, guildFilled } from "../shared/guild.js";
 import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
 import { memberTeamSlug } from "../shared/teams.js";
 
@@ -34,6 +34,7 @@ export const teams = [
       { zh: "每個週末 20:30–21:30 訓練", en: "Weekend training, 20:30–21:30." },
       { zh: "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄", en: "At least two lanes, with at least five familiar heroes in each." },
     ],
+    card: defaultTeamCard(),
   },
 ];
 
@@ -1324,7 +1325,7 @@ function snapshot() {
     rosterMembers: structuredClone(rosterMembers),
     newsPosts: structuredClone(newsPosts),
     player: emptyPlayer(),
-    guild: emptyGuild(),
+    guild: defaultGuild(),
     copy: {
       zh: structuredClone(zh),
       en: structuredClone(en),
@@ -1379,7 +1380,10 @@ export function applyPublishedContent(payload) {
     rosterMembers: Array.isArray(doc.rosterMembers) ? doc.rosterMembers.map((member) => ({ ...member, team: memberTeamSlug(member) })) : base.rosterMembers,
     newsPosts: Array.isArray(doc.newsPosts) ? doc.newsPosts : base.newsPosts,
     player: adoptPublicPlayer(doc.player),
-    guild: cleanGuild(doc.guild),
+    guild: (() => {
+      const cleaned = cleanGuild(doc.guild);
+      return guildFilled(cleaned) ? cleaned : base.guild;
+    })(),
     copy: {
       zh: mergeCopy(base.copy.zh, doc.copy?.zh),
       en: mergeCopy(base.copy.en, doc.copy?.en),

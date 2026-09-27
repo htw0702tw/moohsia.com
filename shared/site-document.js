@@ -2,7 +2,7 @@ import { getDefaultDocument } from "../src/content.js";
 import { CONTACT_EMAIL } from "./brand.js";
 import { upgradeLegacyCopy } from "./copy-upgrade.js";
 import { cleanPlayer, playerNameKeys, toPublicPlayer } from "./player.js";
-import { cleanGuild, cleanTeamCard, emptyGuild } from "./guild.js";
+import { cleanGuild, cleanTeamCard, emptyGuild, guildFilled, teamCardFilled } from "./guild.js";
 import { DEFAULT_TEAM_SLUG, teamSlug } from "./teams.js";
 
 const TEXT_MAX = 2000;
@@ -147,7 +147,11 @@ function cleanTeams(list, fallback) {
       aka,
       lead: bilingual(item.lead, 500),
       requirements: cleanRequirements(item.requirements),
-      card: cleanTeamCard(item.card),
+      card: (() => {
+        const card = cleanTeamCard(item.card);
+        const prior = base.find((team) => team.slug === slug);
+        return teamCardFilled(card) || !teamCardFilled(prior?.card) ? card : cleanTeamCard(prior.card);
+      })(),
     });
   }
   return out;
@@ -242,7 +246,10 @@ export function sanitizeDocument(input) {
     placeholderSlots: cleanSlots(source.placeholderSlots, base.placeholderSlots),
     profileFields: cleanProfile(source.profileFields, base.profileFields),
     teams: cleanTeams(source.teams, base.teams),
-    guild: cleanGuild(source.guild),
+    guild: (() => {
+      const cleaned = cleanGuild(source.guild);
+      return guildFilled(cleaned) ? cleaned : cleanGuild(base.guild);
+    })(),
     rosterMembers: cleanRoster(source.rosterMembers),
     newsPosts: cleanNews(source.newsPosts),
     player: cleanPlayer(source.player),

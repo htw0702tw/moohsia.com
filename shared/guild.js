@@ -1,7 +1,7 @@
 /**
  * In-game guild and team snapshots.
- * Numbers stay blank until an owner enters them. The gap to 4th is
- * the printed 4th-place star total minus this guild's own stars.
+ * The built-in snapshot is the 2026-09-27 client screen. Admin can replace it.
+ * The gap to 4th is the printed 4th-place star total minus this guild's own stars.
  */
 
 import { tierById } from "./ranks.js";
@@ -49,6 +49,48 @@ export function emptyGuild() {
     standing: "",
     weekTop: ["", "", "", ""],
     lastTop: ["", "", "", ""],
+  };
+}
+
+/** Printed guild screen. Other guilds' names are not stored. */
+export function defaultGuild() {
+  return {
+    updatedAt: "2026-09-27",
+    region: "新北市",
+    members: "1",
+    capacity: "20",
+    motto: "moohsia.com 請至官網填表申請",
+    activity: "1195",
+    activityMax: "6240",
+    chestLevel: "1",
+    chestLevels: "8",
+    levelReq: "6",
+    rankReq: "gold",
+    review: "off",
+    accept: "on",
+    president: "htw0702aov",
+    presidentRole: "公會長",
+    weekActivity: "1195",
+    lastActivity: "0",
+    stars: "55",
+    starsLast: "0",
+    standing: "unranked",
+    weekTop: ["12848", "11895", "11353", "11314"],
+    lastTop: ["25693", "24720", "21402", "21193"],
+  };
+}
+
+/** Printed team-list screen. A dash score stays blank and renders as —. */
+export function defaultTeamCard() {
+  return {
+    updatedAt: "2026-09-27",
+    region: "永和區",
+    score: "",
+    members: "1",
+    capacity: "5",
+    status: "招募中",
+    captain: "htw0702aov",
+    motto: "moohsia.com",
   };
 }
 

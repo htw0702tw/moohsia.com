@@ -64,47 +64,7 @@ function row(partial) {
 /** Local-only overlay so the member shell can be screenshotted without live CMS data. */
 export function applyPreview() {
   applyPublishedContent({
-    guild: {
-      updatedAt: "",
-      region: "新北市",
-      members: "1",
-      capacity: "20",
-      motto: "moohsia.com 請至官網填表申請",
-      activity: "1195",
-      activityMax: "6240",
-      chestLevel: "1",
-      chestLevels: "8",
-      levelReq: "6",
-      rankReq: "gold",
-      review: "off",
-      accept: "on",
-      president: "htw0702aov",
-      presidentRole: "公會長",
-      weekActivity: "1195",
-      lastActivity: "0",
-      stars: "55",
-      starsLast: "0",
-      standing: "未上榜",
-      weekTop: ["12848", "11895", "11353", "11314"],
-      lastTop: ["25693", "24720", "21402", "21193"],
-    },
-    teams: builtInTeams.map((team) =>
-      team.slug === "moohsia"
-        ? {
-            ...team,
-            card: {
-              updatedAt: "",
-              region: "永和區",
-              score: "",
-              members: "1",
-              capacity: "5",
-              status: "招募中",
-              captain: "htw0702aov",
-              motto: "moohsia.com",
-            },
-          }
-        : team,
-    ),
+    teams: builtInTeams.map((team) => ({ ...team, card: team.card ? { ...team.card } : team.card })),
     rosterMembers: [
       {
         id: "owner0702",

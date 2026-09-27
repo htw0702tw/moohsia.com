@@ -25,12 +25,34 @@ test("guild copy and the seeded MOOHSIA team survive a round trip", () => {
     doc.teams[0].requirements.map((row) => row.zh),
     ["遊戲內等級 lv.6 以上", "排位至少黃金以上", "每個週末 20:30–21:30 訓練", "每個人至少擅長 2 路，且各路至少 5 隻熟悉英雄"],
   );
-  assert.equal(doc.guild.stars, "");
-  assert.equal(doc.guild.motto, "");
-  assert.equal(doc.teams[0].card.region, "");
+  assert.equal(doc.guild.stars, "55");
+  assert.equal(doc.guild.motto, "moohsia.com 請至官網填表申請");
+  assert.equal(doc.guild.updatedAt, "2026-09-27");
+  assert.equal(doc.guild.activity, "1195");
+  assert.equal(doc.teams[0].card.region, "永和區");
+  assert.equal(doc.teams[0].card.score, "");
+  assert.equal(doc.teams[0].card.updatedAt, "2026-09-27");
   const pub = toPublicDocument(doc);
   assert.equal(pub.teams[0].slug, "moohsia");
+  assert.equal(pub.guild.stars, "55");
+  assert.equal(pub.teams[0].card.status, "招募中");
   assert.equal(pub.rosterMembers.length, 0);
+});
+
+test("an older document without a guild snapshot still publishes the printed screen", () => {
+  const draft = getDefaultDocument();
+  delete draft.guild;
+  delete draft.teams[0].card;
+  const doc = sanitizeDocument(draft);
+  assert.equal(doc.guild.updatedAt, "2026-09-27");
+  assert.equal(doc.guild.members, "1");
+  assert.equal(doc.guild.capacity, "20");
+  assert.equal(doc.teams[0].card.region, "永和區");
+  assert.equal(doc.teams[0].card.captain, "htw0702aov");
+  const edited = sanitizeDocument({ ...getDefaultDocument(), guild: { ...getDefaultDocument().guild, stars: "60", motto: "自訂宣言" } });
+  assert.equal(edited.guild.stars, "60");
+  assert.equal(edited.guild.motto, "自訂宣言");
+  assert.equal(edited.guild.activity, "1195");
 });
 
 test("guild snapshot keeps printed stars and the gap to fourth", () => {
@@ -79,6 +101,8 @@ test("the guild star board prints this guild's gap", async () => {
   assert.match(html, /11259/);
   assert.match(html, /21193/);
   assert.match(html, /1\/20/);
+  assert.match(html, /2026-09-27/);
+  assert.match(html, /\/guild\/moohsia\.webp/);
 });
 
 test("a roster member without a team publishes on MOOHSIA", () => {
