@@ -20,6 +20,22 @@ test("an incomplete bootstrap does not claim older matches are safely archived",
   assert.equal(result.code, "aov_archive_unavailable");
 });
 
+test("invalid existing CMS JSON cannot seed an empty archive", async () => {
+  let wrote = false;
+  const db = { prepare(sql) {
+    return { bind() { return {
+      async first() {
+        if (sql.includes("FROM aov_imports")) return null;
+        return { published_json: "{broken", draft_json: JSON.stringify({ player: { matches: [{ id: "old" }] } }) };
+      },
+      async run() { wrote = true; },
+    }; } };
+  } };
+  const result = await bootstrapAovArchive({ CMS_DB: db });
+  assert.equal(result.ok, false);
+  assert.equal(wrote, false);
+});
+
 test("archive key prefers the external match id", () => {
   assert.equal(aovMatchKey({ id: "local", externalMatchId: "123-456" }), "external:123-456");
 });
