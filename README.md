@@ -6,7 +6,7 @@
 
 ## 本地啟動
 
-需要 Node.js 20 或更新版本。
+需要 Node.js 22 或更新版本（目前 Wrangler 4 需要 Node 22+）。
 
 ```bash
 npm install
@@ -117,6 +117,26 @@ npm run cms:migrate
 `migrations/0001_init.sql` 建 `site_documents`。`migrations/0002_player_and_catalog.sql` 再加 `player_records` 與 `aov_catalog`。`migrations/0003_applications.sql` 加 `applications`。申請表只存審核需要的欄位與邀請的 SHA-256，不存邀請網址。表是空的時候，Worker 會把 [`src/content.js`](src/content.js) 的內建文案寫成第一份草稿與已發布內容。就算 migration 還沒跑、或 D1 暫時讀不到，公開頁也會退回這份內建文案，不會變成空白。英雄、模式與活動則退回倉庫裡的官方快照。後面的 migration 不會改掉已經發布的文案。
 
 ## 個人數據
+
+### 永久 AOV archive 與螢幕錄影匯入
+
+CMS 的 `player.matches` 仍只負責近期公開顯示；完整對局不再以這個陣列當唯一資料來源。Migration `0004_aov_archive.sql` 建立：
+
+- `aov_match_versions`：每次匯入都保留一份版本，不因後續較少資料而刪除。
+- `aov_canonical_matches`：每場目前最完整版本；只有完整度相同或更高的資料可以更新。
+- `aov_capture_frames`：螢幕錄影抽出的關鍵畫面與 Vision 結果。原圖放 R2 `moohsia-media/aov/frames/`。
+- `aov_imports`：每次 HTML、官方同步或錄影匯入批次。
+
+管理後台「選手數據」可直接選 mp4、mov 或 webm。影片留在瀏覽器本機，以 0.5 秒取樣並用畫面差異挑關鍵幀；每個重要頁面請停留約 1 秒。關鍵幀先寫 R2，再由 Workers AI Vision 讀畫面，結果先併入草稿，不直接發布。單支錄影可以包含多場、多個頁面，不必一場一支。
+
+第一次讀 archive 狀態會把當下 CMS 裡已存在的戰績以 `cms-bootstrap-v1` 封存一次。因此若需要使用 D1 Time Travel 回到誤匯前，請先還原，再套 migration／部署新版，之後開啟錄影匯入讓 bootstrap 先完成。
+
+部署順序：
+
+```bash
+npm run cms:migrate
+npm run deploy
+```
 
 個人戰績跟戰隊文案放在同一份 CMS 文件的 `player` 欄位，並在 D1 的 `player_records`（id 為 `owner`）留一份可查詢的複本。儲存草稿只更新 `draft_json`。按 **發布到網站** 才寫入 `published_json`。
 

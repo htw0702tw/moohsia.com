@@ -172,6 +172,8 @@ const SAMPLES = {
   "contact.sheet": ["", "", ""],
 };
 
+let pendingAovVideo = null;
+
 const state = {
   authed: false,
   csrf: "",
@@ -664,6 +666,15 @@ function aovImportPanel() {
     <div class="row-actions">
       <button class="primary" type="button" data-action="garena-sync"${busy}>立即從 Garena 同步</button>
     </div>
+    <h2>從螢幕錄影匯入</h2>
+    <p class="hint">可以一次錄很多場、很多頁，不用一場一支。依序把歷史列表、單場結果、藍紅雙方、輸出／承傷／補刀／治療／塔傷、排位變化等畫面停留約 1 秒。影片只在你的瀏覽器本機拆成「畫面有變化」的關鍵幀；關鍵幀原圖存 R2，辨識結果與每次版本永久寫入 D1 archive。任何錄影匯入都只會補資料，不會刪除既有對局。</p>
+    <label>螢幕錄影（mp4 / mov / webm）
+      <input data-aov-video type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm">
+    </label>
+    <p class="hint" data-aov-video-note>${pendingAovVideo ? esc(`已選擇：${pendingAovVideo.name}`) : "尚未選擇影片。"}</p>
+    <div class="row-actions">
+      <button class="primary" type="button" data-action="aov-video"${busy || !pendingAovVideo ? " disabled" : ""}>分析錄影並併入草稿</button>
+    </div>
     <h2>從 AOVRanking 匯入</h2>
     <p class="hint">資料來自 AOVRanking（個人研究站 aovweb.azurewebsites.net），不是 Garena 官方 API。伺服器直接抓取常常會被安全驗證擋住。可靠的做法是貼上你瀏覽器裡已通過驗證的頁面。大約只會有最近 50 場，可能延遲或被截斷。預設併入草稿，不會自動公開。</p>
     <p class="hint">${lastSync}${cooldown ? ` 請再等 ${cooldown} 秒再向對方查詢。` : ""}</p>
@@ -852,6 +863,22 @@ function markDirty(text) {
 function onInput(event) {
   const target = event.target;
   if (!(target instanceof HTMLElement) || !state.draft) return;
+  if (target instanceof HTMLInputElement && target.type === "file" && "aovVideo" in target.dataset) {
+    const file = target.files?.[0] || null;
+    target.value = "";
+    if (!file || !isAovVideoFile(file)) {
+      pendingAovVideo = null;
+      state.error = message("aov_video_invalid");
+      state.status = "";
+      render();
+      return;
+    }
+    pendingAovVideo = file;
+    state.error = "";
+    state.status = `已選擇錄影：${file.name}`;
+    render();
+    return;
+  }
   if (target instanceof HTMLInputElement && target.type === "file" && "aovFile" in target.dataset) {
     const file = target.files?.[0];
     target.value = "";
@@ -953,6 +980,208 @@ function onInput(event) {
   if (target instanceof HTMLInputElement && target.type === "file") return;
   if (!state.draft.player) return;
   if (applyPlayerInput(state.draft.player, target, state.playerUi.catalog)) markDirty("有未儲存的修改");
+}
+
+function isAovVideoFile(file) {
+  const name = String(file?.name || "").toLowerCase();
+  const type = String(file?.type || "").toLowerCase();
+  return (
+    name.endsWith(".mp4") ||
+    name.endsWith(".mov") ||
+    name.endsWith(".webm") ||
+    type === "video/mp4" ||
+    type === "video/quicktime" ||
+    type === "video/webm"
+  );
+}
+
+function waitForVideo(video, eventName) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("video_timeout")), 15000);
+    const done = () => {
+      clearTimeout(timer);
+      cleanup();
+      resolve();
+    };
+    const fail = () => {
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error("video_error"));
+    };
+    const cleanup = () => {
+      video.removeEventListener(eventName, done);
+      video.removeEventListener("error", fail);
+    };
+    video.addEventListener(eventName, done, { once: true });
+    video.addEventListener("error", fail, { once: true });
+  });
+}
+
+async function seekVideo(video, time) {
+  if (Math.abs(video.currentTime - time) < 0.015) return;
+  const promise = waitForVideo(video, "seeked");
+  video.currentTime = Math.min(Math.max(0, time), Math.max(0, video.duration - 0.02));
+  await promise;
+}
+
+function thumbnailSignature(ctx, width, height) {
+  const { data } = ctx.getImageData(0, 0, width, height);
+  const values = new Uint8Array(width * height);
+  for (let src = 0, dst = 0; src < data.length; src += 4, dst += 1) {
+    values[dst] = Math.round(data[src] * 0.299 + data[src + 1] * 0.587 + data[src + 2] * 0.114);
+  }
+  return values;
+}
+
+function signatureDifference(a, b) {
+  if (!a || !b || a.length !== b.length) return 255;
+  let sum = 0;
+  for (let index = 0; index < a.length; index += 1) sum += Math.abs(a[index] - b[index]);
+  return sum / a.length;
+}
+
+async function extractAovVideoFrames(file, onProgress) {
+  const url = URL.createObjectURL(file);
+  const video = document.createElement("video");
+  video.preload = "auto";
+  video.muted = true;
+  video.playsInline = true;
+  video.src = url;
+  try {
+    await waitForVideo(video, "loadedmetadata");
+    if (!Number.isFinite(video.duration) || video.duration <= 0 || !video.videoWidth || !video.videoHeight) {
+      throw new Error("video_invalid");
+    }
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(video.videoWidth, video.videoHeight));
+    const width = Math.max(1, Math.round(video.videoWidth * scale));
+    const height = Math.max(1, Math.round(video.videoHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: false });
+    if (!ctx) throw new Error("canvas");
+
+    const tw = 48;
+    const th = Math.max(20, Math.round((tw * video.videoHeight) / video.videoWidth));
+    const thumb = document.createElement("canvas");
+    thumb.width = tw;
+    thumb.height = th;
+    const tctx = thumb.getContext("2d", { alpha: false, willReadFrequently: true });
+    if (!tctx) throw new Error("canvas");
+
+    const frames = [];
+    let previous = null;
+    let lastKept = -999;
+    const step = 0.5;
+    const maxFrames = 180;
+    const totalSamples = Math.max(1, Math.ceil(video.duration / step));
+    for (let sample = 0, time = 0; time < video.duration + 0.001; sample += 1, time = sample * step) {
+      const at = Math.min(time, Math.max(0, video.duration - 0.03));
+      await seekVideo(video, at);
+      tctx.drawImage(video, 0, 0, tw, th);
+      const current = thumbnailSignature(tctx, tw, th);
+      const difference = signatureDifference(previous, current);
+      const keep = !previous || difference >= 10 || at - lastKept >= 6;
+      previous = current;
+      if (keep) {
+        ctx.drawImage(video, 0, 0, width, height);
+        frames.push({
+          time: at,
+          image: canvas.toDataURL("image/jpeg", 0.84),
+        });
+        lastKept = at;
+        if (frames.length >= maxFrames) break;
+      }
+      if (sample % 8 === 0) onProgress?.(Math.min(1, sample / totalSamples), frames.length);
+    }
+    onProgress?.(1, frames.length);
+    return { frames, truncated: frames.length >= maxFrames, duration: video.duration };
+  } finally {
+    URL.revokeObjectURL(url);
+    video.removeAttribute("src");
+    video.load();
+  }
+}
+
+async function importAovVideo() {
+  if (state.aovBusy || !pendingAovVideo || !state.draft?.player) return;
+  const archive = await api("/api/admin/aov/archive");
+  if (!archive.ok) {
+    state.error = message(archive.code || "aov_archive_unavailable", archive.http);
+    state.status = "";
+    render();
+    return;
+  }
+
+  state.aovBusy = true;
+  state.error = "";
+  state.status = "正在本機掃描錄影畫面";
+  render();
+
+  let extracted;
+  try {
+    extracted = await extractAovVideoFrames(pendingAovVideo, (progress, kept) => {
+      const node = document.querySelector("[data-status]");
+      if (node) node.textContent = `正在本機掃描錄影 ${Math.round(progress * 100)}% · 已找到 ${kept} 個畫面`;
+    });
+  } catch {
+    state.aovBusy = false;
+    state.error = message("aov_video_invalid");
+    state.status = "";
+    render();
+    return;
+  }
+
+  const importId = `video-${crypto.randomUUID().replaceAll("-", "")}`;
+  const ownerName = String(state.draft.player.handle || state.aovForm.keyword || "").trim();
+  let recognizedFrames = 0;
+  let mergedMatches = 0;
+  let failedFrames = 0;
+  let archiveWarning = false;
+
+  for (let index = 0; index < extracted.frames.length; index += 1) {
+    const frame = extracted.frames[index];
+    const node = document.querySelector("[data-status]");
+    if (node) node.textContent = `正在辨識錄影畫面 ${index + 1} / ${extracted.frames.length} · 已併入 ${mergedMatches} 筆對局資料`;
+    const data = await api("/api/admin/aov/vision", {
+      method: "POST",
+      body: JSON.stringify({
+        image: frame.image,
+        importId,
+        frameIndex: index,
+        videoTime: frame.time,
+        ownerName,
+      }),
+    });
+    if (!state.authed) break;
+    if (!data.ok) {
+      failedFrames += 1;
+      continue;
+    }
+    recognizedFrames += 1;
+    if (data.archive && data.archive.ok === false) archiveWarning = true;
+    if (Array.isArray(data.matches) && data.matches.length) {
+      state.draft.player = applyAovImport(state.draft.player, { matches: data.matches, summary: {} }, {
+        publish: false,
+        keyword: ownerName,
+        searchType: "playerName",
+        server: aovServer(),
+        syncedAt: new Date().toISOString(),
+        hiddenNames: Array.isArray(state.draft.hiddenNames) ? state.draft.hiddenNames : DEFAULT_HIDDEN_NAMES,
+      });
+      mergedMatches += data.matches.length;
+    }
+  }
+
+  state.aovBusy = false;
+  const fileName = pendingAovVideo.name;
+  pendingAovVideo = null;
+  if (archiveWarning) state.error = message("aov_archive_unavailable");
+  const clipped = extracted.truncated ? "；影片變化畫面超過 180 張，後段可能需要分成第二支影片再匯入" : "";
+  const failures = failedFrames ? `；${failedFrames} 張沒有辨識成功，但不會刪除任何既有資料` : "";
+  markDirty(`錄影「${fileName}」完成：保存 ${extracted.frames.length} 個畫面、辨識 ${recognizedFrames} 張、讀到 ${mergedMatches} 筆對局資料${failures}${clipped}。目前只併入草稿，請檢查後再發布。`);
+  render();
 }
 
 function isHistoryFile(file) {
@@ -1357,6 +1586,10 @@ function onClick(event) {
     const note = noteNode instanceof HTMLInputElement ? noteNode.value : "";
     const notify = card?.querySelector("[data-notify]") instanceof HTMLInputElement && card.querySelector("[data-notify]").checked;
     void reviewApplication(button?.dataset.id, action === "app-approve" ? "approve" : "reject", { inviteUrl, note, notify });
+    return;
+  }
+  if (action === "aov-video") {
+    void importAovVideo();
     return;
   }
   if (action === "aov-import" || action === "aov-publish" || action === "aov-paste") {
