@@ -49,26 +49,31 @@ async function saveOwnerPlayer(env, mutate, logCode) {
 }
 
 async function syncFromAovRanking(env, garenaCode) {
-  const fetched = await fetchFightHistory(env, OWNER_HISTORY);
-  if (!fetched.ok) {
-    const code = fetched.code || "aov_blocked";
-    logEvent(code === "aov_challenge" || code === "aov_shell" ? "aov_sync_skipped" : "aov_sync_failed");
-    return { ok: false, code, stored: false, garenaCode, source: "aovweb" };
+  try {
+    const fetched = await fetchFightHistory(env, OWNER_HISTORY);
+    if (!fetched.ok) {
+      const code = fetched.code || "aov_blocked";
+      logEvent(code === "aov_challenge" || code === "aov_shell" ? "aov_sync_skipped" : "aov_sync_failed");
+      return { ok: false, code, stored: false, garenaCode, source: "aovweb" };
+    }
+    const saved = await saveOwnerPlayer(
+      env,
+      (player, now, hiddenNames) =>
+        applyAovImport(player, fetched, {
+          publish: true,
+          keyword: OWNER_HISTORY.keyword,
+          server: OWNER_HISTORY.server,
+          searchType: OWNER_HISTORY.searchType,
+          syncedAt: now,
+          hiddenNames,
+        }),
+      "aov_synced",
+    );
+    return { ...saved, garenaCode, source: "aovweb", matches: saved.matches };
+  } catch (error) {
+    logFailure("aov_sync_failed", error);
+    return { ok: false, code: "aov_sync_failed", stored: false, garenaCode, source: "aovweb" };
   }
-  const saved = await saveOwnerPlayer(
-    env,
-    (player, now, hiddenNames) =>
-      applyAovImport(player, fetched, {
-        publish: true,
-        keyword: OWNER_HISTORY.keyword,
-        server: OWNER_HISTORY.server,
-        searchType: OWNER_HISTORY.searchType,
-        syncedAt: now,
-        hiddenNames,
-      }),
-    "aov_synced",
-  );
-  return { ...saved, garenaCode, source: "aovweb", matches: saved.matches };
 }
 
 /**
@@ -93,37 +98,42 @@ async function ownerHandle(env) {
 }
 
 export async function syncOwnerFightHistory(env) {
-  const secretStatus = garenaSecretStatus(env);
-  if (secretStatus) {
-    logEvent(secretStatus === "garena_unconfigured" ? "garena_sync_unconfigured" : "garena_sync_failed");
-    return syncFromAovRanking(env, secretStatus);
+  try {
+    const secretStatus = garenaSecretStatus(env);
+    if (secretStatus) {
+      logEvent(secretStatus === "garena_unconfigured" ? "garena_sync_unconfigured" : "garena_sync_failed");
+      return syncFromAovRanking(env, secretStatus);
+    }
+    const fetched = await fetchGarenaHistory(env, {
+      keyword: OWNER_HISTORY.keyword,
+      handle: await ownerHandle(env),
+    });
+    if (!fetched.ok) {
+      const code = fetched.code || "garena_blocked";
+      logEvent(code === "garena_login_required" ? "garena_login_required" : "garena_sync_failed");
+      return syncFromAovRanking(env, code);
+    }
+    const saved = await saveOwnerPlayer(
+      env,
+      (player, now) => {
+        if (!characterMatchesOwner(fetched.character?.name, player, OWNER_HISTORY.keyword)) return null;
+        const applied = applyGarenaHistory(player, fetched, {
+          publish: true,
+          keyword: OWNER_HISTORY.keyword,
+          server: fetched.server || OWNER_HISTORY.server,
+          syncedAt: now,
+        });
+        return applied.applied ? applied.player : null;
+      },
+      "garena_synced",
+    );
+    if (!saved.ok && saved.code === "garena_character_mismatch") {
+      logEvent("garena_sync_failed");
+      return syncFromAovRanking(env, "garena_character_mismatch");
+    }
+    return { ...saved, garenaCode: "garena_synced", source: "garena" };
+  } catch (error) {
+    logFailure("garena_sync_failed", error);
+    return { ok: false, code: "garena_sync_failed", stored: false, garenaCode: "garena_sync_failed", source: "garena" };
   }
-  const fetched = await fetchGarenaHistory(env, {
-    keyword: OWNER_HISTORY.keyword,
-    handle: await ownerHandle(env),
-  });
-  if (!fetched.ok) {
-    const code = fetched.code || "garena_blocked";
-    logEvent(code === "garena_login_required" ? "garena_login_required" : "garena_sync_failed");
-    return syncFromAovRanking(env, code);
-  }
-  const saved = await saveOwnerPlayer(
-    env,
-    (player, now) => {
-      if (!characterMatchesOwner(fetched.character?.name, player, OWNER_HISTORY.keyword)) return null;
-      const applied = applyGarenaHistory(player, fetched, {
-        publish: true,
-        keyword: OWNER_HISTORY.keyword,
-        server: fetched.server || OWNER_HISTORY.server,
-        syncedAt: now,
-      });
-      return applied.applied ? applied.player : null;
-    },
-    "garena_synced",
-  );
-  if (!saved.ok && saved.code === "garena_character_mismatch") {
-    logEvent("garena_sync_failed");
-    return syncFromAovRanking(env, "garena_character_mismatch");
-  }
-  return { ...saved, garenaCode: "garena_synced", source: "garena" };
 }
