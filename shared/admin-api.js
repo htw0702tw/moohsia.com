@@ -1,5 +1,5 @@
 import { getDefaultDocument } from "../src/content.js";
-import { aovArchiveSummary, archiveAovMatches } from "./aov-archive.js";
+import { aovArchiveSummary, archiveAovMatches, bootstrapAovArchive } from "./aov-archive.js";
 import { analyzeAovFrame } from "./aov-capture.js";
 import { applicationsFromEnv, approveApplication, presentApplication, rejectApplication } from "./applications.js";
 import { refreshCatalog } from "./catalog-store.js";
@@ -442,8 +442,10 @@ async function importAov(request, env) {
 async function archiveStatus(request, env) {
   const session = await currentSession(request, env);
   if (!session) return json(401, { ok: false, code: "unauthorized" });
+  const bootstrap = await bootstrapAovArchive(env);
+  if (!bootstrap.ok) return ok(request, env, session, bootstrap);
   const summary = await aovArchiveSummary(env);
-  return ok(request, env, session, summary);
+  return ok(request, env, session, { ...summary, bootstrap });
 }
 
 async function visionAov(request, env) {
