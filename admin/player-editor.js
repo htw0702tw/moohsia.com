@@ -17,6 +17,10 @@ import {
   emptyTitle,
   emptyWeeklyReport,
   emptyYearTreasure,
+  defaultGameSnapshot,
+  emptyGameSnapshot,
+  emptyGameSnapshotRow,
+  GAME_SNAPSHOT_KEYS,
   matchRecency,
 } from "../shared/player.js";
 
@@ -211,6 +215,7 @@ export function ensurePlayerRecord(player) {
     ...(record.powerBoard || {}),
     rows: Array.isArray(record.powerBoard?.rows) ? record.powerBoard.rows : [],
   };
+  record.gameSnapshot = normalizeGameSnapshot(record.gameSnapshot);
   record.yearTreasure = {
     ...emptyYearTreasure(),
     ...(record.yearTreasure || {}),
@@ -314,6 +319,52 @@ function pair(html) {
   return `<div class="pair">${html}</div>`;
 }
 
+function normalizeGameSnapshot(value) {
+  // No stored snapshot yet: start from the in-game numbers shipped with the site.
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : defaultGameSnapshot();
+  const rows = (Array.isArray(source.rows) ? source.rows : []).slice(0, 4).map((row) => ({ ...emptyGameSnapshotRow(), ...(row || {}) }));
+  while (rows.length < 2) rows.push(emptyGameSnapshotRow());
+  return { ...emptyGameSnapshot(), ...source, rows };
+}
+
+const GAME_SNAPSHOT_LABELS = {
+  played: "場次",
+  winRate: "勝率",
+  mvp: "MVP",
+  godlike: "超神",
+  penta: "五殺",
+  quadra: "四殺",
+  triple: "三殺",
+  supreme: "頂級",
+  gold: "金牌",
+  silver: "銀牌",
+  loseMvp: "敗方MVP",
+};
+
+function gameSnapshotSection(player, text) {
+  const snap = normalizeGameSnapshot(player.gameSnapshot);
+  const rows = snap.rows
+    .map(
+      (row, index) => `<article class="repeat"><header><b>${esc(row.label || `第 ${index + 1} 列`)}</b></header>
+        ${field("名稱", textInput(`data-game-row="${index}" data-field="label"`, row.label, text), "例如：全部賽季、2026-S4賽季。整列留白就不顯示。")}
+        <div class="pair">${GAME_SNAPSHOT_KEYS.map((key) =>
+          field(GAME_SNAPSHOT_LABELS[key], textInput(`data-game-row="${index}" data-field="${key}"`, row[key], text), key === "winRate" ? "不要加 %。" : ""),
+        ).join("")}</div>
+      </article>`,
+    )
+    .join("");
+  return `<h2>遊戲內對戰資料（參考）</h2>
+    <p class="hint">照遊戲內「對戰資料」頁填，公開頁「圖表」分頁最下方的參考卡會顯示。圖表本身依已同步的對局自動計算，不受這裡影響。</p>
+    <div class="pair">
+      ${field("快照日期", textInput(`data-game-snap="updatedAt" type="date"`, snap.updatedAt, text), "")}
+      ${field("模式", textInput(`data-game-snap="mode"`, snap.mode, text), "例如：排位賽。")}
+      ${field("賽季名稱", textInput(`data-game-snap="seasonLabel"`, snap.seasonLabel, text), "圖表篩選按鈕的名稱，例如：2026-S4賽季。")}
+      ${field("賽季開始日", textInput(`data-game-snap="seasonStart" type="date"`, snap.seasonStart, text), "填了之後圖表會多一個只看本賽季的篩選。不確定就留白。")}
+    </div>
+    <div class="repeats">${rows}</div>
+    <button class="ghost" type="button" data-action="game-snapshot-default">還原為 2026-09-27 的遊戲內數字</button>`;
+}
+
 function rankTab(player, text) {
   const card = player.rankCard || emptyRankCard();
   const tiers = LADDER.map((tier) => `<option value="${esc(tier.id)}"${card.tier === tier.id ? " selected" : ""}>${esc(tier.zh)}</option>`).join("");
@@ -376,6 +427,7 @@ function rankTab(player, text) {
       ${field("快照日期", textInput(`data-power="updatedAt" type="date"`, board.updatedAt, text), "")}
     </div>
     ${rows}
+    ${gameSnapshotSection(player, text)}
     <h2>賽年寶藏</h2>
     <div class="pair">
       ${field("賽年", textInput(`data-year-field="year"`, treasure.year, text), "例如：2026。")}
@@ -831,6 +883,16 @@ export function applyPlayerInput(player, target, catalog) {
     record.powerBoard.rows[index][target.dataset.field] = target.value;
     return true;
   }
+  if (target.dataset.gameSnap) {
+    record.gameSnapshot[target.dataset.gameSnap] = target.value;
+    return true;
+  }
+  if (target.dataset.gameRow != null) {
+    const index = Number(target.dataset.gameRow);
+    while (record.gameSnapshot.rows.length <= index) record.gameSnapshot.rows.push(emptyGameSnapshotRow());
+    if (target.dataset.field) record.gameSnapshot.rows[index][target.dataset.field] = target.value;
+    return true;
+  }
   if (target.dataset.yearField) {
     record.yearTreasure[target.dataset.yearField] = target.value;
     return true;
@@ -965,6 +1027,11 @@ export function runPlayerAction(player, action, node, ui) {
     const report = emptyWeeklyReport();
     report.id = newId();
     record.weeklyReports.push(report);
+    ui.tab = "rank";
+    return done(true);
+  }
+  if (action === "game-snapshot-default") {
+    record.gameSnapshot = normalizeGameSnapshot(defaultGameSnapshot());
     ui.tab = "rank";
     return done(true);
   }

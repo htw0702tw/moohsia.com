@@ -296,6 +296,36 @@ export function emptyPowerBoard() {
   return { updatedAt: "", area: "", hero: "", power: "", bestPower: "", rows: [] };
 }
 
+/** Medal keys on the in-game 對戰資料 page, in screen order. */
+export const GAME_SNAPSHOT_KEYS = ["played", "winRate", "mvp", "godlike", "penta", "quadra", "triple", "supreme", "gold", "silver", "loseMvp"];
+
+export function emptyGameSnapshotRow(label = "") {
+  const row = { label };
+  for (const key of GAME_SNAPSHOT_KEYS) row[key] = "";
+  return row;
+}
+
+export function emptyGameSnapshot() {
+  return { updatedAt: "", mode: "", seasonLabel: "", seasonStart: "", rows: [] };
+}
+
+/**
+ * In-game 對戰資料 (排位賽) as read off the owner's screen on 2026-09-27.
+ * Used when the stored player has no snapshot yet; admin can edit or clear it.
+ */
+export function defaultGameSnapshot() {
+  return {
+    updatedAt: "2026-09-27",
+    mode: "排位賽",
+    seasonLabel: "2026-S4賽季",
+    seasonStart: "",
+    rows: [
+      { label: "全部賽季", played: "96", winRate: "64.6", mvp: "30", godlike: "12", penta: "28", quadra: "7", triple: "22", supreme: "1", gold: "12", silver: "13", loseMvp: "9" },
+      { label: "2026-S4賽季", played: "37", winRate: "56.8", mvp: "9", godlike: "1", penta: "0", quadra: "0", triple: "2", supreme: "0", gold: "2", silver: "3", loseMvp: "4" },
+    ],
+  };
+}
+
 export function emptyYearTreasure() {
   return {
     year: "",
@@ -380,6 +410,7 @@ export function emptyPlayer() {
     aov: { syncedAt: "", count: "", keyword: "", server: "" },
     rankCard: emptyRankCard(),
     powerBoard: emptyPowerBoard(),
+    gameSnapshot: emptyGameSnapshot(),
     yearTreasure: emptyYearTreasure(),
     weeklyReports: [],
   };
@@ -843,6 +874,27 @@ function cleanPowerBoard(value) {
   };
 }
 
+function cleanGameSnapshot(value) {
+  if (value === undefined) return defaultGameSnapshot();
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const rows = [];
+  for (const item of (Array.isArray(source.rows) ? source.rows : []).slice(0, 4)) {
+    const raw = item && typeof item === "object" ? item : {};
+    const row = { label: clip(raw.label, 24) };
+    for (const key of GAME_SNAPSHOT_KEYS) row[key] = key === "winRate" ? decimal(raw[key], 3, 1) : whole(raw[key], 6);
+    if (row.winRate !== "" && Number(row.winRate) > 100) row.winRate = "";
+    if (!row.label && GAME_SNAPSHOT_KEYS.every((key) => row[key] === "")) continue;
+    rows.push(row);
+  }
+  return {
+    updatedAt: flexDate(source.updatedAt),
+    mode: clip(source.mode, 24),
+    seasonLabel: clip(source.seasonLabel, 24),
+    seasonStart: flexDate(source.seasonStart),
+    rows,
+  };
+}
+
 function cleanYearTreasure(value) {
   const source = value && typeof value === "object" ? value : {};
   const incoming = Array.isArray(source.seasons) ? source.seasons : [];
@@ -969,6 +1021,7 @@ export function cleanPlayer(input) {
     aov: cleanAov(source.aov),
     rankCard: cleanRankCard(source.rankCard),
     powerBoard: cleanPowerBoard(source.powerBoard),
+    gameSnapshot: cleanGameSnapshot(source.gameSnapshot),
     yearTreasure: cleanYearTreasure(source.yearTreasure),
     weeklyReports: (Array.isArray(source.weeklyReports) ? source.weeklyReports : [])
       .slice(0, 8)
@@ -1159,6 +1212,7 @@ export function toPublicPlayer(player) {
     matches: player.matches.filter((match) => match.publish).map(publicMatch),
     rankCard: player.rankCard,
     powerBoard: player.powerBoard,
+    gameSnapshot: player.gameSnapshot,
     yearTreasure: player.yearTreasure,
     weeklyReports: player.weeklyReports,
   };

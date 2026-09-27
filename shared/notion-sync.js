@@ -229,6 +229,7 @@ export function applyNotionCollections(document, sections) {
     builds: doc.player.builds,
     rankCard: doc.player.rankCard,
     powerBoard: doc.player.powerBoard,
+    gameSnapshot: doc.player.gameSnapshot,
     yearTreasure: doc.player.yearTreasure,
     weeklyReports: doc.player.weeklyReports,
   };
@@ -278,6 +279,7 @@ export function applyNotionCollections(document, sections) {
         builds: kept.builds || [],
         rankCard: kept.rankCard,
         powerBoard: kept.powerBoard,
+        gameSnapshot: kept.gameSnapshot,
         yearTreasure: kept.yearTreasure,
         weeklyReports: kept.weeklyReports || [],
         matches: kept.matches,
