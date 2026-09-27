@@ -14,7 +14,7 @@ import worker from "../worker/index.js";
 import { createMemoryStore } from "../shared/cms-store.js";
 import { hashPassword } from "../shared/password.js";
 import { resetLoginFailuresForTests } from "../shared/rate-limit.js";
-import { cleanPlayer, emptyPlayer, toPublicPlayer } from "../shared/player.js";
+import { cleanPlayer, emptyPlayer, PLAYER_MATCH_LIMIT, toPublicPlayer } from "../shared/player.js";
 
 const fixture = readFileSync(new URL("./fixtures/aov-fight-history.html", import.meta.url), "utf8");
 const headerFixture = readFileSync(new URL("./fixtures/aov-fight-history-headers.html", import.meta.url), "utf8");
@@ -1128,4 +1128,24 @@ test("collapsed re-import keeps the fuller scoreboard, items, and combat stats",
   assert.equal(kept.mode, "排位賽");
   assert.equal(kept.map, "經典競技");
   assert.equal(kept.ownerSide, "red");
+});
+
+test("an import beyond the document capacity fails without discarding an older game", () => {
+  const previous = Array.from({ length: PLAYER_MATCH_LIMIT }, (_, index) => ({
+    id: `stored-${index}`, externalMatchId: `stored-${index}`, hero: "娜塔亞", result: "勝",
+  }));
+  const player = { ...emptyPlayer(), matches: previous };
+  const incoming = { matches: [{ id: "new-game", externalMatchId: "new-game", hero: "芽芽" }], summary: {} };
+  assert.throws(() => applyAovImport(player, incoming), { code: "aov_match_limit" });
+  assert.equal(player.matches.length, PLAYER_MATCH_LIMIT);
+  assert.equal(player.matches.at(-1).id, `stored-${PLAYER_MATCH_LIMIT - 1}`);
+});
+
+test("a shallow re-import retains previously recorded optional match fields", () => {
+  const previous = { id: "same", externalMatchId: "same", hero: "娜塔亞", result: "勝", skin: "特別造型", blueScore: "25" };
+  const player = { ...emptyPlayer(), matches: [previous] };
+  const incoming = { matches: [{ id: "same", externalMatchId: "same", hero: "娜塔亞", result: "勝", skin: "", blueScore: "" }], summary: {} };
+  const merged = applyAovImport(player, incoming);
+  assert.equal(merged.matches[0].skin, "特別造型");
+  assert.equal(merged.matches[0].blueScore, "25");
 });
