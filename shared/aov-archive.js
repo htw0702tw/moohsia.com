@@ -210,16 +210,18 @@ export async function bootstrapAovArchive(env) {
       .prepare("SELECT draft_json, published_json FROM site_documents WHERE id = ?")
       .bind("site")
       .first();
-    let matches = [];
-    try {
-      // Draft and published histories can differ. Preserve both before a sync
-      // rewrites either CMS document.
-      for (const raw of [row?.published_json, row?.draft_json]) {
-        const doc = raw ? JSON.parse(raw) : {};
-        if (Array.isArray(doc?.player?.matches)) matches.push(...doc.player.matches);
+    const matches = [];
+    // Draft and published histories can differ. Preserve both before a sync
+    // rewrites either CMS document. Invalid JSON must block the write.
+    for (const raw of [row?.published_json, row?.draft_json]) {
+      if (!raw) continue;
+      let doc;
+      try {
+        doc = JSON.parse(raw);
+      } catch {
+        return { ok: false, code: "aov_archive_unavailable", archived: 0 };
       }
-    } catch {
-      matches = [];
+      if (Array.isArray(doc?.player?.matches)) matches.push(...doc.player.matches);
     }
     if (!matches.length) {
       await db
