@@ -192,6 +192,43 @@ export async function archiveAovMatches(env, matches, options = {}) {
   }
 }
 
+export async function bootstrapAovArchive(env) {
+  const db = dbFromEnv(env);
+  if (!db) return { ok: false, code: "aov_archive_unavailable", archived: 0 };
+  try {
+    const seeded = await db.prepare("SELECT id FROM aov_imports WHERE id = ?").bind("cms-bootstrap-v1").first();
+    if (seeded?.id) return { ok: true, archived: 0, seeded: true };
+    const row = await db
+      .prepare("SELECT draft_json, published_json FROM site_documents WHERE id = ?")
+      .bind("site")
+      .first();
+    const raw = row?.published_json || row?.draft_json || "";
+    let matches = [];
+    try {
+      const doc = raw ? JSON.parse(raw) : {};
+      matches = Array.isArray(doc?.player?.matches) ? doc.player.matches : [];
+    } catch {
+      matches = [];
+    }
+    if (!matches.length) {
+      await db
+        .prepare("INSERT INTO aov_imports (id, source, created_at, match_count, note) VALUES (?, ?, ?, 0, ?) ON CONFLICT(id) DO NOTHING")
+        .bind("cms-bootstrap-v1", "manual", new Date().toISOString(), "CMS bootstrap had no matches")
+        .run();
+      return { ok: true, archived: 0, seeded: true };
+    }
+    const result = await archiveAovMatches(env, matches, {
+      source: "manual",
+      importId: "cms-bootstrap-v1",
+      note: "Seeded from the existing CMS player before video imports",
+    });
+    return { ...result, seeded: result.ok };
+  } catch (error) {
+    logFailure("aov_archive_bootstrap_failed", error);
+    return { ok: false, code: "aov_archive_unavailable", archived: 0 };
+  }
+}
+
 export async function aovArchiveSummary(env) {
   const db = dbFromEnv(env);
   if (!db) return { ok: false, code: "aov_archive_unavailable", matches: 0, versions: 0 };
