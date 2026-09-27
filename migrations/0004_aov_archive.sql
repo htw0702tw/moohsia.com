@@ -46,3 +46,21 @@ CREATE TABLE IF NOT EXISTS aov_canonical_matches (
 
 CREATE INDEX IF NOT EXISTS aov_canonical_played
   ON aov_canonical_matches(played_at DESC);
+
+
+-- Every scene frame accepted by the video importer is kept with its AI result.
+-- frame_key points at the original JPEG stored in the existing R2 MEDIA bucket.
+CREATE TABLE IF NOT EXISTS aov_capture_frames (
+  id TEXT PRIMARY KEY,
+  import_id TEXT NOT NULL,
+  frame_index INTEGER NOT NULL,
+  video_time REAL NOT NULL DEFAULT 0,
+  captured_at TEXT NOT NULL,
+  frame_key TEXT NOT NULL DEFAULT '',
+  kind TEXT NOT NULL DEFAULT '',
+  data_json TEXT NOT NULL DEFAULT '{}',
+  FOREIGN KEY(import_id) REFERENCES aov_imports(id)
+);
+
+CREATE INDEX IF NOT EXISTS aov_capture_frames_import
+  ON aov_capture_frames(import_id, frame_index);
