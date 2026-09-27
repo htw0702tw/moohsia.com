@@ -411,7 +411,12 @@ export function applyGarenaHistory(player, parsed, options = {}) {
     imported.push(mergeRow(index >= 0 ? existing[index] : null, raw, publish));
   }
   const leftover = existing.filter((_, index) => !used.has(index));
-  const matches = [...imported, ...leftover].sort((a, b) => matchRecency(b) - matchRecency(a)).slice(0, PLAYER_MATCH_LIMIT);
+  const matches = [...imported, ...leftover].sort((a, b) => matchRecency(b) - matchRecency(a));
+  if (matches.length > PLAYER_MATCH_LIMIT) {
+    const error = new RangeError("aov_match_limit");
+    error.code = "aov_match_limit";
+    throw error;
+  }
   const serverId = options.server === "1011" || options.server === "1012" ? options.server : "";
   const server = { zh: base.server?.zh || "", en: base.server?.en || "" };
   if (!server.zh && serverId === "1012") server.zh = "純潔之翼";
