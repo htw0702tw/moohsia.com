@@ -268,6 +268,7 @@ export async function analyzeAovFrame(env, input = {}) {
   const frameId = `${importId.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 52)}-${String(frameIndex).padStart(4, "0")}`;
 
   const stored = await storeAovCaptureFrame(env, image, frameId);
+  if (!stored.ok) return { ok: false, code: stored.code || "media_unconfigured", importId, frameIndex };
   try {
     const ai = await env.AI.run(MODEL, {
       task: "query",
@@ -286,7 +287,7 @@ export async function analyzeAovFrame(env, input = {}) {
         frameIndex,
         videoTime,
         capturedAt,
-        frameKey: stored.ok ? stored.key : "",
+        frameKey: stored.key,
         kind: "unreadable",
         data: { raw: clip(ai?.answer || ai?.response || "", 4000) },
       });
@@ -305,7 +306,7 @@ export async function analyzeAovFrame(env, input = {}) {
       frameIndex,
       videoTime,
       capturedAt,
-      frameKey: stored.ok ? stored.key : "",
+      frameKey: stored.key,
       kind: normalized.kind,
       data: normalized,
     });
@@ -313,8 +314,8 @@ export async function analyzeAovFrame(env, input = {}) {
       ok: true,
       importId,
       frameIndex,
-      frameKey: stored.ok ? stored.key : "",
-      stored: stored.ok,
+      frameKey: stored.key,
+      stored: true,
       archive,
       ...normalized,
     };
