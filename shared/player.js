@@ -617,7 +617,7 @@ function cleanMatch(item) {
     rankDelta: signed(source.rankDelta),
     powerDelta: signed(source.powerDelta),
     externalMatchId: cleanExternalId(source.externalMatchId),
-    source: source.source === "aovweb" || source.source === "garena" || source.source === "capture" ? source.source : "",
+    source: source.source === "aovweb" || source.source === "garena" ? source.source : "",
     blueScore: whole(source.blueScore, 4),
     redScore: whole(source.redScore, 4),
     winner,
@@ -934,7 +934,13 @@ export function cleanPlayer(input) {
   const stats = source.stats && typeof source.stats === "object" ? source.stats : {};
   const matches = [];
   if (Array.isArray(source.matches)) {
-    for (const item of source.matches.slice(0, PLAYER_MATCH_LIMIT)) {
+    // Never silently drop older matches while cleaning a CMS document.
+    if (source.matches.length > PLAYER_MATCH_LIMIT) {
+      const error = new RangeError("aov_match_limit");
+      error.code = "aov_match_limit";
+      throw error;
+    }
+    for (const item of source.matches) {
       const match = cleanMatch(item);
       if (matchFilled(match)) matches.push(match);
     }
