@@ -1,5 +1,5 @@
 import { getDefaultDocument } from "../src/content.js";
-import { archiveAovMatches } from "./aov-archive.js";
+import { archiveBeforeAovWrite } from "./aov-archive.js";
 import { applyAovImport, fetchFightHistory } from "./aov-import.js";
 import { storeFromEnv } from "./cms-store.js";
 import { namesForImport } from "./hidden-names.js";
@@ -57,7 +57,8 @@ async function syncFromAovRanking(env, garenaCode) {
       logEvent(code === "aov_challenge" || code === "aov_shell" ? "aov_sync_skipped" : "aov_sync_failed");
       return { ok: false, code, stored: false, garenaCode, source: "aovweb" };
     }
-    const archive = await archiveAovMatches(env, fetched.matches, { source: "aovweb", note: "hourly fallback sync" });
+    const archive = await archiveBeforeAovWrite(env, fetched.matches, { source: "aovweb", note: "hourly fallback sync" });
+    if (!archive.ok) return { ok: false, code: archive.code, stored: false, garenaCode, source: "aovweb" };
     const saved = await saveOwnerPlayer(
       env,
       (player, now, hiddenNames) =>
@@ -115,7 +116,8 @@ export async function syncOwnerFightHistory(env) {
       logEvent(code === "garena_login_required" ? "garena_login_required" : "garena_sync_failed");
       return syncFromAovRanking(env, code);
     }
-    const archive = await archiveAovMatches(env, fetched.matches, { source: "garena", note: "hourly official sync" });
+    const archive = await archiveBeforeAovWrite(env, fetched.matches, { source: "garena", note: "hourly official sync" });
+    if (!archive.ok) return { ok: false, code: archive.code, stored: false, garenaCode: "garena_synced", source: "garena" };
     const saved = await saveOwnerPlayer(
       env,
       (player, now) => {
