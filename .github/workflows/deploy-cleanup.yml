@@ -22,8 +22,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
       - run: npm run build
+      - run: npm run check
       - name: Apply D1 migrations
         run: npm run cms:migrate
       - name: Deploy Worker
