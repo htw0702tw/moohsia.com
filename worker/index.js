@@ -1,9 +1,8 @@
 import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
-import { refreshCatalog } from "../shared/catalog-store.js";
 import { isAdminHost } from "../shared/hosts.js";
 import { logFailure } from "../shared/log.js";
-import { syncNotionDraft } from "../shared/notion-sync.js";
+import { purgePlayerRecords } from "../shared/player-record-purge.js";
 import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/session.js";
 
 /**
@@ -25,20 +24,10 @@ import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/s
  * @property {string} [NOTION_NEWS_DB]
  * @property {string} [NOTION_COPY_DB]
  * @property {string} [NOTION_PROFILE_DB]
- * @property {string} [NOTION_PLAYER_DB]
- * @property {string} [NOTION_MATCH_DB]
- * @property {string} [NOTION_SEASON_DB]
- * @property {string} [NOTION_HONOR_DB]
- * @property {string} [NOTION_TITLE_DB]
- * @property {string} [NOTION_HERO_DB]
  * @property {string} [RESEND_API_KEY]
  * @property {string} [MAIL_FROM]
  * @property {string} [APPLICATIONS_TO]
  * @property {R2Bucket} [MEDIA]
- * @property {string} [GARENA_ACCESS_TOKEN]
- * @property {string} [GARENA_CODE]
- * @property {string} [GARENA_PARTITION]
- * @property {string} [GARENA_CSRF_TOKEN]
  */
 
 const PUBLIC_FALLBACK = "/index.html";
@@ -160,24 +149,12 @@ async function servePublic(request, env) {
   return serveAsset(request, env, PUBLIC_FALLBACK);
 }
 
-async function runScheduled(env) {
-  try {
-    await syncNotionDraft(env);
-  } catch (error) {
-    logFailure("notion_cron_failed", error);
-  }
-  try {
-    await refreshCatalog(env);
-  } catch (error) {
-    logFailure("catalog_cron_failed", error);
-  }
-}
-
 export default {
   /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
+      await purgePlayerRecords(env);
       if (isAdminHost(url.hostname)) return await serveAdmin(request, env);
       return await servePublic(request, env);
     } catch (error) {
