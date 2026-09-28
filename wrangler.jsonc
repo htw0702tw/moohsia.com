@@ -51,9 +51,9 @@
       "bucket_name": "moohsia-media"
     }
   ],
-  // Match history is no longer ingested. Daily 18:15 UTC: Notion draft sync and catalog refresh.
+  // No scheduled fetches. Public/player data changes only through explicit edits or deploys.
   "triggers": {
-    "crons": ["15 18 * * *"]
+    "crons": []
   }
   // Custom domains are attached in the Cloudflare dashboard (or by uncommenting
   // after the moohsia.com zone is on this account). Do not route this Worker
