@@ -1,9 +1,35 @@
-const PURGE_KEY = "player-records-purged-v2";
+const PURGE_KEY = "player-records-purged-v3";
 
-function blankRecords(player) {
-  if (!player || typeof player !== "object" || Array.isArray(player)) return player;
+const OWNER_TOKENS = ["htw0702aov", "htw0702"];
+
+function isOwnerToken(value) {
+  const text = String(value ?? "").trim().toLowerCase();
+  if (!text) return false;
+  return OWNER_TOKENS.some((token) => text === token || text.includes(token));
+}
+
+function isOwnerMember(member) {
+  if (!member || typeof member !== "object") return false;
+  return [member.id, member.slug, member.handle, member.name?.zh, member.name?.en].some(isOwnerToken);
+}
+
+function emptyPlayerShell() {
   return {
-    ...player,
+    publish: false,
+    handle: "",
+    uid: "",
+    name: { zh: "", en: "" },
+    role: { zh: "", en: "" },
+    lane: { zh: "", en: "" },
+    rank: { zh: "", en: "" },
+    season: { zh: "", en: "" },
+    server: { zh: "", en: "" },
+    title: { zh: "", en: "" },
+    bio: { zh: "", en: "" },
+    signatureHeroes: { zh: "", en: "" },
+    peakRank: { zh: "", en: "" },
+    joinDate: "",
+    avatar: { caption: { zh: "", en: "" }, key: "", mime: "", kind: "" },
     stats: { played: "", wins: "", winRate: "", kda: "", mvp: "", kills: "", deaths: "", assists: "", gold: "", damage: "" },
     seasons: [],
     reputation: { score: "", level: "", exp: "", expMax: "", note: { zh: "", en: "" }, privileges: [] },
@@ -14,6 +40,7 @@ function blankRecords(player) {
     skins: [],
     matches: [],
     aov: { syncedAt: "", count: "", keyword: "", server: "" },
+    rankCard: { season: "", tier: "", division: "", stars: "", points: "", queueReadout: "", queueReadoutMax: "", seasonChallenge: "", updatedAt: "" },
     powerBoard: { updatedAt: "", area: "", hero: "", power: "", bestPower: "", rows: [] },
     gameSnapshot: { updatedAt: "", mode: "", seasonLabel: "", seasonStart: "", rows: [] },
     yearTreasure: { year: "", reward: "", updatedAt: "", seasons: [] },
@@ -25,20 +52,20 @@ function rewriteSiteJson(value) {
   if (typeof value !== "string" || !value) return value;
   try {
     const doc = JSON.parse(value);
-    if (doc && typeof doc === "object") doc.player = blankRecords(doc.player);
+    if (doc && typeof doc === "object") {
+      doc.player = emptyPlayerShell();
+      if (Array.isArray(doc.rosterMembers)) {
+        doc.rosterMembers = doc.rosterMembers.filter((member) => !isOwnerMember(member));
+      }
+    }
     return JSON.stringify(doc);
   } catch {
     return value;
   }
 }
 
-function rewritePlayerJson(value) {
-  if (typeof value !== "string" || !value) return value;
-  try {
-    return JSON.stringify(blankRecords(JSON.parse(value)));
-  } catch {
-    return value;
-  }
+function rewritePlayerJson() {
+  return JSON.stringify(emptyPlayerShell());
 }
 
 async function deleteTableRows(db, table) {
@@ -75,16 +102,7 @@ export async function purgePlayerRecords(env) {
   }
 
   try {
-    const row = await db
-      .prepare("SELECT draft_json, published_json FROM player_records WHERE id = ?")
-      .bind("owner")
-      .first();
-    if (row) {
-      await db
-        .prepare("UPDATE player_records SET draft_json = ?, published_json = ? WHERE id = ?")
-        .bind(rewritePlayerJson(row.draft_json), row.published_json == null ? null : rewritePlayerJson(row.published_json), "owner")
-        .run();
-    }
+    await db.prepare("DELETE FROM player_records WHERE id = ?").bind("owner").run();
   } catch {
     // Player mirror can be absent before its migration.
   }
