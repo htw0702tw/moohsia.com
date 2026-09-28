@@ -163,12 +163,4 @@ export default {
       return text(500, "Service unavailable");
     }
   },
-
-  /**
-   * Daily 18:15 UTC: Notion draft sync and official catalog refresh.
-   * Fight history is no longer ingested or published.
-   */
-  async scheduled(controller, env, ctx) {
-    ctx.waitUntil(runScheduled(env));
-  },
 };
