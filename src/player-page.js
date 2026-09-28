@@ -105,7 +105,7 @@ function kdaIcons(kills, deaths, assists) {
   const sword = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 14 L9 3 L11 5 L4 16 Z" fill="currentColor"/><path d="M9 3 L13 1 L14 4 L11 5 Z" fill="currentColor"/></svg>`;
   const skull = `<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="7" r="4.2" fill="currentColor"/><rect x="5" y="11" width="6" height="3" rx="1" fill="currentColor"/></svg>`;
   const fist = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8 V5 H5 V8 H7 V4 H9 V8 H11 V5 H13 V9 C13 12 11 14 8 14 S3 12 3 9 Z" fill="currentColor"/></svg>`;
-  const cell = (icon, value) => `<span>${icon}<b>${esc(value === "" ? "—" : String(value))}</b></span>`;
+  const cell = (icon, value) => `<span>${icon}<b>${esc(value === "" ? "\u2014" : String(value))}</b></span>`;
   return `<span class="aov-kda">${cell(sword, kills)}${cell(skull, deaths)}${cell(fist, assists)}</span>`;
 }
 
@@ -158,7 +158,7 @@ function pctBar(label, value, pct, tone) {
   const width = Math.max(0, Math.min(100, Number(pct) || 0));
   return `<div class="aov-metric">
     <span>${esc(label)}</span>
-    <b>${esc(value === "" || value == null ? "—" : String(value))}</b>
+    <b>${esc(value === "" || value == null ? "\u2014" : String(value))}</b>
     <i class="aov-bar ${tone}"><em style="width:${width}%"></em></i>
     <small>${pct ? `${esc(String(pct))}%` : ""}</small>
   </div>`;
@@ -210,7 +210,7 @@ function boardLine(match, page, tab) {
     return `<p class="section-note">${esc(
       [resultWord(match.result), self.hero, `${self.kills}/${self.deaths}/${self.assists}`, `${page.lastHits} ${self.lastHits}`, `${page.healing} ${self.healing}`]
         .filter((part) => part && !part.endsWith(" "))
-        .join(" · ") || page.pending,
+        .join(" \u00b7 ") || page.pending,
     )}</p>`;
   }
   const side = (rows, tone) =>
@@ -219,7 +219,7 @@ function boardLine(match, page, tab) {
         const name = row.ign || row.hero || page.pending;
         return `<li class="${row.owner ? "is-owner" : ""}">
           ${portrait(row.hero, row.score)}
-          <div class="aov-who"><strong>${esc(name)}${row.mvp ? `<em>MVP</em>` : ""}</strong><span>${esc([row.kills, row.deaths, row.assists].filter((part) => part !== "").join(" / ") || "—")}</span><small>${esc(row.gold || "")}</small></div>
+          <div class="aov-who"><strong>${esc(name)}${row.mvp ? `<em>MVP</em>` : ""}</strong><span>${esc([row.kills, row.deaths, row.assists].filter((part) => part !== "").join(" / ") || "\u2014")}</span><small>${esc(row.gold || "")}</small></div>
           ${itemRow(row.items, true)}
           ${metricTrio(page, row, tone, match, tab)}
         </li>`;
@@ -228,7 +228,7 @@ function boardLine(match, page, tab) {
   const word = resultWord(match.result);
   const title = [teamScore(match, "blue"), word, teamScore(match, "red")].filter(Boolean).join(" ");
   return `<div class="aov-board">
-    <header><span>${esc([match.duration, match.playedAt || match.date].filter(Boolean).join(" · "))}</span><strong class="${word === "VICTORY" ? "is-win" : "is-loss"}">${esc(title || page.pending)}</strong><span>${esc(match.mode || "")}</span></header>
+    <header><span>${esc([match.duration, match.playedAt || match.date].filter(Boolean).join(" \u00b7 "))}</span><strong class="${word === "VICTORY" ? "is-win" : "is-loss"}">${esc(title || page.pending)}</strong><span>${esc(match.mode || "")}</span></header>
     <div class="aov-versus">${side(blue, "blue")}${side(red, "red")}</div>
   </div>`;
 }
@@ -261,10 +261,10 @@ function historyList(copy, player, limit = 0) {
           <button type="button" class="aov-row-hit" data-match="${esc(match.id)}" aria-expanded="${open ? "true" : "false"}">
             <span class="aov-hero">${portrait(self.hero, self.score)}${self.mvp ? `<i class="aov-mvp">MVP</i>` : ""}<b>${esc(self.hero || page.pending)}</b>${lane ? `<small>${esc(lane)}</small>` : ""}</span>
             <span class="aov-result ${word === "VICTORY" ? "is-win" : "is-loss"}">${esc(word || page.pending)}</span>
-            <span class="aov-points"><b>${esc(signedText(self.rankDelta) || "—")}</b>${kdaIcons(self.kills, self.deaths, self.assists)}</span>
+            <span class="aov-points"><b>${esc(signedText(self.rankDelta) || "\u2014")}</b>${kdaIcons(self.kills, self.deaths, self.assists)}</span>
             ${itemRow(self.items)}
             <span class="aov-when"><b>${esc(match.mode || page.pending)}</b><small>${esc(whenLabel(match))}</small></span>
-            <span class="aov-chevron" aria-hidden="true">›</span>
+            <span class="aov-chevron" aria-hidden="true">\u203a</span>
           </button>
           ${open ? `<div class="aov-detail">${boardLine(match, page, view.tab)}<div class="aov-tabs">${tabs}</div></div>` : ""}
         </article>`;
@@ -299,14 +299,14 @@ function heroCards(copy, player) {
   const table = `<div class="aov-table-wrap"><h3>${esc(page.heroTable)}</h3><table class="aov-table"><thead><tr><th>${esc(page.columns.hero)}</th><th>${esc(page.played)}</th><th>${esc(page.winRate)}</th><th>${esc(page.power)}</th><th>K / D / A</th></tr></thead><tbody>${cards
     .map((card) => {
       const kda = [card.kills, card.deaths, card.assists].filter((part) => part !== "").join(" / ");
-      return `<tr><td>${esc(card.hero)}</td><td>${esc(card.matches || "—")}</td><td>${esc(card.winRate ? `${card.winRate}%` : "—")}</td><td>${esc(card.power || "—")}</td><td>${esc(kda || card.kda || "—")}</td></tr>`;
+      return `<tr><td>${esc(card.hero)}</td><td>${esc(card.matches || "\u2014")}</td><td>${esc(card.winRate ? `${card.winRate}%` : "\u2014")}</td><td>${esc(card.power || "\u2014")}</td><td>${esc(kda || card.kda || "\u2014")}</td></tr>`;
     })
     .join("")}</tbody></table></div>`;
   const builds = frequentBuilds(player.matches, 6, getCatalog().items);
   const buildBlock = builds.length
     ? `<section class="aov-builds"><h3>${esc(page.buildsTitle)}</h3><p class="section-note"><a href="/items" data-nav>${esc(page.items)}</a></p><div class="aov-build-grid">${builds
         .map(
-          (build) => `<article><header><b>${esc(build.hero || page.pending)}</b><span>×${build.count}</span></header>${itemRow(build.items.map((slot) => slot.label), true)}</article>`,
+          (build) => `<article><header><b>${esc(build.hero || page.pending)}</b><span>\u00d7${build.count}</span></header>${itemRow(build.items.map((slot) => slot.label), true)}</article>`,
         )
         .join("")}</div></section>`
     : `<p class="aov-empty">${esc(page.buildsEmpty)}</p>`;
@@ -348,7 +348,7 @@ function battlePanel(copy, player) {
   const index = Math.min(view.season, seasons.length - 1);
   const season = seasons[index];
   const tabs = seasons
-    .map((item, itemIndex) => `<button type="button" class="${itemIndex === index ? "is-on" : ""}" data-season="${itemIndex}">${esc([item.label, item.mode].filter(Boolean).join(" · ") || page.pending)}</button>`)
+    .map((item, itemIndex) => `<button type="button" class="${itemIndex === index ? "is-on" : ""}" data-season="${itemIndex}">${esc([item.label, item.mode].filter(Boolean).join(" \u00b7 ") || page.pending)}</button>`)
     .join("");
   const medals = Object.entries(page.medals)
     .map(([key, label]) => {
@@ -404,45 +404,38 @@ export function renderPlayerBody(copy, compact) {
   if (!player) {
     return `<div class="aov-shell"><p class="aov-empty">${esc(page.emptyTitle)}</p><p>${esc(page.emptyBody)}</p></div>`;
   }
-  const view = getPlayerView();
-  if (compact) {
-    return `<div class="aov-shell is-compact">${historyList(copy, player, 3)}</div>`;
-  }
-  const sections = ["heroes", "history", "rank", "charts", "analysis", "battle", "reputation", "honors", "titles", "bonds"];
-  const nav = sections
-    .map((id) => `<button type="button" class="${view.section === id ? "is-on" : ""}" data-profile-section="${id}">${esc(page.sections[id])}</button>`)
-    .join("");
-  let main = "";
-  if (view.section === "history") main = `${analysisSection(copy, player)}<div class="aov-history-block">${queueTabs(page, view)}${historyList(copy, player)}</div>`;
-  else if (view.section === "rank" || view.section === "analysis") {
-    const rank = renderRankStage(copy, player);
-    main = view.section === "analysis" ? `${rank}${analysisSection(copy, player) || `<p class="aov-empty">${esc(page.matchesEmpty)}</p>`}` : rank || `<p class="aov-empty">${esc(page.analysis?.empty || "資料不足")}</p>`;
-  }
-  else if (view.section === "charts") main = renderChartsTab(page, player, view);
-  else if (view.section === "heroes") main = heroCards(copy, player);
-  else if (view.section === "reputation") main = reputationPanel(copy, player);
-  else if (view.section === "honors") {
-    main = listCards(
-      player.championships || [],
-      (item) => `<article><header><b>${esc(item.title)}</b></header><p>${esc(item.season || "")}</p><p>${esc(bi(item.note))}</p></article>`,
-      page.honorsEmpty,
-    );
-  } else if (view.section === "titles") {
-    main = listCards(
-      player.honorTitles || [],
-      (item) => `<article><header><b>${esc(item.name)}</b></header><p>${esc(bi(item.note))}</p></article>`,
-      page.titlesEmpty,
-    );
-  } else if (view.section === "bonds") main = `<p class="aov-empty">${esc(page.bondsEmpty)}</p>`;
-  else main = battlePanel(copy, player);
-  const facts = [player.handle, bi(player.rank), bi(player.season), player.uid && `UID ${player.uid}`].filter(Boolean);
-  return `<div class="aov-shell">
-    <header class="aov-identity"><p>${esc(page.title)}</p><h2>${esc(player.handle || page.pending)}</h2><span>${esc(facts.join(" · "))}</span></header>
-    <div class="aov-layout">
-      <aside class="aov-nav">${nav}</aside>
-      <div class="aov-main">${main}</div>
-    </div>
+  const siteHref = page.siteUrl || "https://htw0702.com";
+  const siteLabel = page.siteLabel || "htw0702.com";
+  const facts = [
+    player.handle,
+    bi(player.rank),
+    bi(player.season),
+    player.uid && `UID ${player.uid}`,
+    bi(player.role),
+    bi(player.lane),
+    bi(player.server),
+  ].filter(Boolean);
+  const heroes = (player.heroPool || [])
+    .map((card) => card.hero)
+    .filter(Boolean)
+    .slice(0, 12);
+  const heroLine = heroes.length
+    ? `<p class="section-note">${esc(page.heroesLabel || page.sections.heroes)}\uff1a${esc(heroes.join(" \u00b7 "))}</p>`
+    : "";
+  const bio = bi(player.bio);
+  const rank = renderRankStage(copy, player);
+  const body = `<div class="aov-shell${compact ? " is-compact" : ""}">
+    <header class="aov-identity">
+      <p>${esc(page.title)}</p>
+      <h2>${esc(player.handle || page.pending)}</h2>
+      <span>${esc(facts.join(" \u00b7 "))}</span>
+    </header>
+    ${bio ? `<p class="section-note">${esc(bio)}</p>` : ""}
+    ${heroLine}
+    ${rank || ""}
+    <p class="aov-jumps"><a href="${esc(siteHref)}" rel="noopener noreferrer">${esc(siteLabel)}</a></p>
   </div>`;
+  return body;
 }
 
 export function derivedPreviewKda(card) {
