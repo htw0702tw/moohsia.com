@@ -19,6 +19,32 @@ const DATABASES = [
   ["heroes", "NOTION_HERO_DB"],
 ];
 
+const PLAYER_RECORD_DATABASES = new Set(["matches", "seasons", "honors", "titles", "heroes"]);
+
+function withoutPlayerRecords(document) {
+  const doc = structuredClone(document);
+  if (!doc.player || typeof doc.player !== "object") return doc;
+  const blank = emptyPlayer();
+  doc.player = {
+    ...doc.player,
+    stats: blank.stats,
+    seasons: [],
+    reputation: blank.reputation,
+    heroPool: [],
+    championships: [],
+    honorTitles: [],
+    builds: [],
+    skins: [],
+    matches: [],
+    aov: blank.aov,
+    powerBoard: blank.powerBoard,
+    gameSnapshot: blank.gameSnapshot,
+    yearTreasure: blank.yearTreasure,
+    weeklyReports: [],
+  };
+  return doc;
+}
+
 function configuredId(env, name) {
   const value = env?.[name];
   return typeof value === "string" && value.trim() ? value.trim() : "";
@@ -432,12 +458,12 @@ export async function syncNotionDraft(env) {
     const sections = {};
     const counts = {};
     for (const [key, name] of DATABASES) {
-      if (!status[key]) continue;
+      if (!status[key] || PLAYER_RECORD_DATABASES.has(key)) continue;
       const pages = await queryNotionDatabase(env, configuredId(env, name), fetchImpl);
       sections[key] = pages;
       counts[key] = pages.length;
     }
-    const next = sanitizeDocument(applyNotionCollections(JSON.parse(row.draft_json), sections));
+    const next = sanitizeDocument(withoutPlayerRecords(applyNotionCollections(JSON.parse(row.draft_json), sections)));
     const saved = await store.saveDraft(JSON.stringify(next), new Date().toISOString());
     return { ok: true, counts, updatedAt: saved?.updated_at || "", row: saved };
   } catch (error) {
