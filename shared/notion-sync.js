@@ -19,7 +19,7 @@ const DATABASES = [
   ["heroes", "NOTION_HERO_DB"],
 ];
 
-const PLAYER_RECORD_DATABASES = new Set(["matches", "seasons", "honors", "titles", "heroes"]);
+const PLAYER_RECORD_DATABASES = new Set(["player", "matches", "seasons", "honors", "titles", "heroes"]);
 
 function withoutPlayerRecords(document) {
   const doc = structuredClone(document);
