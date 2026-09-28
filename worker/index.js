@@ -1,6 +1,5 @@
 import { handleAdmin } from "../shared/admin-api.js";
 import { handleApi } from "../shared/api.js";
-import { syncOwnerFightHistory } from "../shared/aov-sync.js";
 import { refreshCatalog } from "../shared/catalog-store.js";
 import { isAdminHost } from "../shared/hosts.js";
 import { logFailure } from "../shared/log.js";
@@ -189,15 +188,10 @@ export default {
   },
 
   /**
-   * Hourly: merge htw0702aov fight history and publish that player record only.
-   * Prefers Garena official JSON when GARENA_ACCESS_TOKEN or GARENA_CODE is set.
-   * Daily 18:15 UTC: Notion draft sync and official catalog refresh. That job does not publish drafts.
+   * Daily 18:15 UTC: Notion draft sync and official catalog refresh.
+   * Fight history is no longer ingested or published.
    */
   async scheduled(controller, env, ctx) {
-    if (controller?.cron === "0 * * * *") {
-      ctx.waitUntil(syncOwnerFightHistory(env));
-      return;
-    }
     ctx.waitUntil(runScheduled(env));
   },
 };
