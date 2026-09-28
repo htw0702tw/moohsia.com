@@ -8,6 +8,12 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function withoutMatches(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  if (!payload.player || typeof payload.player !== "object") return payload;
+  return { ...payload, player: { ...payload.player, matches: [] } };
+}
+
 /**
  * Published content for the public site.
  * Falls back to built-in defaults when storage is empty or unavailable.
@@ -30,18 +36,18 @@ export async function publishedHiddenNames(env) {
 
 export async function loadPublicPayload(env) {
   const store = storeFromEnv(env);
-  if (!store) return projectDefault();
+  if (!store) return withoutMatches(projectDefault());
   try {
     let row = await store.get();
     if (!row) {
       const seeded = JSON.stringify(sanitizeDocument(getDefaultDocument()));
       row = await store.seed(seeded, nowIso());
     }
-    if (!row?.published_json) return projectDefault();
+    if (!row?.published_json) return withoutMatches(projectDefault());
     const doc = sanitizeDocument(JSON.parse(row.published_json));
-    return { ok: true, source: "published", ...toPublicDocument(doc) };
+    return withoutMatches({ ok: true, source: "published", ...toPublicDocument(doc) });
   } catch (error) {
     logFailure("cms_read_failed", error);
-    return projectDefault();
+    return withoutMatches(projectDefault());
   }
 }
