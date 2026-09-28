@@ -1,4 +1,4 @@
-const PURGE_KEY = "player-records-purged-v3";
+const PURGE_KEY = "player-records-purged-v4";
 
 const OWNER_TOKENS = ["htw0702aov", "htw0702"];
 
@@ -64,16 +64,10 @@ function rewriteSiteJson(value) {
   }
 }
 
-function rewritePlayerJson() {
-  return JSON.stringify(emptyPlayerShell());
-}
-
 async function deleteTableRows(db, table) {
   try {
     await db.prepare(`DELETE FROM ${table}`).run();
-  } catch {
-    // Older deployments may not have the archive tables. Nothing to purge there.
-  }
+  } catch {}
 }
 
 export async function purgePlayerRecords(env) {
@@ -82,9 +76,7 @@ export async function purgePlayerRecords(env) {
 
   try {
     if (env?.CMS_KV && (await env.CMS_KV.get(PURGE_KEY)) === "1") return { ok: true, already: true };
-  } catch {
-    // KV is only an optimization; D1 cleanup below is idempotent.
-  }
+  } catch {}
 
   try {
     const site = await db
@@ -97,15 +89,11 @@ export async function purgePlayerRecords(env) {
         .bind(rewriteSiteJson(site.draft_json), site.published_json == null ? null : rewriteSiteJson(site.published_json), "site")
         .run();
     }
-  } catch {
-    // Site table can be absent on a brand-new deployment.
-  }
+  } catch {}
 
   try {
     await db.prepare("DELETE FROM player_records WHERE id = ?").bind("owner").run();
-  } catch {
-    // Player mirror can be absent before its migration.
-  }
+  } catch {}
 
   await deleteTableRows(db, "aov_capture_frames");
   await deleteTableRows(db, "aov_match_versions");
@@ -114,8 +102,6 @@ export async function purgePlayerRecords(env) {
 
   try {
     await env?.CMS_KV?.put(PURGE_KEY, "1");
-  } catch {
-    // The cleanup itself already completed.
-  }
+  } catch {}
   return { ok: true };
 }
