@@ -5,33 +5,9 @@ import { logFailure } from "../shared/log.js";
 import { purgePlayerRecords } from "../shared/player-record-purge.js";
 import { readCookie, readSession, SESSION_COOKIE, sessionNow } from "../shared/session.js";
 
-/**
- * Marketing site for moohsia.com (暮霞｜MOS) plus the private admin host.
- * This Worker is `moohsia-com`. It does not replace `moohsia-cloud`,
- * the separate AI/chat API Worker.
- *
- * @typedef {Object} Env
- * @property {Fetcher} ASSETS
- * @property {string} [DISCORD_INVITE_URL]
- * @property {string} [ADMIN_USERNAME]
- * @property {string} [ADMIN_PASSWORD_HASH]
- * @property {string} [ADMIN_SESSION_SECRET]
- * @property {D1Database} [CMS_DB]
- * @property {KVNamespace} [CMS_KV]
- * @property {string} [NOTION_TOKEN]
- * @property {string} [NOTION_WEBHOOK_SECRET]
- * @property {string} [NOTION_ROSTER_DB]
- * @property {string} [NOTION_NEWS_DB]
- * @property {string} [NOTION_COPY_DB]
- * @property {string} [NOTION_PROFILE_DB]
- * @property {string} [RESEND_API_KEY]
- * @property {string} [MAIL_FROM]
- * @property {string} [APPLICATIONS_TO]
- * @property {R2Bucket} [MEDIA]
- */
-
 const PUBLIC_FALLBACK = "/index.html";
 const ADMIN_FALLBACK = "/admin/";
+const PERSONAL_AOV = "https://htw0702.com/tw/games/aov/htw0702aov";
 
 function isFilePath(pathname) {
   return /\.[a-z0-9]{1,8}$/i.test(pathname);
@@ -86,7 +62,6 @@ async function serveAsset(request, env, fallbackPath) {
   return env.ASSETS.fetch(new Request(fallback, request));
 }
 
-/** Fetch a shell and follow one Assets redirect (index.html → /) inside the Worker. */
 async function fetchAssetShell(request, env, shellPath) {
   const url = new URL(request.url);
   let shell = await env.ASSETS.fetch(new Request(new URL(shellPath, url.origin), request));
@@ -125,8 +100,6 @@ async function serveAdmin(request, env) {
     const session = await adminSession(request, env);
     if (path === "/") return redirect(session ? "/dashboard" : "/login");
     if (path === "/login" && session) return redirect("/dashboard");
-    // Assets 307s /admin/index.html and extensionless client routes (/login, /dashboard) to /admin/.
-    // Fetch the directory shell, and follow one Assets redirect, so the browser stays on the SPA path.
     return withAdminPageHeaders(await fetchAssetShell(request, env, ADMIN_FALLBACK));
   }
 
@@ -138,11 +111,18 @@ async function serveAdmin(request, env) {
 async function servePublic(request, env) {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
+  if (/\/roster\/htw0702aov$/i.test(path) || path === "/player" || path.endsWith("/player")) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: PERSONAL_AOV,
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  }
   if (path === "/api" || path.startsWith("/api/")) return handleApi(request, env);
   if (path === "/admin" || path.startsWith("/admin/")) return text(404, "Not found");
-  // Assets 307s extensionless client routes (/apply, /player, /activities, …) to /.
-  // Serve index.html and follow that redirect inside the Worker so a refresh stays on the path.
-  // Missing files (a real .js/.css/.svg 404) still pass through serveAsset.
   if ((request.method === "GET" || request.method === "HEAD") && !isFilePath(url.pathname)) {
     return fetchAssetShell(request, env, PUBLIC_FALLBACK);
   }
@@ -150,7 +130,6 @@ async function servePublic(request, env) {
 }
 
 export default {
-  /** @param {Request} request @param {Env} env */
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
